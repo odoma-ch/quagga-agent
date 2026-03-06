@@ -1,0 +1,95 @@
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://www.w3.org/ns/sparql-service-description#>
+PREFIX pc: <http://purl.org/vocab/frbr/core#>
+PREFIX purlSF: <http://purl.org/spar/fabio/>
+PREFIX purlSP: <http://purl.org/spar/pro/>
+PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/>
+PREFIX purlSD: <http://purl.org/spar/datacite/>
+PREFIX essepuntato20L: <http://www.essepuntato.it/2010/06/literalreification/>
+
+        
+purlSD:Identifier {
+    a [ purlSD:Identifier ]* ;
+    a . + ;
+    essepuntato20L:hasLiteralValue xsd:string* 
+}
+                
+purlSF:BookChapter {
+    a [ purlSF:BookChapter ]* ;
+    a . + ;
+    prismstandardNB2:publicationDate xsd:gYear* ;
+    dcterms:title xsd:string* ;
+    purlSD:hasIdentifier (@purlSD:Identifier OR IRI)* ;
+    purlSP:isDocumentContextFor (@purlSP:RoleInTime OR IRI)* ;
+    pc:embodiment (@purlSF:Manifestation OR IRI)* 
+}
+                
+purlSP:RoleInTime {
+    a [ purlSP:RoleInTime ]* ;
+    a . + ;
+    purlSP:isHeldBy (@foaf:Agent OR IRI)* 
+}
+                
+purlSF:Manifestation {
+    a [ purlSF:Manifestation ]* ;
+    a . + ;
+    prismstandardNB2:endingPage xsd:string* ;
+    prismstandardNB2:startingPage xsd:string* 
+}
+                
+purlSF:Expression {
+    a [ purlSF:Expression ]* ;
+    a . + ;
+    prismstandardNB2:publicationDate (xsd:date OR xsd:gYear OR xsd:gYearMonth OR IRI)* ;
+    dcterms:title xsd:string* ;
+    purlSD:hasIdentifier (@purlSD:Identifier OR IRI)* ;
+    purlSF:hasSequenceIdentifier xsd:string* ;
+    purlSP:isDocumentContextFor (@purlSP:RoleInTime OR IRI)* ;
+    pc:embodiment (@purlSF:Manifestation OR IRI)* ;
+    pc:partOf (@purlSF:JournalIssue OR IRI)* 
+}
+                
+purlSF:JournalIssue {
+    a [ purlSF:JournalIssue ]* ;
+    a . + ;
+    purlSF:hasSequenceIdentifier xsd:string* 
+}
+                
+purlSF:JournalArticle {
+    a [ purlSF:JournalArticle ]* ;
+    a . + ;
+    prismstandardNB2:publicationDate (xsd:date OR xsd:gYearMonth OR IRI)* ;
+    dcterms:title xsd:string* ;
+    purlSD:hasIdentifier (@purlSD:Identifier OR IRI)* ;
+    purlSP:isDocumentContextFor (@purlSP:RoleInTime OR IRI)* ;
+    pc:embodiment (@purlSF:Manifestation OR IRI)* ;
+    pc:partOf (@purlSF:Expression OR @purlSF:JournalIssue OR IRI)* 
+}
+                
+purlSF:ProceedingsPaper {
+    a [ purlSF:ProceedingsPaper ]* ;
+    a . + ;
+    prismstandardNB2:publicationDate xsd:gYearMonth* ;
+    dcterms:title xsd:string* ;
+    purlSP:isDocumentContextFor (@purlSP:RoleInTime OR IRI)* 
+}
+                
+purlSF:ReferenceEntry {
+    a [ purlSF:ReferenceEntry ]* ;
+    a . + ;
+    prismstandardNB2:publicationDate xsd:date* ;
+    dcterms:title xsd:string* ;
+    purlSP:isDocumentContextFor (@purlSP:RoleInTime OR IRI)* 
+}
+                
+foaf:Agent {
+    a [ foaf:Agent ]* ;
+    a . + ;
+    foaf:familyName xsd:string* ;
+    foaf:givenName xsd:string* ;
+    foaf:name xsd:string* 
+}
+  
