@@ -1,17 +1,3 @@
-"""
-OpenAI-compatible API for the Quagga LangGraph Agent (ShEx retriever only).
-
-Exposes /v1/models and /v1/chat/completions so that OpenWebUI (or any
-OpenAI-compatible client) can talk to the agent out of the box.
-
-Usage:
-    uvicorn api:app --host 0.0.0.0 --port 8000
-
-    # Then in OpenWebUI → Admin → Connections → OpenAI API:
-    #   URL:  http://<host>:8000/v1
-    #   Key:  (any non-empty string, e.g. "sk-dummy")
-"""
-
 import os
 import json
 import time
@@ -33,48 +19,32 @@ from langchain_ollama import ChatOllama
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.checkpoint.memory import InMemorySaver
 
 from models import ContextSchema, State
 from helper_functions import load_shex_file, chunk_shex_file, get_embeddings_for_chunks
 from tools import CustomShexRetrieverTool, validate_sparql_tool
 
+from agent_constants import MODEL_ID
+from agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
+from agent_runtime_state import runtime_state
+from message_format_helpers import _extract_messages, _make_chat_completion, _make_openai_error
+from agent_helpers import _run_agent, _stream_agent
+
 load_dotenv()
 
-# ---------------------------------------------------------------------------
-# Configuration – read from environment variables
-# ---------------------------------------------------------------------------
+
 USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
 PATH_TO_SHEX = os.getenv("PATH_TO_SHEX", "")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "")
-SPARQL_ENDPOINT = os.getenv("SPARQL_ENDPOINT", "")
 RETRIEVER_K = int(os.getenv("RETRIEVER_K", "10"))
 
-MODEL_ID = "Graphia SPARQL Agent"
-MAX_AGENT_STEPS = int(os.getenv("MAX_AGENT_STEPS", "20"))
-SSE_DEBUG = os.getenv("SSE_DEBUG", "false").strip().lower() in {"1", "true", "yes", "on"}
-
 logger = logging.getLogger("graphia-sparql-agent-api")
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
-# ---------------------------------------------------------------------------
-# Module-level state (populated during lifespan startup)
-# ---------------------------------------------------------------------------
-llm_with_tools = None
-graph = None
-shex_prefixes: str = ""
-chunk_titles: list[str] = []
-# Per-session checkpointer living in memory (thread_id → conversation)
-checkpointer = InMemorySaver()
-
-
-# ---------------------------------------------------------------------------
-# RAG environment setup (mirrors run_agent.py, ShEx only)
-# ---------------------------------------------------------------------------
 def setup_rag_environment(path_to_shex: str, collection_name: str, k: int = 3):
     """Return (retriever_tool, shex_prefixes, chunk_titles)."""
     shex_collection_name = collection_name + "_shex"
@@ -131,14 +101,13 @@ def sparql_chat(state: State, config: RunnableConfig):
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query.""",
             ),
         )
-    return {"messages": [llm_with_tools.invoke(state["messages"])]}
+    return {"messages": [runtime_state.llm_with_tools.invoke(state["messages"])]}
 
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialise the LangGraph agent once at startup."""
-    global llm_with_tools, graph, shex_prefixes, chunk_titles
 
     if not PATH_TO_SHEX or not COLLECTION_NAME:
         raise RuntimeError(
@@ -146,7 +115,7 @@ async def lifespan(app: FastAPI):
             "as environment variables before starting the API."
         )
 
-    retriever_tool, shex_prefixes, chunk_titles = setup_rag_environment(
+    retriever_tool, runtime_state.shex_prefixes, runtime_state.chunk_titles = setup_rag_environment(
         PATH_TO_SHEX, COLLECTION_NAME, k=RETRIEVER_K
     )
 
@@ -168,7 +137,7 @@ async def lifespan(app: FastAPI):
         )
 
     tools = [retriever_tool, validate_sparql_tool]
-    llm_with_tools = llm.bind_tools(tools)
+    runtime_state.llm_with_tools = llm.bind_tools(tools)
 
     graph_builder = StateGraph(State)
     graph_builder.add_node("sparql_chat_agent", sparql_chat)
@@ -180,7 +149,7 @@ async def lifespan(app: FastAPI):
     graph_builder.add_edge("tools", "sparql_chat_agent")
     graph_builder.set_entry_point("sparql_chat_agent")
 
-    graph = graph_builder.compile(checkpointer=checkpointer)
+    runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 
     logger.info("Quagga SPARQL agent is ready")
     yield  # application is running
@@ -203,280 +172,6 @@ app.add_middleware(
 )
 
 
-def _make_chat_completion(content: str, finish_reason: str = "stop") -> dict:
-    """Build an OpenAI-style ChatCompletion response body."""
-    return {
-        "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
-        "object": "chat.completion",
-        "created": int(time.time()),
-        "model": MODEL_ID,
-        "choices": [
-            {
-                "index": 0,
-                "message": {"role": "assistant", "content": content},
-                "finish_reason": finish_reason,
-            }
-        ],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
-    }
-
-
-def _make_openai_error(message: str, err_type: str = "api_error") -> dict:
-    """Build an OpenAI-style error payload."""
-    return {"error": {"message": message, "type": err_type}}
-
-
-def _make_chat_completion_chunk(
-    content: str,
-    finish_reason: str | None = None,
-    chunk_id: str | None = None,
-    role: str | None = None,
-    chunk_type: str | None = None,
-) -> str:
-    """Build one SSE chunk in OpenAI streaming format."""
-    delta = {}
-    if role:
-        delta["role"] = role
-    if content:
-        delta["content"] = content
-
-    chunk = {
-        "id": chunk_id or f"chatcmpl-{uuid.uuid4().hex[:12]}",
-        "object": "chat.completion.chunk",
-        "created": int(time.time()),
-        "model": MODEL_ID,
-        "choices": [
-            {
-                "index": 0,
-                "delta": delta,
-                "finish_reason": finish_reason,
-            }
-        ],
-    }
-
-    chunk["x_chunk_type"] = chunk_type
-    return f"data: {json.dumps(chunk)}\n\n"
-
-
-def _message_content_to_text(content) -> str:
-    """Normalize LangChain message/chunk content into plain text."""
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts: list[str] = []
-        for item in content:
-            if isinstance(item, str):
-                parts.append(item)
-                continue
-            if isinstance(item, dict):
-                text = item.get("text")
-                if text:
-                    parts.append(str(text))
-        return "".join(parts)
-    if content is None:
-        return ""
-    return str(content)
-
-
-def _extract_messages(body: dict) -> list[tuple[str, str]]:
-    """Convert OpenAI-style messages list into LangGraph (role, content) tuples."""
-    messages = []
-    for msg in body.get("messages", []):
-        role = msg.get("role", "user")
-        content = msg.get("content", "")
-        messages.append((role, content))
-    return messages
-
-
-# ---------------------------------------------------------------------------
-# Friendly labels for tool names shown to the user
-# ---------------------------------------------------------------------------
-_TOOL_DISPLAY_NAMES = {
-    "shex_retriever": "Searching ShEx schemas",
-    "validate_sparql_tool": "Generating and validating SPARQL query",
-}
-
-
-def _format_tool_call(message) -> str:
-    """Render an LLM tool-call message as a readable markdown block."""
-    parts = []
-    for tc in message.tool_calls:
-        name = tc.get("name", "unknown_tool")
-        args = tc.get("args", {})
-        display = _TOOL_DISPLAY_NAMES.get(name, name)
-        header = f"**{display}**"
-
-        # TODO: check if we need to show args
-        # if args:
-        #     # Show the arguments compactly
-        #     args_str = ", ".join(f"`{k}`: {v}" for k, v in args.items())
-        #     parts.append(f"{header}\n> {args_str}\n")
-        # else:
-        parts.append(f"{header}\n")
-    return "\n".join(parts)
-
-
-def _format_tool_result(message) -> str:
-    """Render a tool result message as a collapsible markdown details block."""
-    content = message.content if isinstance(message.content, str) else str(message.content)
-    tool_name = getattr(message, "name", "tool")
-    display = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-    # Truncate very long results so the chat stays readable
-    preview = content[:500] + ("…" if len(content) > 500 else "")
-    return (
-        f"<details>\n<summary>Result from {display}</summary>\n\n"
-        f"```\n{preview}\n```\n</details>\n\n"
-    )
-
-
-def _build_agent_context() -> dict:
-    """Build the shared context dict passed to graph.stream()."""
-    prefixes_str = (
-        "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
-        if shex_prefixes
-        else ""
-    )
-    return {
-        "sparql_endpoint": SPARQL_ENDPOINT,
-        "shex_prefixes": prefixes_str,
-        "chunk_titles": chunk_titles,
-        "retrieved_chunks": set(),
-        "benchmark_mode": False,
-        "benchmark_method_description": "ShEX",
-    }
-
-
-async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
-    """Invoke the LangGraph agent and collect the full response including thinking."""
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
-    context = _build_agent_context()
-
-    parts: list[str] = []
-    # Run synchronous graph.stream in a thread so we don't block the event loop.
-    for event in await asyncio.to_thread(
-        lambda: list(graph.stream({"messages": messages}, config, context=context))
-    ):
-        for value in event.values():
-            if value.get("messages"):
-                latest = value["messages"][-1]
-                # Tool-call message (LLM decided to call a tool)
-                if hasattr(latest, "tool_calls") and len(latest.tool_calls) > 0:
-                    parts.append(_format_tool_call(latest))
-                    continue
-                # Tool-result message
-                if hasattr(latest, "type") and latest.type == "tool":
-                    parts.append(_format_tool_result(latest))
-                    continue
-                # Final assistant response
-                text = _message_content_to_text(latest.content)
-                if text:
-                    parts.append(text)
-
-    return "\n".join(parts)
-
-
-async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
-    """Yield SSE chunks as tool steps + tokenized assistant output."""
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
-    context = _build_agent_context()
-    stream_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
-    queue: asyncio.Queue = asyncio.Queue()
-    loop = asyncio.get_running_loop()
-    sentinel = object()
-
-    # Emit initial role delta for OpenAI-compatible clients.
-    role_chunk = _make_chat_completion_chunk(
-        "", chunk_id=stream_id, role="assistant", chunk_type="role"
-    )
-    print("role", role_chunk)
-    yield role_chunk
-
-    def _token_chunks(text: str):
-        """Split text into stream-friendly chunks that feel token-like."""
-        if not text:
-            return
-        words = text.split(" ")
-        for i, word in enumerate(words):
-            if i < len(words) - 1:
-                yield word + " "
-            else:
-                yield word
-
-    def _producer():
-        try:
-            for event in graph.stream({"messages": messages}, config, context=context):
-                for value in event.values():
-                    if not value.get("messages"):
-                        continue
-                    latest = value["messages"][-1]
-                    if hasattr(latest, "tool_calls") and len(latest.tool_calls) > 0:
-                        tool_call_chunk = _make_chat_completion_chunk(
-                            _format_tool_call(latest) + "\n\n",
-                            chunk_id=stream_id,
-                            chunk_type="tool_call",
-                        )
-                        print("tool_call", tool_call_chunk)
-                        loop.call_soon_threadsafe(
-                            queue.put_nowait,
-                            tool_call_chunk,
-                        )
-                        continue
-                    if hasattr(latest, "type") and latest.type == "tool":
-                        tool_result_chunk = _make_chat_completion_chunk(
-                            _format_tool_result(latest),
-                            chunk_id=stream_id,
-                            chunk_type="tool_result",
-                        )
-                        print("tool_result", tool_result_chunk)
-                        loop.call_soon_threadsafe(
-                            queue.put_nowait,
-                            tool_result_chunk,
-                        )
-                        continue
-
-                    text = _message_content_to_text(getattr(latest, "content", ""))
-                    for chunk in _token_chunks(text):
-                        text_chunk = _make_chat_completion_chunk(
-                            chunk, chunk_id=stream_id, chunk_type="llm_text"
-                        )
-                        print("text", text_chunk)
-                        loop.call_soon_threadsafe(
-                            queue.put_nowait,
-                            text_chunk,
-                        )
-        except Exception as exc:
-            error_chunk = _make_chat_completion_chunk(
-                f"\n\n**Error:** {exc}", chunk_id=stream_id, chunk_type="error"
-            )
-            print("error", error_chunk)
-            loop.call_soon_threadsafe(
-                queue.put_nowait,
-                error_chunk,
-            )
-        finally:
-            loop.call_soon_threadsafe(queue.put_nowait, sentinel)
-
-    asyncio.get_running_loop().run_in_executor(None, _producer)
-
-    while True:
-        item = await queue.get()
-        if item is sentinel:
-            break
-        yield item
-
-    final_chunk = _make_chat_completion_chunk(
-        "", finish_reason="stop", chunk_id=stream_id, chunk_type="final"
-    )
-    print("final", final_chunk)
-    yield final_chunk
-    done_chunk = "data: [DONE]\n\n"
-    print("done", done_chunk)
-    yield done_chunk
-
-
-# ---------------------------------------------------------------------------
-# OpenAI-compatible endpoints
-# ---------------------------------------------------------------------------
 @app.get("/v1/models")
 async def list_models():
     """Return the list of available models (single agent model)."""
