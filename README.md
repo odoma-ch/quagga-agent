@@ -52,9 +52,11 @@ curl https://quagga-llm-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1/cha
   }' 2>/dev/null | jq -C
 ```
 
+## For running the GRAPHIA agent API:
+
 - Start the OpenWebUI: `open-webui serve`
 - Start the API in another terminal tab: `uvicorn api:app --host 0.0.0.0 --port 8004`
 - In OpenWebUI → Admin → Connections → OpenAI API:
     - URL: http://<host>:8004/v1
     - Key: any non-empty string (e.g. sk-dummy)
-    - The agent will appear as a model named `quagga-sparql-agent` in the OpenWebUI model selector.
+    - The agent will appear as a model named `Graphia SPARQL agent` in the OpenWebUI model selector.
