@@ -61,3 +61,4 @@ curl https://quagga-llm-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1/cha
     - Key: any non-empty string (e.g. sk-dummy)
     - The agent will appear as a model named `Graphia SPARQL agent` in the OpenWebUI model selector.
     - Sometimes, OpenWebUI can cause issues, do the `lsof -i:8000` command and kill the process with the right PID.
+- Might need to delete the `chroma_db` from the repo and rebuild the vector for some reason it causes hangup locally.

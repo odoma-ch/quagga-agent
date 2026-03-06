@@ -54,62 +54,6 @@ Content-Type: application/json
 ### Request Body Parameters
 
 | Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|a# Quagga SPARQL Agent API Documentation
-
-## Overview
-
-The Quagga SPARQL Agent API provides an OpenAI-compatible interface for interacting with a LangGraph-based SPARQL agent that uses ShEx schemas for query generation and validation. This API can be integrated with any OpenAI-compatible frontend.
-
-## Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/v1/models` | GET | List available models |
-| `/v1/chat/completions` | POST | Create chat completions |
-| `/health` | GET | Health check endpoint |
-
----
-
-## 1. List Models
-
-Returns the list of available models.
-
-### Request
-
-```bash
-GET /v1/models
-```
-
-### Response
-
-```json
-{
-  "object": "list",
-  "data": [{
-    "id": "Graphia SPARQL Agent",
-    "object": "model",
-    "created": 1700000000,
-    "owned_by": "Odoma"
-  }]
-}
-```
-
----
-
-## 2. Chat Completions
-
-Creates a chat completion for the provided messages. Supports both streaming and non-streaming modes.
-
-### Request
-
-```bash
-POST /v1/chat/completions
-Content-Type: application/json
-```
-
-### Request Body Parameters
-
-| Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `messages` | Array | Yes | Array of message objects |
 | `stream` | Boolean | No | Enable streaming response (default: false) |
@@ -129,7 +73,7 @@ Content-Type: application/json
 ```json
 {
   "messages": [
-    {"role": "user", "content": "Show me all employees"}
+    {"role": "user", "content": "What is a knowledge graph aobut?"}
   ],
   "thread_id": "conversation-123",
   "stream": false
@@ -148,7 +92,7 @@ Content-Type: application/json
     "index": 0,
     "message": {
       "role": "assistant",
-      "content": "Generated SPARQL query:\n```sparql\nSELECT ?employee WHERE {...}\n```"
+      "content": "Generated SPARQL query:\n```sparql\nSELECT ?entity WHERE {...}\n```"
     },
     "finish_reason": "stop"
   }],
@@ -165,24 +109,10 @@ Content-Type: application/json
 ```json
 {
   "messages": [
-    {"role": "user", "content": "Show me all employees"}
+    {"role": "user", "content": "What is this knowledge graph about?"}
   ],
   "stream": true
 }
-```
-
-### Response (Streaming - SSE Format)
-
-```
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}],"x_chunk_type":"role"}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"content":"Here"},"finish_reason":null}],"x_chunk_type":"llm_text"}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"content":" is"},"finish_reason":null}],"x_chunk_type":"llm_text"}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"x_chunk_type":"final"}
-
-data: [DONE]
 ```
 
 ### Chunk Fields
@@ -290,12 +220,12 @@ Use a consistent `thread_id` to maintain conversation history across requests:
 # First request
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Show me employees"}], "thread_id": "session-123"}'
+  -d '{"messages": [{"role": "user", "content": "What is the KG about?"}], "thread_id": "session-123"}'
 
 # Follow-up request with same thread_id
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Filter by department"}], "thread_id": "session-123"}'
+  -d '{"messages": [{"role": "user", "content": "generate a sparql query to get the title and publication date of the article with the DOI: 10.1162/qss_a_00023"}], "thread_id": "session-123"}'
 ```
 
 ### Streaming Responses
@@ -307,7 +237,7 @@ const response = await fetch('http://localhost:8000/v1/chat/completions', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
-    messages: [{ role: 'user', content: 'Show me employees' }],
+    messages: [{ role: 'user', content: 'What is the KG about?' }],
     stream: true
   })
 });
@@ -367,7 +297,7 @@ client.headers.update({"Authorization": "Bearer sk-dummy"})
 response = client.post(
     "http://localhost:8000/v1/chat/completions",
     json={
-        "messages": [{"role": "user", "content": "Show me all employees"}],
+        "messages": [{"role": "user", "content": "What is the knowledge graph about?"}],
         "stream": False
     }
 )
@@ -377,7 +307,7 @@ print(response.json()["choices"][0]["message"]["content"])
 response = client.post(
     "http://localhost:8000/v1/chat/completions",
     json={
-        "messages": [{"role": "user", "content": "Show me all employees"}],
+        "messages": [{"role": "user", "content": "What is the knowledge graph about?"}],
         "stream": True
     },
     stream=True
@@ -450,7 +380,7 @@ curl http://localhost:8000/v1/models
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{"role": "user", "content": "Show me all employees in HR department"}],
+    "messages": [{"role": "user", "content": "What is the KG about?"}],
     "stream": false
   }'
 
@@ -458,289 +388,9 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 curl -X POST http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "messages": [{"role": "user", "content": "Show me all employees"}],
+    "messages": [{"role": "user", "content": "What is the KG about?"}],
     "stream": true
   }'
-```
-
----
-
-## Environment Variables
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `PATH_TO_SHEX` | Yes | - | Path to ShEx schema file |
-| `COLLECTION_NAME` | Yes | - | ChromaDB collection name |
-| `SPARQL_ENDPOINT` | No | - | SPARQL endpoint URL |
-| `RETRIEVER_K` | No | 10 | Number of chunks to retrieve |
-| `LOCAL_MODE` | No | False | Use Ollama instead of OpenAI |
-| `MAX_AGENT_STEPS` | No | 20 | Maximum agent recursion depth |
-| `messages` | Array | Yes | Array of message objects |
-| `stream` | Boolean | No | Enable streaming response (default: false) |
-| `thread_id` | String | No | Conversation ID for context continuity |
-
-### Message Object Format
-
-```json
-{
-  "role": "user" | "assistant" | "system",
-  "content": "Message content"
-}
-```
-
-### Example Request (Non-streaming)
-
-```json
-{
-  "messages": [
-    {"role": "user", "content": "Show me all employees"}
-  ],
-  "thread_id": "conversation-123",
-  "stream": false
-}
-```
-
-### Response (Non-streaming)
-
-```json
-{
-  "id": "chatcmpl-abc123",
-  "object": "chat.completion",
-  "created": 1700000000,
-  "model": "Graphia SPARQL Agent",
-  "choices": [{
-    "index": 0,
-    "message": {
-      "role": "assistant",
-      "content": "Generated SPARQL query:\n```sparql\nSELECT ?employee WHERE {...}\n```"
-    },
-    "finish_reason": "stop"
-  }],
-  "usage": {
-    "prompt_tokens": 0,
-    "completion_tokens": 0,
-    "total_tokens": 0
-  }
-}
-```
-
-### Example Request (Streaming)
-
-```json
-{
-  "messages": [
-    {"role": "user", "content": "Show me all employees"}
-  ],
-  "stream": true
-}
-```
-
-### Response (Streaming - SSE Format)
-
-```
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"role":"assistant"},"finish_reason":null}]}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"content":"Here"},"finish_reason":null}]}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{"content":" is"},"finish_reason":null}]}
-
-data: {"id":"chatcmpl-abc123","object":"chat.completion.chunk","created":1700000000,"model":"Graphia SPARQL Agent","choices":[{"index":0,"delta":{},"finish_reason":"stop"}]}
-
-data: [DONE]
-```
-
-### Chunk Fields
-
-| Field | Description |
-|-------|-------------|
-| `id` | Unique completion ID |
-| `object` | Always `chat.completion.chunk` |
-| `created` | Unix timestamp |
-| `model` | Model name |
-| `choices[0].delta` | Content delta (may include `role` or `content`) |
-| `choices[0].finish_reason` | Reason for completion (null, "stop", "length", etc.) |
-
----
-
-## 3. Health Check
-
-Simple health check endpoint.
-
-### Request
-
-```bash
-GET /health
-```
-
-### Response
-
-```json
-{
-  "status": "Agent is functioning"
-}
-```
-
----
-
-## Integration Guide
-
-### Authentication
-
-Pass any non-empty API key header:
-
-```bash
-curl -H "Authorization: Bearer sk-dummy" http://localhost:8000/v1/chat/completions
-```
-
-### Conversation Context
-
-Use a consistent `thread_id` to maintain conversation history across requests:
-
-```bash
-# First request
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Show me employees"}], "thread_id": "session-123"}'
-
-# Follow-up request with same thread_id
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"messages": [{"role": "user", "content": "Filter by department"}], "thread_id": "session-123"}'
-```
-
-### Streaming Responses
-
-Handle streaming responses for real-time feedback:
-
-```javascript
-const response = await fetch('http://localhost:8000/v1/chat/completions', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    messages: [{ role: 'user', content: 'Show me employees' }],
-    stream: true
-  })
-});
-
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-
-  const chunk = decoder.decode(value);
-  const lines = chunk.split('\n\n');
-
-  for (const line of lines) {
-    if (line.startsWith('data: ')) {
-      const data = line.slice(6);
-      if (data === '[DONE]') continue;
-      const parsed = JSON.parse(data);
-      const content = parsed.choices[0].delta.content;
-      if (content) process.stdout.write(content);
-    }
-  }
-}
-console.log('\n');
-```
-
----
-
-## Error Handling
-
-All errors follow OpenAI's error format:
-
-```json
-{
-  "error": {
-    "message": "Error description",
-    "type": "invalid_request_error" | "authentication_error" | "rate_limit_error" | "internal_server_error"
-  }
-}
-```
-
-### Common Error Types
-
-| Type | Description |
-|------|-------------|
-| `invalid_request_error` | Malformed request or invalid parameters |
-| `authentication_error` | Invalid or missing API key |
-| `rate_limit_error` | Too many requests |
-| `internal_server_error` | Server-side error |
-
----
-
-## Usage with Different Frontends
-
-### OpenWebUI
-
-1. Go to Admin → Connections → Add Connection
-2. Select "OpenAI API"
-3. Configure:
-   - URL: `http://<host>:8000/v1`
-   - API Key: Any non-empty string (e.g., `sk-dummy`)
-
-### cURL
-
-```bash
-# List models
-curl http://localhost:8000/v1/models
-
-# Non-streaming completion
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [{"role": "user", "content": "Show me all employees in HR department"}],
-    "stream": false
-  }'
-
-# Streaming completion
-curl -X POST http://localhost:8000/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [{"role": "user", "content": "Show me all employees"}],
-    "stream": true
-  }'
-```
-
-### Python
-
-```python
-import requests
-
-client = requests.Session()
-client.headers.update({"Authorization": "Bearer sk-dummy"})
-
-# Non-streaming
-response = client.post(
-    "http://localhost:8000/v1/chat/completions",
-    json={
-        "messages": [{"role": "user", "content": "Show me all employees"}],
-        "stream": False
-    }
-)
-print(response.json()["choices"][0]["message"]["content"])
-
-# Streaming
-response = client.post(
-    "http://localhost:8000/v1/chat/completions",
-    json={
-        "messages": [{"role": "user", "content": "Show me all employees"}],
-        "stream": True
-    },
-    stream=True
-)
-
-for line in response.iter_lines():
-    if line:
-        data = line.decode('utf-8')
-        if data.startswith('data: '):
-            parsed = json.loads(data[6:])
-            content = parsed["choices"][0]["delta"].get("content", "")
-            if content:
-                print(content, end="", flush=True)
-print()
 ```
 
 ---
