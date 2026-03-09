@@ -37,10 +37,10 @@ def _format_tool_result(message) -> str:
     if tool_name == "validate_sparql_tool":
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
-            f"<code>\n{preview}\n</code>\n</details>\n\n"
+            f"<text>\n{preview}\n</text>\n</details>\n\n"
         )
     else:
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
-            f"<text>\n{preview}\n</text>\n</details>\n\n"
+            f"<code>\n{preview}\n</code>\n</details>\n\n"
         )
