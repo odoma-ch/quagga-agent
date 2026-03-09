@@ -32,9 +32,15 @@ def _format_tool_result(message) -> str:
     content = message.content if isinstance(message.content, str) else str(message.content)
     tool_name = getattr(message, "name", "tool")
     display = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-    # Truncate very long results so the chat stays readable
     preview = content[:500] + ("…" if len(content) > 500 else "")
-    return (
-        f"<details>\n<summary>Result from {display}</summary>\n\n"
-        f"```\n{preview}\n```\n</details>\n\n"
-    )
+
+    if tool_name == "validate_sparql_tool":
+        return (
+            f"<details>\n<summary>Result from {display}</summary>\n\n"
+            f"<code>\n{preview}\n</code>\n</details>\n\n"
+        )
+    else:
+        return (
+            f"<details>\n<summary>Result from {display}</summary>\n\n"
+            f"<text>\n{preview}\n</text>\n</details>\n\n"
+        )
