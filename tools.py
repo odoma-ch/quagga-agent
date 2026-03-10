@@ -22,8 +22,9 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=Tru
 
 import httpx
 from langchain_openai import ChatOpenAI
-
+from tool_helpers import _is_sparql_endpoint_up
 from models import ContextSchema, ShexRetrieverInput, SPARQLValidationInput
+
 
 from rdflib import Graph
 from rdflib.plugins.stores import sparqlstore
@@ -234,51 +235,25 @@ def validate_sparql_tool(query: str):
     try:
         runtime = get_runtime(ContextSchema)
         endpoint = runtime.context.get("sparql_endpoint")
-        benchmark_mode = runtime.context.get("benchmark_mode")
-        benchmark_method = runtime.context.get("benchmark_method")
-        ground_truth_query = runtime.context.get("ground_truth_query")
-        ground_truth_id = runtime.context.get("ground_truth_id")
-        benchmark_model = runtime.context.get("benchmark_model")
         console.print(
             f"Running the query against the SPARQL endpoint", style="bold blue"
         )
-
-        if benchmark_mode:
-            ground_truth_query = f"""
-PREFIX orkgp: <http://orkg.org/orkg/predicate/>
-PREFIX orkgc: <http://orkg.org/orkg/class/>
-PREFIX orkgr: <http://orkg.org/orkg/resource/>
-
-            {ground_truth_query}
-            """
-            with open(
-                f"/Users/hdsingh/quagga-agent/benchmark/results/case{benchmark_method}_results.json",
-                "a",
-            ) as f:
-                f.write(
-                    json.dumps(
-                        {
-                            "id": ground_truth_id,
-                            "model": benchmark_model,
-                            "generated": {"query": query},
-                            "ground_truth": {"query": ground_truth_query},
-                        }
-                    )
-                    + "\n"
-                )
-
+    
         results = []
-        if not benchmark_mode:
-            console.print(
-                f"Querying the SPARQL endpoint: {endpoint}", style="bold blue"
-            )
-            store = sparqlstore.SPARQLStore(query_endpoint=endpoint)
-            g = Graph(store=store)
+        console.print(
+            f"Querying the SPARQL endpoint: {endpoint}", style="bold blue"
+        )
 
-            logging.info(f"Query to be validated: {query}")
-            results = g.query(query)
-            console.print(f"Results: {results}", style="bold green")
-            console.print(f"""```sparql\n{query}\n```""")
+        if not _is_sparql_endpoint_up(endpoint):
+            return f"The SPARQL endpoint is not reachable. Currently the knowledge graph is not available."
+
+        store = sparqlstore.SPARQLStore(query_endpoint=endpoint)
+        g = Graph(store=store)
+
+        logging.info(f"Query to be validated: {query}")
+        results = g.query(query)
+        console.print(f"Results: {results}", style="bold green")
+        console.print(f"""```sparql\n{query}\n```""")
     except Exception as e:
         console.print(
             f"Error running the query with the following exception: {e}",
@@ -290,7 +265,7 @@ PREFIX orkgr: <http://orkg.org/orkg/resource/>
     logging.info(
         f"Results retrieved for the query: {len(results_list)} with results: {results_list}"
     )
-    if not benchmark_mode and len(results_list) == 0:
+    if len(results_list) == 0:
         chunk_titles = runtime.context.get("chunk_titles")
         new_text_query = generate_hypothetical_description_tool(query, chunk_titles)
         console.print(

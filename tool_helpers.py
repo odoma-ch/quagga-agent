@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import requests
+
 
 _TOOL_DISPLAY_NAMES = {
     "shex_retriever": "Searching ShEx schemas",
@@ -39,8 +41,22 @@ def _format_tool_result(message) -> str:
             f"<details>\n<summary>Result from {display}</summary>\n\n"
             f"<text>\n{preview}\n</text>\n</details>\n\n"
         )
-    else:
+    else:   
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
             f"<code>\n{preview}\n</code>\n</details>\n\n"
         )
+
+
+def _is_sparql_endpoint_up(endpoint_url: str, timeout: int = 15) -> bool:
+    """Check if a SPARQL endpoint is reachable by sending a lightweight test query."""
+    try:
+        # ask is a super simple light weight query [looks for a triple in the graph]
+        response = requests.get(
+            endpoint_url,
+            params={"query": "ASK { ?s ?p ?o }", "format": "json"},
+            timeout=timeout
+        )
+        return 200 <= response.status_code < 300
+    except requests.exceptions.RequestException:
+        return False
