@@ -51,10 +51,10 @@ def _format_tool_result(message) -> str:
 def _is_sparql_endpoint_up(endpoint_url: str, timeout: int = 15) -> bool:
     """Check if a SPARQL endpoint is reachable by sending a lightweight test query."""
     try:
-        # ask is a super simple light weight query [looks for a triple in the graph]
         response = requests.get(
             endpoint_url,
-            params={"query": "ASK { ?s ?p ?o }", "format": "json"},
+            params={"query": "ASK { ?s ?p ?o }"},
+            headers={"Accept": "application/sparql-results+json"},
             timeout=timeout
         )
         return 200 <= response.status_code < 300
