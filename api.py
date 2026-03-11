@@ -14,11 +14,11 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from langchain_chroma import Chroma
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph import StateGraph
+from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from models import ContextSchema, State
 from helper_functions import load_shex_file, chunk_shex_file, get_embeddings_for_chunks
@@ -28,7 +28,7 @@ from agent_constants import MODEL_ID
 from agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
 from agent_runtime_state import runtime_state
 from message_format_helpers import _extract_messages, _make_chat_completion, _make_openai_error
-from agent_helpers import _run_agent, _stream_agent
+from agent_helpers import _run_agent, _stream_agent, _scope_checker
 
 load_dotenv()
 
@@ -91,18 +91,39 @@ def sparql_chat(state: State, config: RunnableConfig):
     )
 
     if not shex_already_added and _shex_prefixes:
-        state["messages"].insert(0, ("system", f"You are a helpful assistant for SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."))
-        state["messages"].insert(0, ("system", _shex_prefixes))
-        state["messages"].insert(
-            0,
+        system_messages = [
             (
                 "system",
-                f"""Use the SHEX retriever tool to retrieve the relevant schemas for the question.
+                "You are a helpful assistant for SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query.",
+            ),
+            (
+                "system",
+                """Use the SHEX retriever tool to retrieve the relevant schemas for the question.
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query.""",
             ),
-        )
+            ("system", """
+A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates 
+they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). 
+Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities becoming OPTIONAL {} clauses. 
+The node type declared with a [ <Class> ] maps to ?node rdf:type <Class> in the WHERE clause."""),
+            ("system", f"You might need to use these prefixes in the SPARQL query: {_shex_prefixes}"),
+        ]
+        state["messages"] = system_messages + state["messages"]
     return {"messages": [runtime_state.llm_with_tools.invoke(state["messages"])]}
 
+
+def scope_subgraph():
+    """
+    Initialise the scope subgraph.
+    Ideally, it should be triggered whenever user input is received.
+    """
+    scope_subgraph_builder = StateGraph(State)
+    scope_subgraph_builder.add_node("scope_detection", _scope_checker)
+    scope_subgraph_builder.add_edge(START, "scope_detection")
+    scope_subgraph_builder.add_edge("scope_detection", END)
+
+    scope_subgraph = scope_subgraph_builder.compile()
+    return scope_subgraph
 
 
 @asynccontextmanager
@@ -140,24 +161,26 @@ async def lifespan(app: FastAPI):
     runtime_state.llm_with_tools = llm.bind_tools(tools)
 
     graph_builder = StateGraph(State)
+    graph_builder.add_node("scope_subgraph", scope_subgraph())
     graph_builder.add_node("sparql_chat_agent", sparql_chat)
 
     tool_node = ToolNode(tools=tools)
     graph_builder.add_node("tools", tool_node)
 
+    graph_builder.add_edge(START, "scope_subgraph")
+    graph_builder.add_edge("scope_subgraph", "sparql_chat_agent")
     graph_builder.add_conditional_edges("sparql_chat_agent", tools_condition)
     graph_builder.add_edge("tools", "sparql_chat_agent")
-    graph_builder.set_entry_point("sparql_chat_agent")
 
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 
-    logger.info("Quagga SPARQL agent is ready")
+    logger.info("Graphia SPARQL agent is ready")
     yield  # application is running
-    logger.info("Shutting down Quagga SPARQL Agent API")
+    logger.info("Shutting down Graphia SPARQL Agent API")
 
 
 app = FastAPI(
-    title="Quagga SPARQL Agent API",
+    title="Graphia SPARQL Agent API",
     description="OpenAI-compatible API wrapping the LangGraph ShEx-based SPARQL agent",
     version="0.1.0",
     lifespan=lifespan,
