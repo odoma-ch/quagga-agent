@@ -277,10 +277,14 @@ def validate_sparql_tool(query: str):
         A new textual query has been generated: {new_text_query}. 
         Use always the shex_retriever_tool again to look at other classes and properties and generate a new SPARQL query.
         """
-    # return a snapshot of the results
-    return f"""
-    Query returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}
-    """
+    # Return markdown without leading indentation so the SPARQL block renders cleanly.
+    return (
+        "The SPARQL has been executed:\n"
+        "```sparql\n"
+        f"{query.strip()}\n"
+        "```\n"
+        f"Query returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}"
+    )
 
 
 def generate_hypothetical_description_tool(question: str, chunk_titles: list[str]):

@@ -29,6 +29,7 @@ from agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
 from agent_runtime_state import runtime_state
 from message_format_helpers import _extract_messages, _make_chat_completion, _make_openai_error
 from agent_helpers import _run_agent, _stream_agent, _scope_checker
+from tool_helpers import _after_tool
 
 load_dotenv()
 
@@ -170,7 +171,7 @@ async def lifespan(app: FastAPI):
     graph_builder.add_edge(START, "scope_subgraph")
     graph_builder.add_edge("scope_subgraph", "sparql_chat_agent")
     graph_builder.add_conditional_edges("sparql_chat_agent", tools_condition)
-    graph_builder.add_edge("tools", "sparql_chat_agent")
+    graph_builder.add_conditional_edges("tools", _after_tool)
 
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 

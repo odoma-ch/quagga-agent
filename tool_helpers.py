@@ -3,11 +3,14 @@ load_dotenv()
 
 import requests
 
+from models import State
+from langgraph.graph import END
 
 _TOOL_DISPLAY_NAMES = {
     "shex_retriever": "Searching ShEx schemas",
     "validate_sparql_tool": "Generating and validating SPARQL query",
 }
+_TERMINAL_SPARQL_MARKER = "The SPARQL has been executed:"
 
 
 def _format_tool_call(message) -> str:
@@ -39,13 +42,36 @@ def _format_tool_result(message) -> str:
     if tool_name == "validate_sparql_tool":
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
-            f"<text>\n{preview}\n</text>\n</details>\n\n"
+            f"{content}\n"
+            f"</details>\n\n"
         )
     else:   
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
-            f"<code>\n{preview}\n</code>\n</details>\n\n"
+            f"```text\n{preview}\n```\n"
+            f"</details>\n\n"
         )
+
+
+def _extract_terminal_tool_answer(message) -> str | None:
+    """Return answer text when tool output should be surfaced as final assistant text."""
+    if (
+        getattr(message, "type", None) != "tool"
+        or getattr(message, "name", "") != "validate_sparql_tool"
+    ):
+        return None
+    content = message.content if isinstance(message.content, str) else str(message.content)
+    if _TERMINAL_SPARQL_MARKER in content:
+        return content
+    return None
+
+
+def _after_tool(state: State):
+    """Route to END once query validation has succeeded."""
+    last_message = state["messages"][-1]
+    if _extract_terminal_tool_answer(last_message):
+        return END
+    return "sparql_chat_agent"
 
 
 def _is_sparql_endpoint_up(endpoint_url: str, timeout: int = 15) -> bool:

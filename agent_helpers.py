@@ -11,7 +11,11 @@ from message_format_helpers import (
     _message_content_to_text,
     _make_chat_completion_chunk,
 )
-from tool_helpers import _format_tool_call, _format_tool_result
+from tool_helpers import (
+    _extract_terminal_tool_answer,
+    _format_tool_call,
+    _format_tool_result,
+)
 from agent_constants import (
     GRAPHS_INVOLVED,
     GRAPH_KG_DESCRIPTIONS_URL,
@@ -68,6 +72,10 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
                     continue
                 # Tool-result message
                 if hasattr(latest, "type") and latest.type == "tool":
+                    terminal_answer = _extract_terminal_tool_answer(latest)
+                    if terminal_answer:
+                        parts.append(terminal_answer)
+                        continue
                     parts.append(_format_tool_result(latest))
                     continue
                 # Final assistant response
@@ -123,6 +131,17 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
                         )
                         continue
                     if hasattr(latest, "type") and latest.type == "tool":
+                        terminal_answer = _extract_terminal_tool_answer(latest)
+                        if terminal_answer:
+                            for chunk in _token_chunks(terminal_answer):
+                                text_chunk = _make_chat_completion_chunk(
+                                    chunk, chunk_id=stream_id, chunk_type="llm_text"
+                                )
+                                loop.call_soon_threadsafe(
+                                    queue.put_nowait,
+                                    text_chunk,
+                                )
+                            continue
                         tool_result_chunk = _make_chat_completion_chunk(
                             _format_tool_result(latest),
                             chunk_id=stream_id,
