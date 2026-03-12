@@ -1,9 +1,6 @@
 import os
 import uuid
-import json
-import openai
 import asyncio
-import requests
 
 from agent_runtime_state import runtime_state
 from agent_config import MAX_AGENT_STEPS, SPARQL_ENDPOINT
@@ -16,24 +13,12 @@ from tool_helpers import (
     _format_tool_call,
     _format_tool_result,
 )
-from agent_constants import (
-    GRAPHS_INVOLVED,
-    GRAPH_KG_DESCRIPTIONS_URL,
-    GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA,
-)
-from models import State, GraphRelevanceBatchResponse
+from models import State
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import ToolMessage
 
 
 from dotenv import load_dotenv
 load_dotenv()
-
-
-openai_client = openai.OpenAI(
-	api_key=os.getenv("PSNC_OKD_API_KEY"),
-	base_url=os.getenv("PSNC_OKD_BASE_URL")
-)
 
 
 def _build_agent_context() -> dict:
@@ -187,85 +172,3 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     yield final_chunk
     done_chunk = "data: [DONE]\n\n"
     yield done_chunk
-
-
-def _scope_checker(state: State, config: RunnableConfig):
-    graph_kg_descriptions = []
-    for kg_name in GRAPHS_INVOLVED:
-        response = requests.get(
-            GRAPH_KG_DESCRIPTIONS_URL, params={"kg_name": kg_name}, headers={"accept": "application/json"}).json()
-        graph_kg_descriptions.append(response)
-
-    def get_relevance_scores(query: str, passages: list[dict]) -> dict:
-        passages_content = "\n\n".join(
-            f"Passage {i+1} ({p['kg_name']}): {p['description']}" 
-            for i, p in enumerate(passages)
-        )
-
-        response = openai_client.chat.completions.parse(
-            model=os.getenv("PSNC_OKD_MEDIUM_MODEL"),
-            max_tokens=2048,
-            response_format=GraphRelevanceBatchResponse,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a relevance scoring assistant. Always respond with valid JSON only."
-                },
-                {
-                    "role": "user",
-                    "content": f"""Given a user query A and multiple knowledge graph descriptions B, determine whether the query is related to each knowledge graph.
-A: {query}
-B:
-{passages_content}
-For EACH passage, provide a decision of 'Yes' or 'No', a confidence score between 0 and 1, and a one sentence reasoning. Use the passage kg_name to identify each result.
-Respond with ONLY valid JSON matching this schema, nothing else:
-{GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA}"""
-                }
-            ]
-        )
-        result = json.loads(response.choices[0].message.content)
-        kg_with_confidence_scores = {r["kg_name"]: r for r in result["results"]}
-        return kg_with_confidence_scores
-
-    # build query from user/tool messages for both tuple and LangChain message object formats.
-    query_parts: list[str] = []
-    for msg in state["messages"]:
-        if isinstance(msg, (tuple, list)) and len(msg) >= 2:
-            if msg[0] in {"user", "tool"}:
-                text = msg[1] if isinstance(msg[1], str) else str(msg[1])
-                if text:
-                    query_parts.append(text)
-            continue
-
-        msg_type = getattr(msg, "type", "")
-        if msg_type in {"human", "tool"}:
-            text = _message_content_to_text(getattr(msg, "content", ""))
-            if text:
-                query_parts.append(text)
-
-    query = "\n".join(query_parts)
-    results = get_relevance_scores(query, graph_kg_descriptions)
-    scores = {
-        r["kg_name"]: r["confidence"] if r["decision"] == "Yes" else -r["confidence"] for r in results.values()
-    }
-    # if the highest score is relatively high, then the user input is relevant to the knowledge graph
-    sorted_items = sorted(scores.items(), key=lambda item: item[1], reverse=True)
-    top_key, top_score = sorted_items[0]
-    second_key, second_score = sorted_items[1]
-    high_confidence_prompt = f"User messages are aligned with the knowledge graph: {top_key}"
-    low_confidence_prompt = f"Which graph would you want me to query: {top_key} or {second_key}?"
-    # return a proper tool message with tool_call_id [making the subgrapgh act like a tool]
-    # sometimes substracting two scores can be very small, so we add a small epsilon to the threshold
-    scope_prompt = (
-        high_confidence_prompt if (top_score - second_score) >= (0.1 - 1e-9) else low_confidence_prompt
-    )
-    print(f"Scope prompt: {scope_prompt} with top score: {top_score} and second score: {second_score}")
-    return {
-        "messages": [
-            ToolMessage(
-                content=scope_prompt,
-                tool_call_id=f"scope_detection_{uuid.uuid4().hex[:12]}",
-                name="Knowledge graph identification",
-            )
-        ]
-    }

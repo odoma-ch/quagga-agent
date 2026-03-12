@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from langchain_chroma import Chroma
 from langchain_ollama import ChatOllama
+from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -22,13 +23,20 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from models import ContextSchema, State
 from helper_functions import load_shex_file, chunk_shex_file, get_embeddings_for_chunks
-from tools import CustomShexRetrieverTool, validate_sparql_tool
+from tools import (
+    CustomShexRetrieverTool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
+)
 
 from agent_constants import MODEL_ID
 from agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
 from agent_runtime_state import runtime_state
-from message_format_helpers import _extract_messages, _make_chat_completion, _make_openai_error
-from agent_helpers import _run_agent, _stream_agent, _scope_checker
+from message_format_helpers import (
+    _extract_messages,
+    _make_chat_completion,
+    _make_openai_error,
+    _message_content_to_text,
+)
+from agent_helpers import _run_agent, _stream_agent
 from tool_helpers import _after_tool
 
 load_dotenv()
@@ -44,6 +52,10 @@ RETRIEVER_K = int(os.getenv("RETRIEVER_K", "10"))
 
 logger = logging.getLogger("graphia-sparql-agent-api")
 logging.basicConfig(level=logging.INFO)
+
+
+def is_openwebui_internal(message: str) -> bool:
+    return message.strip().startswith("### Task:")
 
 
 def setup_rag_environment(path_to_shex: str, collection_name: str, k: int = 3):
@@ -84,47 +96,78 @@ def setup_rag_environment(path_to_shex: str, collection_name: str, k: int = 3):
 def sparql_chat(state: State, config: RunnableConfig):
     runtime = config["configurable"]["__pregel_runtime"]
     _shex_prefixes = runtime.context["shex_prefixes"]
-    endpoint = runtime.context["sparql_endpoint"]
+    system_anchor = "You are a helpful assistant for SPARQL queries."
+    last_msg = state["messages"][-1] if state["messages"] else None
+    # last_msg_is_user = (
+    #     (isinstance(last_msg, (tuple, list)) and len(last_msg) >= 1 and last_msg[0] == "user")
+    #     or (getattr(last_msg, "type", "") in {"human", "user"})
+    # )
 
-    shex_already_added = any(
-        hasattr(msg, "type") and msg.type == "system" and msg.content == _shex_prefixes
+    # if last_msg_is_user and runtime_state.scope_graph is not None:
+    #     print("Running scope detection")
+    #     scope_result = runtime_state.scope_graph.invoke({"messages": state["messages"]}, config)
+    #     scope_messages = scope_result.get("messages", [])
+    #     if scope_messages:
+    #         state["messages"] = state["messages"] + scope_messages
+
+    has_seed_system_messages = any(
+        (
+            isinstance(msg, (tuple, list))
+            and len(msg) >= 2
+            and msg[0] == "system"
+            and isinstance(msg[1], str)
+            and system_anchor in msg[1]
+        )
+        or (
+            getattr(msg, "type", "") == "system"
+            and isinstance(getattr(msg, "content", None), str)
+            and system_anchor in msg.content
+        )
         for msg in state["messages"]
     )
+    print(has_seed_system_messages)
 
-    if not shex_already_added and _shex_prefixes:
-        system_messages = [
-            (
-                "system",
-                "You are a helpful assistant for SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query.",
+    added_system_messages: list[SystemMessage] = []
+    if not has_seed_system_messages and _shex_prefixes:
+        added_system_messages = [
+            SystemMessage(
+                content="You are a helpful assistant for SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."
             ),
-            (
-                "system",
-                """Use the SHEX retriever tool to retrieve the relevant schemas for the question.
-            After generating the SPARQL query, always use the validate_sparql_tool to validate the query.""",
+            SystemMessage(
+                content="""
+If the user asks which knowledge graphs, KGs, or datasets are available to query, or wants to know details such as 
+endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory. 
+If the user input implies to query a knowledge graph --- and to check which KG it is associated with, 
+always call the `scope_checker_tool` tool to determine which knowledge graph is relevant."""
             ),
-            ("system", """
+            SystemMessage(
+                content="""Use the SHEX retriever tool to retrieve the relevant schemas for the question.
+            After generating the SPARQL query, always use the validate_sparql_tool to validate the query."""
+            ),
+            SystemMessage(content="""
 A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates 
 they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). 
 Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities becoming OPTIONAL {} clauses. 
 The node type declared with a [ <Class> ] maps to ?node rdf:type <Class> in the WHERE clause."""),
-            ("system", f"You might need to use these prefixes in the SPARQL query: {_shex_prefixes}"),
+            SystemMessage(content=f"You might need to use these prefixes in the SPARQL query: {_shex_prefixes}"),
         ]
-        state["messages"] = system_messages + state["messages"]
-    return {"messages": [runtime_state.llm_with_tools.invoke(state["messages"])]}
+    llm_input = added_system_messages + state["messages"] if added_system_messages else state["messages"]
+    llm_message = runtime_state.llm_with_tools.invoke(llm_input)
+    return {"messages": added_system_messages + [llm_message]}
 
 
-def scope_subgraph():
-    """
-    Initialise the scope subgraph.
-    Ideally, it should be triggered whenever user input is received.
-    """
-    scope_subgraph_builder = StateGraph(State)
-    scope_subgraph_builder.add_node("scope_detection", _scope_checker)
-    scope_subgraph_builder.add_edge(START, "scope_detection")
-    scope_subgraph_builder.add_edge("scope_detection", END)
+# def scope_subgraph():
+#     """
+#     Initialise the scope subgraph.
+#     Ideally, it should be triggered whenever user input is received.
+#     """
+#     scope_subgraph_builder = StateGraph(State)
+#     scope_subgraph_builder.add_node("scope_detection", _scope_checker)
+#     scope_subgraph_builder.add_edge(START, "scope_detection")
+#     scope_subgraph_builder.add_edge("scope_detection", END)
 
-    scope_subgraph = scope_subgraph_builder.compile()
-    return scope_subgraph
+#     scope_subgraph = scope_subgraph_builder.compile()
+#     return scope_subgraph
 
 
 @asynccontextmanager
@@ -158,21 +201,24 @@ async def lifespan(app: FastAPI):
             max_tokens=None,
         )
 
-    tools = [retriever_tool, validate_sparql_tool]
+    tools = [retriever_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
+    runtime_state.llm = llm
     runtime_state.llm_with_tools = llm.bind_tools(tools)
+    # runtime_state.scope_graph = scope_subgraph()
 
     graph_builder = StateGraph(State)
-    graph_builder.add_node("scope_subgraph", scope_subgraph())
+    # graph_builder.add_node("scope_subgraph", scope_subgraph())
     graph_builder.add_node("sparql_chat_agent", sparql_chat)
 
     tool_node = ToolNode(tools=tools)
     graph_builder.add_node("tools", tool_node)
 
-    graph_builder.add_edge(START, "scope_subgraph")
-    graph_builder.add_edge("scope_subgraph", "sparql_chat_agent")
+    # graph_builder.add_edge(START, "scope_subgraph")
+    # graph_builder.add_edge("scope_subgraph", "sparql_chat_agent")
     graph_builder.add_conditional_edges("sparql_chat_agent", tools_condition)
     graph_builder.add_conditional_edges("tools", _after_tool)
 
+    graph_builder.set_entry_point("sparql_chat_agent")
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 
     logger.info("Graphia SPARQL agent is ready")
@@ -231,9 +277,20 @@ async def chat_completions(request: Request):
     try:
         messages = _extract_messages(body)
         stream = body.get("stream", False)
+        last_message = messages[-1][1] if messages else ""
+        internal_task = isinstance(last_message, str) and is_openwebui_internal(last_message)
 
-        # Use a stable thread_id per conversation when provided, else create one.
-        thread_id = body.get("thread_id", str(uuid.uuid4()))
+        # Use a stable thread_id per conversation when provided, else throw an error as it should come from OpenWebUI.
+        thread_id = body.get("chat_id", None)
+        if not internal_task and thread_id is None:
+            raise ValueError("chat_id is required")
+
+        # OpenWebUI sends internal metadata requests (title/tags/follow-ups)
+        # as regular chat completions. Handle them directly to avoid running scope/tools.
+        if internal_task and not stream and runtime_state.llm is not None:
+            response = await asyncio.to_thread(lambda: runtime_state.llm.invoke(messages))
+            content = _message_content_to_text(getattr(response, "content", ""))
+            return JSONResponse(_make_chat_completion(content))
 
         if stream:
             return StreamingResponse(

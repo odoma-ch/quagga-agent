@@ -1,14 +1,17 @@
 import os
 import json
+import openai
 import logging
-from typing import Type
+import requests
 from datetime import datetime
 from pydantic import BaseModel
+from typing import Type, Annotated
 
 # from langchain.tools import tool
 from langchain_core.tools import tool
 from rich.console import Console
 from langchain_chroma import Chroma
+from langgraph.prebuilt import InjectedState
 
 # from langchain.tools.base import BaseTool
 from langchain_core.tools import BaseTool
@@ -23,8 +26,19 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=Tru
 import httpx
 from langchain_openai import ChatOpenAI
 from tool_helpers import _is_sparql_endpoint_up
-from agent_constants import GRAPHS_INVOLVED, GRAPH_KG_DESCRIPTIONS_URL
-from models import ContextSchema, ShexRetrieverInput, SPARQLValidationInput
+from message_format_helpers import _message_content_to_text
+from agent_constants import (
+    GRAPHS_INVOLVED,
+    GRAPH_KG_DESCRIPTIONS_URL,
+    GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA,
+)
+from models import (
+    ContextSchema,
+    ShexRetrieverInput,
+    SPARQLValidationInput,
+    GraphRelevanceBatchResponse,
+    State,
+)
 
 from rdflib import Graph
 from rdflib.plugins.stores import sparqlstore
@@ -43,6 +57,88 @@ filename = f"conversation_logs_{date}.log"
 file_handler = logging.FileHandler(filename)
 logging.getLogger().addHandler(file_handler)
 logging.getLogger().setLevel(logging.INFO)
+
+openai_client = openai.OpenAI(
+    api_key=os.getenv("PSNC_OKD_API_KEY"),
+    base_url=os.getenv("PSNC_OKD_BASE_URL"),
+)
+
+
+def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
+    passages_content = "\n\n".join(
+        f"Passage {i+1} ({p['kg_name']}): {p['description']}"
+        for i, p in enumerate(passages)
+    )
+    response = openai_client.chat.completions.parse(
+        model=os.getenv("PSNC_OKD_MEDIUM_MODEL"),
+        max_tokens=2048,
+        response_format=GraphRelevanceBatchResponse,
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a relevance scoring assistant. Always respond with valid JSON only.",
+            },
+            {
+                "role": "user",
+                "content": f"""Given a user and tool messages A and multiple knowledge graph descriptions B, determine whether the messages are related to each knowledge graph.
+A: {query}
+B:
+{passages_content}
+For EACH passage, provide a decision of 'Yes' or 'No', a confidence score between 0 and 1, and a one sentence reasoning. Use the passage kg_name to identify each result.
+Respond with ONLY valid JSON matching this schema, nothing else:
+{GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA}""",
+            },
+        ],
+    )
+    result = json.loads(response.choices[0].message.content)
+    return {r["kg_name"]: r for r in result["results"]}
+
+
+@tool
+def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
+    """Classify input user messages and tool messages against known KGs and return the KG with the highest confidence score as the scope prompt."""
+    graph_kg_descriptions = []
+    for kg_name in GRAPHS_INVOLVED:
+        response = requests.get(
+            GRAPH_KG_DESCRIPTIONS_URL,
+            params={"kg_name": kg_name},
+            headers={"accept": "application/json"},
+        ).json()
+        graph_kg_descriptions.append(response)
+
+    query_parts: list[str] = []
+    for msg in state["messages"]:
+        if isinstance(msg, (tuple, list)) and len(msg) >= 2:
+            if msg[0] in {"user", "tool"}:
+                text = msg[1] if isinstance(msg[1], str) else str(msg[1])
+                if text:
+                    query_parts.append(text)
+            continue
+
+        msg_type = getattr(msg, "type", "")
+        if msg_type in {"human", "tool"}:
+            text = _message_content_to_text(getattr(msg, "content", ""))
+            if text:
+                query_parts.append(text)
+
+    query = "\n".join(query_parts)
+    results = _get_scope_relevance_scores(query, graph_kg_descriptions)
+    scores = {
+        r["kg_name"]: r["confidence"] if r["decision"] == "Yes" else -r["confidence"]
+        for r in results.values()
+    }
+    sorted_items = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    top_key, top_score = sorted_items[0]
+    second_key, second_score = sorted_items[1]
+    high_confidence_prompt = f"User messages are aligned with the knowledge graph: {top_key}"
+    low_confidence_prompt = (
+        f"Ask the user which knowledge graph would they want me to query: {top_key} or {second_key}?"
+    )
+    return (
+        high_confidence_prompt
+        if (top_score - second_score) >= (0.1 - 1e-9)
+        else low_confidence_prompt
+    )
 
 
 class CustomShexRetrieverTool(BaseTool):
@@ -231,7 +327,7 @@ class CustomVoIDRetrieverTool(BaseTool):
 
 @tool
 def describe_knowledge_graphs_tool():
-    """Tool to describe the knowledge graphs indexed for the agent"""
+    """Tool to describe the knowledge graphs which a user can ask questions against"""
     graph_kg_descriptions = []
     for kg_name in GRAPHS_INVOLVED:
         response = requests.get(
