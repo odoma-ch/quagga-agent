@@ -259,6 +259,7 @@ Respond with ONLY valid JSON matching this schema, nothing else:
     scope_prompt = (
         high_confidence_prompt if (top_score - second_score) >= (0.1 - 1e-9) else low_confidence_prompt
     )
+    print(f"Scope prompt: {scope_prompt} with top score: {top_score} and second score: {second_score}")
     return {
         "messages": [
             ToolMessage(
