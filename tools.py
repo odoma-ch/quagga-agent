@@ -23,8 +23,8 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=Tru
 import httpx
 from langchain_openai import ChatOpenAI
 from tool_helpers import _is_sparql_endpoint_up
+from agent_constants import GRAPHS_INVOLVED, GRAPH_KG_DESCRIPTIONS_URL
 from models import ContextSchema, ShexRetrieverInput, SPARQLValidationInput
-
 
 from rdflib import Graph
 from rdflib.plugins.stores import sparqlstore
@@ -227,6 +227,18 @@ class CustomVoIDRetrieverTool(BaseTool):
     async def _arun(self, question: str) -> str:
         """Async version - optional"""
         return self._run(question)
+
+
+@tool
+def describe_knowledge_graphs_tool():
+    """Tool to describe the knowledge graphs indexed for the agent"""
+    graph_kg_descriptions = []
+    for kg_name in GRAPHS_INVOLVED:
+        response = requests.get(
+            GRAPH_KG_DESCRIPTIONS_URL, params={"kg_name": kg_name}, headers={"accept": "application/json"}).json()
+        graph_kg_descriptions.append(response)
+
+    return json.dumps(graph_kg_descriptions)
 
 
 @tool(args_schema=SPARQLValidationInput)
