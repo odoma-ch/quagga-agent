@@ -9,6 +9,7 @@ from langgraph.graph import END
 _TOOL_DISPLAY_NAMES = {
     "shex_retriever": "Searching ShEx schemas",
     "validate_sparql_tool": "Generating and validating SPARQL query",
+    "describe_knowledge_graphs_tool": "Describing the knowledge graphs indexed for the agent",
 }
 _TERMINAL_SPARQL_MARKER = "The SPARQL has been executed:"
 
