@@ -391,7 +391,7 @@ def validate_sparql_tool(query: str):
         "```sparql\n"
         f"{query.strip()}\n"
         "```\n"
-        f"Query returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}"
+        f"```text\nQuery returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}\n```"
     )
 
 

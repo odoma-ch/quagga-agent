@@ -10,6 +10,7 @@ _TOOL_DISPLAY_NAMES = {
     "shex_retriever": "Searching ShEx schemas",
     "validate_sparql_tool": "Generating and validating SPARQL query",
     "describe_knowledge_graphs_tool": "Describing the knowledge graphs indexed for the agent",
+    "scope_checker_tool": "Searching which knowledge graph I should query?",
 }
 _TERMINAL_SPARQL_MARKER = "The SPARQL has been executed:"
 
