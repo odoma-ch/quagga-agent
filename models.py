@@ -1,5 +1,5 @@
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
@@ -11,6 +11,14 @@ from langgraph.graph.message import add_messages
 class ContextSchema:
     sparql_endpoint: str
     shex_prefixes: str
+    chunk_titles: list[str] = field(default_factory=list)
+    retrieved_chunks: set = field(default_factory=set)
+    
+    def __getitem__(self, key):
+        return getattr(self, key)
+    
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
 
 class ShexRetrieverInput(BaseModel):

@@ -13,7 +13,7 @@ from tool_helpers import (
     _format_tool_call,
     _format_tool_result,
 )
-from models import State
+from models import State, ContextSchema
 from langchain_core.runnables import RunnableConfig
 
 
@@ -21,21 +21,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _build_agent_context() -> dict:
-    """Build the shared context dict passed to graph.stream()."""
-    prefixes_str = (
-        "You might need to use these prefixes in the SPARQL query: " + runtime_state.shex_prefixes
-        if runtime_state.shex_prefixes
-        else ""
+def _build_agent_context():
+    """Build the shared context passed to graph.stream()."""
+    prefixes_str = runtime_state.shex_prefixes or ""
+    sparql_endpoint = getattr(runtime_state, "sparql_endpoint", SPARQL_ENDPOINT)
+    
+    return ContextSchema(
+        sparql_endpoint=sparql_endpoint,
+        shex_prefixes=prefixes_str,
+        chunk_titles=runtime_state.chunk_titles,
+        retrieved_chunks=set(),
     )
-    return {
-        "sparql_endpoint": SPARQL_ENDPOINT,
-        "shex_prefixes": prefixes_str,
-        "chunk_titles": runtime_state.chunk_titles,
-        "retrieved_chunks": set(),
-        "benchmark_mode": False,
-        "benchmark_method_description": "ShEX",
-    }
 
 
 async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:

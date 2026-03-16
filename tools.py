@@ -4,7 +4,7 @@ import openai
 import logging
 import requests
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Type, Annotated
 
 # from langchain.tools import tool
@@ -26,10 +26,11 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=Tru
 import httpx
 from langchain_openai import ChatOpenAI
 from tool_helpers import _is_sparql_endpoint_up
-from message_format_helpers import _message_content_to_text
+from message_format_helpers import _message_content_to_text, _pretty_sparql
 from agent_constants import (
     GRAPHS_INVOLVED,
     GRAPH_KG_DESCRIPTIONS_URL,
+    GRAPH_METADATA_URL,
     GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA,
 )
 from models import (
@@ -65,9 +66,16 @@ openai_client = openai.OpenAI(
 
 
 def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
+    if not passages:
+        return {}
+    normalized_passages = [
+        p for p in passages if isinstance(p, dict) and p.get("kg_name") and p.get("description")
+    ]
+    if not normalized_passages:
+        return {}
     passages_content = "\n\n".join(
         f"Passage {i+1} ({p['kg_name']}): {p['description']}"
-        for i, p in enumerate(passages)
+        for i, p in enumerate(normalized_passages)
     )
     response = openai_client.chat.completions.parse(
         model=os.getenv("PSNC_OKD_MEDIUM_MODEL"),
@@ -90,21 +98,68 @@ Respond with ONLY valid JSON matching this schema, nothing else:
             },
         ],
     )
-    result = json.loads(response.choices[0].message.content)
-    return {r["kg_name"]: r for r in result["results"]}
+
+    choices = getattr(response, "choices", None) or []
+    if not choices:
+        return {}
+    message = getattr(choices[0], "message", None)
+    if message is None:
+        return {}
+
+    parsed = getattr(message, "parsed", None)
+    if parsed is not None:
+        if hasattr(parsed, "model_dump"):
+            result = parsed.model_dump()
+        elif isinstance(parsed, dict):
+            result = parsed
+        else:
+            return {}
+    else:
+        raw_content = getattr(message, "content", None)
+        if not raw_content:
+            return {}
+        if not isinstance(raw_content, str):
+            raw_content = str(raw_content)
+        try:
+            result = json.loads(raw_content)
+        except Exception:
+            return {}
+
+    parsed_results = result.get("results", []) if isinstance(result, dict) else []
+    if not isinstance(parsed_results, list):
+        return {}
+    return {r["kg_name"]: r for r in parsed_results if isinstance(r, dict) and "kg_name" in r}
 
 
 @tool
 def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
-    """Classify input user messages and tool messages against known KGs and return the KG with the highest confidence score as the scope prompt."""
+    """Classify input user messages and tool messages against known KGs, load the selected KG metadata into runtime, and return confirmation."""
+    from kg_metadata_helper import setup_kg_rag_environment
+    from agent_runtime_state import runtime_state
+    
+    retriever_k = int(os.getenv("RETRIEVER_K", "10"))
+    
     graph_kg_descriptions = []
     for kg_name in GRAPHS_INVOLVED:
-        response = requests.get(
-            GRAPH_KG_DESCRIPTIONS_URL,
-            params={"kg_name": kg_name},
-            headers={"accept": "application/json"},
-        ).json()
-        graph_kg_descriptions.append(response)
+        try:
+            response = requests.get(
+                GRAPH_KG_DESCRIPTIONS_URL,
+                params={"kg_name": kg_name},
+                headers={"accept": "application/json"},
+                timeout=15,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if isinstance(payload, dict):
+                graph_kg_descriptions.append(payload)
+        except Exception:
+            continue
+
+    if not graph_kg_descriptions:
+        return (
+            "I could not load knowledge-graph descriptions right now. "
+            "Please tell me explicitly which knowledge graph to query."
+        )
 
     query_parts: list[str] = []
     for msg in state["messages"]:
@@ -121,82 +176,178 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
             if text:
                 query_parts.append(text)
 
-    query = "\n".join(query_parts)
-    results = _get_scope_relevance_scores(query, graph_kg_descriptions)
+    query = "\\n".join(query_parts).strip()
+    if not query:
+        return (
+            "I need a bit more detail to select a knowledge graph. "
+            "Please mention the dataset or domain you want to query."
+        )
+
+    try:
+        results = _get_scope_relevance_scores(query, graph_kg_descriptions)
+    except Exception:
+        results = {}
+
+    if not results:
+        available = [kg.get("kg_name") for kg in graph_kg_descriptions if kg.get("kg_name")]
+        if available:
+            return (
+                "I could not confidently infer the target knowledge graph from the message. "
+                f"Please choose one: {', '.join(available)}."
+            )
+        return (
+            "I could not confidently infer the target knowledge graph from the message. "
+            "Please tell me which knowledge graph to use."
+        )
+
     scores = {
-        r["kg_name"]: r["confidence"] if r["decision"] == "Yes" else -r["confidence"]
+        r["kg_name"]: r.get("confidence", 0.0) if r.get("decision") == "Yes" else -r.get("confidence", 0.0)
         for r in results.values()
+        if isinstance(r, dict) and r.get("kg_name")
     }
+    if not scores:
+        return (
+            "I could not compute relevance scores for the available knowledge graphs. "
+            "Please tell me explicitly which knowledge graph to query."
+        )
+
     sorted_items = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+    if not sorted_items:
+        return (
+            "I could not rank knowledge-graph relevance from the current context. "
+            "Please specify the knowledge graph to query."
+        )
+
     top_key, top_score = sorted_items[0]
-    second_key, second_score = sorted_items[1]
-    high_confidence_prompt = f"User messages are aligned with the knowledge graph: {top_key}"
-    low_confidence_prompt = (
-        f"Ask the user which knowledge graph would they want me to query: {top_key} or {second_key}?"
-    )
-    return (
-        high_confidence_prompt
-        if (top_score - second_score) >= (0.1 - 1e-9)
-        else low_confidence_prompt
-    )
+    second_key, second_score = sorted_items[1] if len(sorted_items) > 1 else (None, 0)
+    
+    if (top_score - second_score) >= (0.1 - 1e-9):
+        selected_kg = top_key
+        
+        if selected_kg not in runtime_state.kg_metadata_cache:
+            kg_endpoint = next(
+                (
+                    kg.get("endpoint_url")
+                    for kg in graph_kg_descriptions
+                    if isinstance(kg, dict) and kg.get("kg_name") == selected_kg
+                ),
+                None,
+            )
+            if kg_endpoint:
+                try:
+                    retriever_tool, shex_prefixes, chunk_titles, sparql_endpoint = setup_kg_rag_environment(
+                        selected_kg,
+                        kg_endpoint,
+                        GRAPH_METADATA_URL,
+                        runtime_state.chroma_client,
+                        runtime_state.embedding_model,
+                        k=retriever_k
+                    )
+                    runtime_state.kg_metadata_cache[selected_kg] = {
+                        "retriever_tool": retriever_tool,
+                        "shex_prefixes": shex_prefixes,
+                        "chunk_titles": chunk_titles,
+                        "sparql_endpoint": sparql_endpoint
+                    }
+                except Exception:
+                    return (
+                        f"I identified `{selected_kg}` as the best match, but failed to initialize its metadata. "
+                        "Please try again or choose another knowledge graph."
+                    )
+        
+        if selected_kg not in runtime_state.kg_metadata_cache:
+            return (
+                f"I identified `{selected_kg}` as the best match, but could not load its metadata. "
+                "Please try again or choose another knowledge graph."
+            )
+
+        runtime_state.shex_prefixes = runtime_state.kg_metadata_cache[selected_kg]["shex_prefixes"]
+        runtime_state.chunk_titles = runtime_state.kg_metadata_cache[selected_kg]["chunk_titles"]
+        runtime_state.current_retriever_tool = runtime_state.kg_metadata_cache[selected_kg]["retriever_tool"]
+        runtime_state.sparql_endpoint = runtime_state.kg_metadata_cache[selected_kg]["sparql_endpoint"]
+        
+        # Update runtime context with SPARQL endpoint
+        try:
+            current_runtime = get_runtime(ContextSchema)
+            current_runtime.context.sparql_endpoint = runtime_state.sparql_endpoint
+            current_runtime.context.chunk_titles = runtime_state.chunk_titles
+            current_runtime.context.shex_prefixes = runtime_state.shex_prefixes
+        except:
+            pass
+        
+        console.print(f"Loaded metadata for KG: {selected_kg}", style="bold green")
+        return f"User messages are aligned with the knowledge graph: {selected_kg}"
+    else:
+        low_confidence_prompt = f"Ask the user which knowledge graph would they want me to query: {top_key} or {second_key}?"
+        return low_confidence_prompt
 
 
-class CustomShexRetrieverTool(BaseTool):
+class ShexRetrieverTool(BaseTool):
     name: str = "shex_retriever"
     description: str = "Retrieve relevant schemas from vector store based on a question"
     args_schema: Type[BaseModel] = ShexRetrieverInput
 
-    vectorstore: Chroma = None
     k: int = 3
-    retrieved_chunks: set = set()
     standalone_mode: bool = False
     model_name: str = None
+    retrieved_chunks: set = Field(default_factory=set)
+    vectorstore: Chroma = None
 
-    def __init__(self, vectorstore, k=3, standalone_mode=False, **kwargs):
+    def __init__(self, vectorstore=None, k=3, standalone_mode=False, **kwargs):
+        kwargs["k"] = k
+        kwargs["standalone_mode"] = standalone_mode
         super().__init__(**kwargs)
         self.vectorstore = vectorstore
-        self.k = k
-        self.retrieved_chunks = set()
-        self.standalone_mode = standalone_mode
 
     def _run(self, question: str) -> str:
         """Execute the tool"""
         try:
-            console.print(
-                f"Finding the best classes from SHEX schema with k={self.k}, standalone_mode={self.standalone_mode}",
-                style="bold blue",
-            )
-            total_chunks = self.vectorstore._collection.count()
+            # Determine which vectorstore to use
+            if self.vectorstore is not None:
+                # Use the provided vectorstore (KG-specific mode)
+                console.print(
+                    f"Finding the best classes from SHEX schema with k={self.k}, standalone_mode={self.standalone_mode}",
+                    style="bold blue",
+                )
+                total_chunks = self.vectorstore._collection.count()
+                retriever = self.vectorstore.as_retriever
+            else:
+                # Get vectorstore from runtime state (dynamic mode)
+                from agent_runtime_state import runtime_state
+                retriever_tool = runtime_state.current_retriever_tool
+                if retriever_tool is None:
+                    return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."
+                
+                console.print(
+                    f"Finding the best classes from SHEX schema with k={self.k}, standalone_mode={self.standalone_mode}",
+                    style="bold blue",
+                )
+                total_chunks = retriever_tool.vectorstore._collection.count()
+                retriever = retriever_tool.vectorstore.as_retriever
 
             updated_search_kwargs = {"k": self.k}
             runtime = None
             context_retrieved_chunks = set()
 
-            # Get previously retrieved chunks from context if available
             if not self.standalone_mode:
                 try:
                     runtime = get_runtime(ContextSchema)
-                    context_retrieved_chunks = set(
-                        runtime.context.get("retrieved_chunks", set())
-                    )
+                    retrieved_attr = getattr(runtime.context, "retrieved_chunks", None)
+                    context_retrieved_chunks = set(retrieved_attr) if retrieved_attr else set()
                 except Exception:
-                    # In non-graph execution contexts, runtime may be unavailable.
                     runtime = None
                     context_retrieved_chunks = set()
 
-            # Merge with instance retrieved_chunks
             all_retrieved_chunks = self.retrieved_chunks.union(context_retrieved_chunks)
 
-            # parameter: take total_chunks/2 instead (another option)
             if 0 < len(all_retrieved_chunks) < total_chunks:
                 updated_search_kwargs["filter"] = {
                     "chunk_index": {"$nin": list(all_retrieved_chunks)}
                 }
 
-            retriever = self.vectorstore.as_retriever(
+            retriever_result = retriever(
                 search_kwargs=updated_search_kwargs, verbose=False
-            )
-            retriever_result = retriever.invoke(question)
+            ).invoke(question)
             console.print(
                 f"Retriever returned {retriever_result} chunks", style="bold green"
             )
@@ -216,23 +367,18 @@ class CustomShexRetrieverTool(BaseTool):
                     f"Retrieved chunks: {sorted(self.retrieved_chunks)}",
                     style="bold green",
                 )
-
-                # Update context with newly retrieved chunks (when runtime exists)
                 if runtime is not None:
-                    runtime.context["retrieved_chunks"] = self.retrieved_chunks
+                    runtime.context.retrieved_chunks = self.retrieved_chunks
             else:
                 self.retrieved_chunks.update(new_chunk_indices)
 
             max_model_tokens = None
             if self.standalone_mode:
                 from data_functions import MAX_MODEL_TOKENS
-
                 max_model_tokens = MAX_MODEL_TOKENS[self.model_name]
 
             if max_model_tokens is not None:
-                retriever_result = get_fitting_chunks(
-                    retriever_result, max_model_tokens
-                )
+                retriever_result = get_fitting_chunks(retriever_result, max_model_tokens)
             result = "\n\n".join([doc.page_content for doc in retriever_result])
             logging.info(
                 f"Chunks retrieved for the natural language query = {question}: {result}"
@@ -340,9 +486,13 @@ def describe_knowledge_graphs_tool():
 @tool(args_schema=SPARQLValidationInput)
 def validate_sparql_tool(query: str):
     """Tool to execute a sparql query and validate the result against a remote endpoint"""
+    from agent_runtime_state import runtime_state
+    
     try:
-        runtime = get_runtime(ContextSchema)
-        endpoint = runtime.context.get("sparql_endpoint")
+        endpoint = getattr(runtime_state, "sparql_endpoint", None)
+        if not endpoint:
+            return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
+        
         console.print(
             f"Running the query against the SPARQL endpoint", style="bold blue"
         )
@@ -374,7 +524,7 @@ def validate_sparql_tool(query: str):
         f"Results retrieved for the query: {len(results_list)} with results: {results_list}"
     )
     if len(results_list) == 0:
-        chunk_titles = runtime.context.get("chunk_titles")
+        chunk_titles = getattr(runtime_state, "chunk_titles", [])
         new_text_query = generate_hypothetical_description_tool(query, chunk_titles)
         console.print(
             f"New formulated query to the KG schema: {new_text_query}",
@@ -385,11 +535,12 @@ def validate_sparql_tool(query: str):
         A new textual query has been generated: {new_text_query}. 
         Use always the shex_retriever_tool again to look at other classes and properties and generate a new SPARQL query.
         """
-    # Return markdown without leading indentation so the SPARQL block renders cleanly.
+    # returns markdown without leading indentation so the SPARQL block renders cleanly
+    pretty_query = _pretty_sparql(query)
     return (
         "The SPARQL has been executed:\n"
         "```sparql\n"
-        f"{query.strip()}\n"
+        f"{pretty_query}\n"
         "```\n"
         f"```text\nQuery returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}\n```"
     )
@@ -403,12 +554,13 @@ def generate_hypothetical_description_tool(question: str, chunk_titles: list[str
     http_client = httpx.Client(verify=False)
     llm = ChatOpenAI(
         base_url=os.getenv("PSNC_HPC_BASE_URL"),
-        model="DeepSeek-V3.1-vLLM",
+        model="GLM-4.7",
         api_key=os.getenv("PSNC_HPC_API_KEY"),
         temperature=0.1,
         top_p=1,
         http_client=http_client,
         max_tokens=None,
+        extra_body={"chat_template_kwargs": {"enable_thinking": False}}
     )
     result = llm.invoke(f"""
     Reformulate and elaborate this question for better understanding and return only the reformulated question: {question}

@@ -22,9 +22,8 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from models import ContextSchema, State
-from helper_functions import load_shex_file, chunk_shex_file, get_embeddings_for_chunks
 from tools import (
-    CustomShexRetrieverTool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
+    ShexRetrieverTool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
 )
 
 from agent_constants import MODEL_ID
@@ -46,10 +45,6 @@ USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
-PATH_TO_SHEX = os.getenv("PATH_TO_SHEX", "")
-COLLECTION_NAME = os.getenv("COLLECTION_NAME", "")
-RETRIEVER_K = int(os.getenv("RETRIEVER_K", "10"))
-
 logger = logging.getLogger("graphia-sparql-agent-api")
 logging.basicConfig(level=logging.INFO)
 
@@ -58,80 +53,39 @@ def is_openwebui_internal(message: str) -> bool:
     return message.strip().startswith("### Task:")
 
 
-def setup_rag_environment(path_to_shex: str, collection_name: str, k: int = 3):
-    """Return (retriever_tool, shex_prefixes, chunk_titles)."""
-    shex_collection_name = collection_name + "_shex"
-
-    if not os.path.exists("chroma_db"):
-        shex_content = load_shex_file(path_to_shex)
-        shex_prefixes_local, shex_chunks, chunk_titles_local = chunk_shex_file(shex_content)
-        shex_vector_store = get_embeddings_for_chunks(shex_collection_name, shex_chunks, use_chonkie=False)
-        retriever_tool = CustomShexRetrieverTool(vectorstore=shex_vector_store, k=k)
-        return retriever_tool, shex_prefixes_local, chunk_titles_local
-    else:
-        client = chromadb.PersistentClient(path="chroma_db")
-        embedding_model = OpenAIEmbeddings(
-            model="Qwen/Qwen3-Embedding-0.6B",
-            openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
-            openai_api_key="EMPTY",
-        )
-        available_collections = [c.name for c in client.list_collections()]
-        if shex_collection_name not in available_collections:
-            raise RuntimeError(f"Collection {shex_collection_name} not found in chroma_db")
-
-        retriever_tool = CustomShexRetrieverTool(
-            vectorstore=Chroma(
-                collection_name=shex_collection_name,
-                persist_directory="chroma_db",
-                embedding_function=embedding_model,
-            ),
-            k=k,
-        )
-
-        shex_content = load_shex_file(path_to_shex)
-        shex_prefixes_local, _, chunk_titles_local = chunk_shex_file(shex_content)
-        return retriever_tool, shex_prefixes_local, chunk_titles_local
-
-
 def sparql_chat(state: State, config: RunnableConfig):
     runtime = config["configurable"]["__pregel_runtime"]
     _shex_prefixes = runtime.context["shex_prefixes"]
-    system_anchor = "You are a helpful assistant for SPARQL queries."
-    last_msg = state["messages"][-1] if state["messages"] else None
-    # last_msg_is_user = (
-    #     (isinstance(last_msg, (tuple, list)) and len(last_msg) >= 1 and last_msg[0] == "user")
-    #     or (getattr(last_msg, "type", "") in {"human", "user"})
-    # )
+    prefix_anchor = "You might need to use these prefixes in the SPARQL query:"
+    all_system_messages: list[str] = []
+    seed_signatures = [
+        "helpful assistant called Quagga to generate SPARQL queries",
+        "always call the `scope_checker_tool` tool",
+        "always use the validate_sparql_tool to validate the query",
+        "A ShEx (Shape Expressions) file defines the expected structure of RDF nodes",
+    ]
+    for msg in state["messages"]:
+        if isinstance(msg, (tuple, list)) and len(msg) >= 2 and msg[0] == "system" and isinstance(msg[1], str):
+            all_system_messages.append(msg[1])
+            continue
+        if getattr(msg, "type", "") == "system":
+            content = getattr(msg, "content", None)
+            if isinstance(content, str):
+                all_system_messages.append(content)
 
-    # if last_msg_is_user and runtime_state.scope_graph is not None:
-    #     print("Running scope detection")
-    #     scope_result = runtime_state.scope_graph.invoke({"messages": state["messages"]}, config)
-    #     scope_messages = scope_result.get("messages", [])
-    #     if scope_messages:
-    #         state["messages"] = state["messages"] + scope_messages
-
-    has_seed_system_messages = any(
-        (
-            isinstance(msg, (tuple, list))
-            and len(msg) >= 2
-            and msg[0] == "system"
-            and isinstance(msg[1], str)
-            and system_anchor in msg[1]
-        )
-        or (
-            getattr(msg, "type", "") == "system"
-            and isinstance(getattr(msg, "content", None), str)
-            and system_anchor in msg.content
-        )
-        for msg in state["messages"]
+    has_seed_system_messages = all(
+        any(signature in system_msg for system_msg in all_system_messages)
+        for signature in seed_signatures
     )
-    print(has_seed_system_messages)
+    has_prefix_system_message = any(
+        prefix_anchor in system_msg for system_msg in all_system_messages
+    )
 
     added_system_messages: list[SystemMessage] = []
-    if not has_seed_system_messages and _shex_prefixes:
+    if not has_seed_system_messages:
         added_system_messages = [
             SystemMessage(
-                content="You are a helpful assistant for SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."
+                content="You are a helpful assistant called Quagga to generate SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."
             ),
             SystemMessage(
                 content="""
@@ -145,43 +99,46 @@ always call the `scope_checker_tool` tool to determine which knowledge graph is 
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query."""
             ),
             SystemMessage(content="""
-A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates 
-they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). 
-Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities becoming OPTIONAL {} clauses. 
-The node type declared with a [ <Class> ] maps to ?node rdf:type <Class> in the WHERE clause."""),
-            SystemMessage(content=f"You might need to use these prefixes in the SPARQL query: {_shex_prefixes}"),
+A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. """),
         ]
+        logging.info("Added seed system messages")
+    if _shex_prefixes and not has_prefix_system_message:
+        clean_prefixes = _shex_prefixes.replace(prefix_anchor, "").strip()
+        if clean_prefixes:
+            added_system_messages.append(
+                SystemMessage(content=f"{prefix_anchor}\n{clean_prefixes}")
+            )
+            logging.info("Added ShEx prefix system message")
+    print(
+        f"[sparql_chat] added_system_messages={len(added_system_messages)} "
+        f"seed_present={has_seed_system_messages} "
+        f"prefix_present={has_prefix_system_message}"
+    )
+    print("[sparql_chat] existing_system_messages_start")
+    for idx, content in enumerate(all_system_messages, start=1):
+        print(f"[sparql_chat] existing_system_message_{idx}: {content}")
+    print("[sparql_chat] existing_system_messages_end")
+    print("[sparql_chat] added_system_messages_start")
+    for idx, message in enumerate(added_system_messages, start=1):
+        print(f"[sparql_chat] added_system_message_{idx}: {message.content}")
+    print("[sparql_chat] added_system_messages_end")
     llm_input = added_system_messages + state["messages"] if added_system_messages else state["messages"]
     llm_message = runtime_state.llm_with_tools.invoke(llm_input)
     return {"messages": added_system_messages + [llm_message]}
-
-
-# def scope_subgraph():
-#     """
-#     Initialise the scope subgraph.
-#     Ideally, it should be triggered whenever user input is received.
-#     """
-#     scope_subgraph_builder = StateGraph(State)
-#     scope_subgraph_builder.add_node("scope_detection", _scope_checker)
-#     scope_subgraph_builder.add_edge(START, "scope_detection")
-#     scope_subgraph_builder.add_edge("scope_detection", END)
-
-#     scope_subgraph = scope_subgraph_builder.compile()
-#     return scope_subgraph
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialise the LangGraph agent once at startup."""
 
-    if not PATH_TO_SHEX or not COLLECTION_NAME:
-        raise RuntimeError(
-            "Set PATH_TO_SHEX, COLLECTION_NAME (and optionally SPARQL_ENDPOINT, RETRIEVER_K) "
-            "as environment variables before starting the API."
-        )
-
-    retriever_tool, runtime_state.shex_prefixes, runtime_state.chunk_titles = setup_rag_environment(
-        PATH_TO_SHEX, COLLECTION_NAME, k=RETRIEVER_K
+    from agent_config import RETRIEVER_K
+    
+    # Initialize ChromaDB client and embedding model
+    runtime_state.chroma_client = chromadb.PersistentClient(path="chroma_db")
+    runtime_state.embedding_model = OpenAIEmbeddings(
+        model="Qwen/Qwen3-Embedding-0.6B",
+        openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
+        openai_api_key="EMPTY"
     )
 
     if USE_OLLAMA:
@@ -198,9 +155,11 @@ async def lifespan(app: FastAPI):
             temperature=0.1,
             top_p=0.9,
             http_client=http_client,
-            max_tokens=None,
         )
 
+    # Initialize dynamic retriever tool
+    retriever_tool = ShexRetrieverTool(k=RETRIEVER_K)
+    
     tools = [retriever_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
     runtime_state.llm = llm
     runtime_state.llm_with_tools = llm.bind_tools(tools)

@@ -1,3 +1,4 @@
+import re
 import time
 import uuid
 import json
@@ -88,3 +89,33 @@ def _extract_messages(body: dict) -> list[tuple[str, str]]:
         content = msg.get("content", "")
         messages.append((role, content))
     return messages
+
+
+def _pretty_sparql(query: str) -> str:
+    q = re.sub(r"\s+", " ", query.strip())  # normalize spaces first
+
+    # Protect IRIs and quoted literals so formatting does not split dots inside them.
+    protected_parts: list[str] = []
+
+    def _protect(match: re.Match) -> str:
+        protected_parts.append(match.group(0))
+        return f"__SPARQL_PROTECTED_{len(protected_parts)-1}__"
+
+    q = re.sub(r"<[^>]*>|\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'", _protect, q)
+
+    for kw in [
+        "PREFIX", "SELECT", "CONSTRUCT", "ASK", "DESCRIBE",
+        "WHERE", "OPTIONAL", "FILTER", "VALUES",
+        "GROUP BY", "ORDER BY", "LIMIT", "OFFSET"
+    ]:
+        q = re.sub(rf"\b{kw}\b", f"\n{kw}", q, flags=re.IGNORECASE)
+    q = re.sub(r"\{\s*", "{\n  ", q)
+    q = re.sub(r"\s*\}", "\n}", q)
+    # Only break on triple terminators, not every dot character.
+    q = re.sub(r"\s+\.(?=\s|})", " .\n  ", q)
+
+    # Restore protected IRIs and literals.
+    for idx, original in enumerate(protected_parts):
+        q = q.replace(f"__SPARQL_PROTECTED_{idx}__", original)
+
+    return q.strip()
