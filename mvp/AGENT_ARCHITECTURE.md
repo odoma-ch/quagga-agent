@@ -2,7 +2,7 @@
 
 ```mermaid
 flowchart TB
-    classDef default fill:#fff,stroke:#333,stroke-width:2px,font-color:#000000
+    classDef default fill:#fff,stroke:#333,stroke-width:2px,color:#000000
 
     subgraph Client["Client Layer"]
         UI["User Interface<br/>OpenWebUI/FastAPI"]
