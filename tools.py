@@ -44,6 +44,12 @@ from models import (
 from rdflib import Graph
 from rdflib.plugins.stores import sparqlstore
 
+from rdflib.term import Variable
+from rdflib import Literal, URIRef
+from rdflib.plugins.sparql.parser import parseQuery
+from rdflib.plugins.stores.sparqlstore import SPARQLStore
+from rdflib.plugins.sparql import algebra as sparql_algebra
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -66,16 +72,9 @@ openai_client = openai.OpenAI(
 
 
 def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
-    if not passages:
-        return {}
-    normalized_passages = [
-        p for p in passages if isinstance(p, dict) and p.get("kg_name") and p.get("description")
-    ]
-    if not normalized_passages:
-        return {}
     passages_content = "\n\n".join(
         f"Passage {i+1} ({p['kg_name']}): {p['description']}"
-        for i, p in enumerate(normalized_passages)
+        for i, p in enumerate(passages)
     )
     response = openai_client.chat.completions.parse(
         model=os.getenv("PSNC_OKD_MEDIUM_MODEL"),
@@ -88,47 +87,20 @@ def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
             },
             {
                 "role": "user",
-                "content": f"""Given a user and tool messages A and multiple knowledge graph descriptions B, determine whether the messages are related to each knowledge graph.
+                "content": f"""Given user messages A and multiple knowledge graph descriptions B, determine whether the messages are related to each knowledge graph.
 A: {query}
 B:
 {passages_content}
 For EACH passage, provide a decision of 'Yes' or 'No', a confidence score between 0 and 1, and a one sentence reasoning. Use the passage kg_name to identify each result.
+For all the user messages, give high priority to the most recent messages [last ones in the list] and give low priority to the older messages.
 Respond with ONLY valid JSON matching this schema, nothing else:
 {GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA}""",
             },
         ],
     )
 
-    choices = getattr(response, "choices", None) or []
-    if not choices:
-        return {}
-    message = getattr(choices[0], "message", None)
-    if message is None:
-        return {}
-
-    parsed = getattr(message, "parsed", None)
-    if parsed is not None:
-        if hasattr(parsed, "model_dump"):
-            result = parsed.model_dump()
-        elif isinstance(parsed, dict):
-            result = parsed
-        else:
-            return {}
-    else:
-        raw_content = getattr(message, "content", None)
-        if not raw_content:
-            return {}
-        if not isinstance(raw_content, str):
-            raw_content = str(raw_content)
-        try:
-            result = json.loads(raw_content)
-        except Exception:
-            return {}
-
-    parsed_results = result.get("results", []) if isinstance(result, dict) else []
-    if not isinstance(parsed_results, list):
-        return {}
-    return {r["kg_name"]: r for r in parsed_results if isinstance(r, dict) and "kg_name" in r}
+    result = json.loads(response.choices[0].message.content)
+    return {r["kg_name"]: r for r in result["results"]}
 
 
 @tool
@@ -156,67 +128,33 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
             continue
 
     if not graph_kg_descriptions:
-        return (
-            "I could not load knowledge-graph descriptions right now. "
-            "Please tell me explicitly which knowledge graph to query."
-        )
+        return "Currently cannot load knowledge graph descriptions. Please ask the user to provide the knowledge graph name."
 
     query_parts: list[str] = []
     for msg in state["messages"]:
         if isinstance(msg, (tuple, list)) and len(msg) >= 2:
-            if msg[0] in {"user", "tool"}:
+            if msg[0] in {"user"}:
                 text = msg[1] if isinstance(msg[1], str) else str(msg[1])
                 if text:
                     query_parts.append(text)
             continue
 
-        msg_type = getattr(msg, "type", "")
-        if msg_type in {"human", "tool"}:
+        msg_type = getattr(msg, "type", "") 
+        if msg_type in {"human"}:
             text = _message_content_to_text(getattr(msg, "content", ""))
             if text:
                 query_parts.append(text)
 
-    query = "\\n".join(query_parts).strip()
-    if not query:
-        return (
-            "I need a bit more detail to select a knowledge graph. "
-            "Please mention the dataset or domain you want to query."
-        )
+    # take only the last user message [this can be changed thats why the above code is there]
+    query = "\n".join(query_parts[-1:]).strip()
 
-    try:
-        results = _get_scope_relevance_scores(query, graph_kg_descriptions)
-    except Exception:
-        results = {}
-
-    if not results:
-        available = [kg.get("kg_name") for kg in graph_kg_descriptions if kg.get("kg_name")]
-        if available:
-            return (
-                "I could not confidently infer the target knowledge graph from the message. "
-                f"Please choose one: {', '.join(available)}."
-            )
-        return (
-            "I could not confidently infer the target knowledge graph from the message. "
-            "Please tell me which knowledge graph to use."
-        )
-
+    results = _get_scope_relevance_scores(query, graph_kg_descriptions)
     scores = {
         r["kg_name"]: r.get("confidence", 0.0) if r.get("decision") == "Yes" else -r.get("confidence", 0.0)
         for r in results.values()
         if isinstance(r, dict) and r.get("kg_name")
     }
-    if not scores:
-        return (
-            "I could not compute relevance scores for the available knowledge graphs. "
-            "Please tell me explicitly which knowledge graph to query."
-        )
-
     sorted_items = sorted(scores.items(), key=lambda item: item[1], reverse=True)
-    if not sorted_items:
-        return (
-            "I could not rank knowledge-graph relevance from the current context. "
-            "Please specify the knowledge graph to query."
-        )
 
     top_key, top_score = sorted_items[0]
     second_key, second_score = sorted_items[1] if len(sorted_items) > 1 else (None, 0)
@@ -517,7 +455,7 @@ def validate_sparql_tool(query: str):
             f"Error running the query with the following exception: {e}",
             style="bold red",
         )
-        return f"Rewrite the query given the context and tools and try again, this is the error: {e}"
+        return f"Rewrite the query: ```sparql\n{query}\n``` given the context and tools and try again, this is the error: {e}"
 
     results_list = list(results)
     logging.info(
@@ -526,15 +464,24 @@ def validate_sparql_tool(query: str):
     if len(results_list) == 0:
         chunk_titles = getattr(runtime_state, "chunk_titles", [])
         new_text_query = generate_hypothetical_description_tool(query, chunk_titles)
+        query_triple_errors = validate_by_ask_sparql_tool(query)
         console.print(
             f"New formulated query to the KG schema: {new_text_query}",
             style="bold green",
         )
-        return f"""
-        No results were found for the previous query
-        A new textual query has been generated: {new_text_query}. 
-        Use always the shex_retriever_tool again to look at other classes and properties and generate a new SPARQL query.
-        """
+        return f"""No results were found for the previous query:
+```sparql
+{query}
+```
+The following triple patterns are invalid:
+```text
+{query_triple_errors}
+```
+A new textual query has been generated:
+```text
+{new_text_query}
+```
+Use `shex_retriever_tool` again to inspect other classes and properties, then generate a revised SPARQL query."""
     # returns markdown without leading indentation so the SPARQL block renders cleanly
     pretty_query = _pretty_sparql(query)
     return (
@@ -544,6 +491,101 @@ def validate_sparql_tool(query: str):
         "```\n"
         f"```text\nQuery returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}\n```"
     )
+
+
+
+def validate_by_ask_sparql_tool(query: str):
+    """Tool to validate a query by asking the SPARQL endpoint incrementally"""
+    from agent_runtime_state import runtime_state
+
+    endpoint = getattr(runtime_state, "sparql_endpoint", None)
+    if not endpoint:
+        return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
+    
+    parsed = parseQuery(query)
+    prologue = sparql_algebra.translatePrologue(parsed[0], base=None)
+    algebra_query = sparql_algebra.translateQuery(parsed)
+    
+    prefixes = dict(prologue.namespace_manager.namespaces())
+    
+    prefix_str = "\n".join(
+        [f"PREFIX {k or ''}: <{v}>" for k, v in prefixes.items() if k is not None]
+    )
+    
+    triples = []
+    all_filters = []
+
+    def walk(node):
+        if node is None:
+            return
+        if hasattr(node, "name"):
+            if node.name == "BGP" and hasattr(node, "triples"):
+                triples.extend(node.triples)
+            elif node.name == "Filter":
+                all_filters.append(node)
+        for attr in ("p", "p1", "p2"):
+            walk(getattr(node, attr, None))
+
+    walk(algebra_query.algebra)
+
+    if not triples:
+        return "Could not find triple patterns in the query."
+
+    def term(t) -> str:
+        if isinstance(t, Variable):
+            return f"?{t}"
+        if isinstance(t, URIRef):
+            t_str = str(t)
+            for prefix, ns in prefixes.items():
+                if prefix is None:
+                    continue
+                ns_str = str(ns)
+                if t_str.startswith(ns_str):
+                    return f"{prefix}:{t_str[len(ns_str):]}" if prefix else f":{t_str[len(ns_str):]}"
+            return f"<{t}>"
+        if isinstance(t, Literal):
+            return t.n3()
+        return str(t)
+
+    store = SPARQLStore(query_endpoint=endpoint)
+    graph = Graph(store=store)
+    results = []
+    accumulated_triples = []
+    
+    for idx, pattern in enumerate(triples):
+        accumulated_triples.append(pattern)
+        
+        triples_str = "\n".join([
+            f"  {term(s)} {term(p)} {term(o)} ."
+            for s, p, o in accumulated_triples
+        ])
+        
+        filter_str = ""
+        for f in all_filters:
+            filter_expr = term(f.expr) if hasattr(f, "expr") else str(f)
+            filter_str += f"  FILTER({filter_expr})\n"
+        
+        ask_query = f"""{prefix_str}
+ASK {{
+{triples_str}
+{filter_str}}}"""
+        
+        try:
+            ask_result = graph.query(ask_query)
+            result = bool(getattr(ask_result, "askAnswer", False))
+        except Exception:
+            result = False
+        
+        results.append({
+            "step": idx + 1,
+            "pattern": f"{term(pattern[0])} {term(pattern[1])} {term(pattern[2])}",
+            "valid": result
+        })
+        
+        if not result:
+            break
+    
+    return [result for result in results if not result["valid"]]
 
 
 def generate_hypothetical_description_tool(question: str, chunk_titles: list[str]):

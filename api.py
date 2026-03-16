@@ -60,7 +60,7 @@ def sparql_chat(state: State, config: RunnableConfig):
     all_system_messages: list[str] = []
     seed_signatures = [
         "helpful assistant called Quagga to generate SPARQL queries",
-        "always call the `scope_checker_tool` tool",
+        "`scope_checker_tool`",
         "always use the validate_sparql_tool to validate the query",
         "A ShEx (Shape Expressions) file defines the expected structure of RDF nodes",
     ]
@@ -77,9 +77,15 @@ def sparql_chat(state: State, config: RunnableConfig):
         any(signature in system_msg for system_msg in all_system_messages)
         for signature in seed_signatures
     )
+    clean_prefixes = (_shex_prefixes or "").replace(prefix_anchor, "").strip()
+    existing_prefix_payloads = [
+        system_msg.split(prefix_anchor, 1)[1].strip()
+        for system_msg in all_system_messages
+        if prefix_anchor in system_msg
+    ]
     has_prefix_system_message = any(
-        prefix_anchor in system_msg for system_msg in all_system_messages
-    )
+        payload == clean_prefixes for payload in existing_prefix_payloads
+    ) if clean_prefixes else False
 
     added_system_messages: list[SystemMessage] = []
     if not has_seed_system_messages:
@@ -91,38 +97,60 @@ def sparql_chat(state: State, config: RunnableConfig):
                 content="""
 If the user asks which knowledge graphs, KGs, or datasets are available to query, or wants to know details such as 
 endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory. 
-If the user input implies to query a knowledge graph --- and to check which KG it is associated with, 
-always call the `scope_checker_tool` tool to determine which knowledge graph is relevant."""
+Call the `scope_checker_tool` only when the target knowledge graph is unknown, ambiguous, or the user explicitly asks to switch to a different KG."""
             ),
             SystemMessage(
                 content="""Use the SHEX retriever tool to retrieve the relevant schemas for the question.
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query."""
             ),
             SystemMessage(content="""
-A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. """),
+A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. When multiple predicates lead to semantically similar targets, prefer the most direct path to the actual entity class — intermediate or wrapper classes that represent metadata about an entity rather than the entity itself should not be substituted for the actual target class unless explicitly requested."""),
         ]
         logging.info("Added seed system messages")
-    if _shex_prefixes and not has_prefix_system_message:
-        clean_prefixes = _shex_prefixes.replace(prefix_anchor, "").strip()
-        if clean_prefixes:
-            added_system_messages.append(
-                SystemMessage(content=f"{prefix_anchor}\n{clean_prefixes}")
-            )
-            logging.info("Added ShEx prefix system message")
+    inject_prefix_for_llm = bool(clean_prefixes)
+    if inject_prefix_for_llm and not has_prefix_system_message:
+        logging.info("Using updated ShEx prefix system message for current turn")
+
+    # Build llm_input in place: remove any previous prefix message(s) from history
+    # and inject only the current KG prefix block for this turn.
+    filtered_state_messages = []
+    for msg in state["messages"]:
+        if (
+            isinstance(msg, (tuple, list))
+            and len(msg) >= 2
+            and msg[0] == "system"
+            and isinstance(msg[1], str)
+            and prefix_anchor in msg[1]
+        ):
+            continue
+        if (
+            getattr(msg, "type", "") == "system"
+            and isinstance(getattr(msg, "content", None), str)
+            and prefix_anchor in msg.content
+        ):
+            continue
+        filtered_state_messages.append(msg)
+
+    llm_system_messages = list(added_system_messages)
+    if inject_prefix_for_llm:
+        llm_system_messages.append(
+            SystemMessage(content=f"{prefix_anchor}\n{clean_prefixes}")
+        )
     print(
         f"[sparql_chat] added_system_messages={len(added_system_messages)} "
         f"seed_present={has_seed_system_messages} "
-        f"prefix_present={has_prefix_system_message}"
+        f"prefix_present={has_prefix_system_message} "
+        f"prefix_injected_this_turn={inject_prefix_for_llm}"
     )
     print("[sparql_chat] existing_system_messages_start")
     for idx, content in enumerate(all_system_messages, start=1):
         print(f"[sparql_chat] existing_system_message_{idx}: {content}")
     print("[sparql_chat] existing_system_messages_end")
     print("[sparql_chat] added_system_messages_start")
-    for idx, message in enumerate(added_system_messages, start=1):
+    for idx, message in enumerate(llm_system_messages, start=1):
         print(f"[sparql_chat] added_system_message_{idx}: {message.content}")
     print("[sparql_chat] added_system_messages_end")
-    llm_input = added_system_messages + state["messages"] if added_system_messages else state["messages"]
+    llm_input = llm_system_messages + filtered_state_messages if llm_system_messages else filtered_state_messages
     llm_message = runtime_state.llm_with_tools.invoke(llm_input)
     return {"messages": added_system_messages + [llm_message]}
 
