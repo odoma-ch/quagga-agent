@@ -11,6 +11,8 @@ from langgraph.graph.message import add_messages
 class ContextSchema:
     sparql_endpoint: str
     shex_prefixes: str
+    thread_id: str = ""
+    selected_kg: str = ""
     chunk_titles: list[str] = field(default_factory=list)
     retrieved_chunks: set = field(default_factory=set)
     

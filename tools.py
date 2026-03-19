@@ -71,6 +71,39 @@ openai_client = openai.OpenAI(
 )
 
 
+def _get_thread_context():
+    """Return (thread_id, runtime_context) when called inside a graph run."""
+    try:
+        runtime = get_runtime(ContextSchema)
+        context = runtime.context
+        return getattr(context, "thread_id", "") or "", context
+    except Exception:
+        return "", None
+
+
+def _resolve_session_values():
+    """Resolve endpoint/chunk titles for current thread first, then fallback to defaults."""
+    from agent_runtime_state import runtime_state
+
+    thread_id, context = _get_thread_context()
+    endpoint = ""
+    chunk_titles: list[str] = []
+    selected_kg = ""
+
+    if context is not None:
+        endpoint = getattr(context, "sparql_endpoint", "") or ""
+        chunk_titles = list(getattr(context, "chunk_titles", []) or [])
+        selected_kg = getattr(context, "selected_kg", "") or ""
+
+    if thread_id:
+        session = runtime_state.get_or_create_session(thread_id)
+        endpoint = endpoint or session.sparql_endpoint
+        chunk_titles = chunk_titles or list(session.chunk_titles or [])
+        selected_kg = selected_kg or session.selected_kg
+
+    return thread_id, selected_kg, endpoint, chunk_titles
+
+
 def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
     passages_content = "\n\n".join(
         f"Passage {i+1} ({p['kg_name']}): {p['description']}"
@@ -199,17 +232,20 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
                 "Please try again or choose another knowledge graph."
             )
 
-        runtime_state.shex_prefixes = runtime_state.kg_metadata_cache[selected_kg]["shex_prefixes"]
-        runtime_state.chunk_titles = runtime_state.kg_metadata_cache[selected_kg]["chunk_titles"]
-        runtime_state.current_retriever_tool = runtime_state.kg_metadata_cache[selected_kg]["retriever_tool"]
-        runtime_state.sparql_endpoint = runtime_state.kg_metadata_cache[selected_kg]["sparql_endpoint"]
+        thread_id, _ = _get_thread_context()
+        session = runtime_state.get_or_create_session(thread_id)
+        session.selected_kg = selected_kg
+        session.shex_prefixes = runtime_state.kg_metadata_cache[selected_kg]["shex_prefixes"]
+        session.chunk_titles = runtime_state.kg_metadata_cache[selected_kg]["chunk_titles"]
+        session.sparql_endpoint = runtime_state.kg_metadata_cache[selected_kg]["sparql_endpoint"]
         
         # Update runtime context with SPARQL endpoint
         try:
             current_runtime = get_runtime(ContextSchema)
-            current_runtime.context.sparql_endpoint = runtime_state.sparql_endpoint
-            current_runtime.context.chunk_titles = runtime_state.chunk_titles
-            current_runtime.context.shex_prefixes = runtime_state.shex_prefixes
+            current_runtime.context.selected_kg = session.selected_kg
+            current_runtime.context.sparql_endpoint = session.sparql_endpoint
+            current_runtime.context.chunk_titles = session.chunk_titles
+            current_runtime.context.shex_prefixes = session.shex_prefixes
         except:
             pass
         
@@ -252,7 +288,12 @@ class ShexRetrieverTool(BaseTool):
             else:
                 # Get vectorstore from runtime state (dynamic mode)
                 from agent_runtime_state import runtime_state
-                retriever_tool = runtime_state.current_retriever_tool
+                _, selected_kg, _, _ = _resolve_session_values()
+                if not selected_kg:
+                    return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."
+                retriever_tool = (
+                    runtime_state.kg_metadata_cache.get(selected_kg, {}).get("retriever_tool")
+                )
                 if retriever_tool is None:
                     return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."
                 
@@ -424,10 +465,9 @@ def describe_knowledge_graphs_tool():
 @tool(args_schema=SPARQLValidationInput)
 def validate_sparql_tool(query: str):
     """Tool to execute a sparql query and validate the result against a remote endpoint"""
-    from agent_runtime_state import runtime_state
-    
+    _, _, endpoint, chunk_titles = _resolve_session_values()
+
     try:
-        endpoint = getattr(runtime_state, "sparql_endpoint", None)
         if not endpoint:
             return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
         
@@ -462,7 +502,6 @@ def validate_sparql_tool(query: str):
         f"Results retrieved for the query: {len(results_list)} with results: {results_list}"
     )
     if len(results_list) == 0:
-        chunk_titles = getattr(runtime_state, "chunk_titles", [])
         new_text_query = generate_hypothetical_description_tool(query, chunk_titles)
         query_triple_errors = validate_by_ask_sparql_tool(query)
         console.print(
@@ -496,9 +535,7 @@ Use `shex_retriever_tool` again to inspect other classes and properties, then ge
 
 def validate_by_ask_sparql_tool(query: str):
     """Tool to validate a query by asking the SPARQL endpoint incrementally"""
-    from agent_runtime_state import runtime_state
-
-    endpoint = getattr(runtime_state, "sparql_endpoint", None)
+    _, _, endpoint, _ = _resolve_session_values()
     if not endpoint:
         return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
     
