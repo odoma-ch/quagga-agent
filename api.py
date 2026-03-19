@@ -100,7 +100,7 @@ endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately
 Call the `scope_checker_tool` only when the target knowledge graph is unknown, ambiguous, or the user explicitly asks to switch to a different KG."""
             ),
             SystemMessage(
-                content="""Use the SHEX retriever tool to retrieve the relevant schemas for the question.
+                content="""Use always the SHEX retriever tool to retrieve the relevant schemas for the question before generating the SPARQL query.
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query."""
             ),
             SystemMessage(content="""
