@@ -81,7 +81,8 @@ def chunk_void_file(void_content: str) -> tuple[str, list]:
     return void_prefixes, doc_chunks
 
 
-def get_embeddings_for_chunks(collection_name: str, doc_chunks: list, embedding_model, use_chonkie: bool = False):
+def get_embeddings_for_chunks(collection_name: str, doc_chunks: list, embedding_model,
+                              client=None, use_chonkie: bool = False):
     if use_chonkie:
         original_count = len(doc_chunks)
         combined_content = "\\n\\n".join([doc.get("page_content") if isinstance(doc, dict) else doc.page_content for doc in doc_chunks])
@@ -112,7 +113,7 @@ def get_embeddings_for_chunks(collection_name: str, doc_chunks: list, embedding_
                     collection_name=collection_name,
                     documents=batch,
                     embedding=embedding_model,
-                    persist_directory="./chroma_db"
+                    client=client,
                 )
             else:
                 vector_store.add_documents(batch)
@@ -154,13 +155,15 @@ def setup_kg_rag_environment(kg_name: str, kg_endpoint_url: str, metadata_url: s
     
     if collection_name not in available_collections:
         shex_prefixes, shex_chunks, chunk_titles = chunk_shex_file(shex_content)
-        shex_vector_store = get_embeddings_for_chunks(collection_name, shex_chunks, embedding_model, use_chonkie=False)
+        shex_vector_store = get_embeddings_for_chunks(
+            collection_name, shex_chunks, embedding_model, client=client, use_chonkie=False
+        )
         retriever_tool = ShexRetrieverTool(vectorstore=shex_vector_store, k=k)
     else:
         retriever_tool = ShexRetrieverTool(
             vectorstore=Chroma(
                 collection_name=collection_name,
-                persist_directory="chroma_db",
+                client=client,
                 embedding_function=embedding_model,
             ),
             k=k,
