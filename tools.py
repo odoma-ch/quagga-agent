@@ -59,10 +59,10 @@ os.environ["LANGCHAIN_VERBOSE"] = "false"
 
 
 console = Console()
-date = datetime.now().strftime("%Y%m%dT%H:%M:%S")
-filename = f"conversation_logs_{date}.log"
-file_handler = logging.FileHandler(filename)
-logging.getLogger().addHandler(file_handler)
+# date = datetime.now().strftime("%Y%m%dT%H:%M:%S")
+# filename = f"conversation_logs_{date}.log"
+# file_handler = logging.FileHandler(filename)
+# logging.getLogger().addHandler(file_handler)
 logging.getLogger().setLevel(logging.INFO)
 
 openai_client = openai.OpenAI(

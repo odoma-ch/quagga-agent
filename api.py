@@ -162,7 +162,8 @@ async def lifespan(app: FastAPI):
     from agent_config import RETRIEVER_K
     
     # Initialize ChromaDB client and embedding model
-    runtime_state.chroma_client = chromadb.PersistentClient(path="chroma_db")
+    chroma_path = "/data/chroma_db" if os.getenv("LOCAL_MODE", "False") != "True" else "chroma_db"
+    runtime_state.chroma_client = chromadb.PersistentClient(path=chroma_path)
     runtime_state.embedding_model = OpenAIEmbeddings(
         model="Qwen/Qwen3-Embedding-0.6B",
         openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
