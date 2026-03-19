@@ -1,0 +1,178 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quagga-agent-webui
+  labels:
+    app: quagga-agent-webui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quagga-agent-webui
+  template:
+    metadata:
+      labels:
+        app: quagga-agent-webui
+    spec:
+      containers:
+        - name: nginx
+          image: quay.io/nginx/nginx-unprivileged:latest
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 200m
+              memory: 512Mi
+
+        - name: quagga-agent-webui
+          image: ghcr.io/open-webui/open-webui:main
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+          env:
+            - name: WEBUI_URL
+              value: "https://quagga-agent-webui-graphia-app1-staging.apps.bst2.paas.psnc.pl"
+            - name: WEBUI_SECRET_KEY
+              value: "93xJD4e1rxTI1YVh"
+            - name: WEBUI_AUTH_TRUSTED_EMAIL_HEADER
+              value: "X-User-Email"
+            - name: WEBUI_AUTH_TRUSTED_NAME_HEADER
+              value: "X-User-Name"
+          volumeMounts:
+            - name: open-webui-data
+              mountPath: /app/backend/data
+            - name: open-webui-static
+              mountPath: /app/backend/open_webui/static
+
+      volumes:
+        - name: open-webui-data
+          persistentVolumeClaim:
+            claimName: open-webui-pvc
+        - name: open-webui-static
+          emptyDir: {}
+        - name: nginx-config
+          configMap:
+            name: quagga-agent-webui-nginx-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: open-webui-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quagga-agent-webui
+spec:
+  selector:
+    app: quagga-agent-webui
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8081
+  type: ClusterIP
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: quagga-agent-webui
+  namespace: graphia-app1-staging
+  annotations:
+    haproxy.router.openshift.io/ip_whitelist: "0.0.0.0/0"
+    openshift.io/host.generated: "true"
+spec:
+  to:
+    kind: Service
+    name: quagga-agent-webui
+    weight: 100
+  port:
+    targetPort: 8081
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: quagga-agent-webui-nginx-config
+  namespace: graphia-app1-staging
+data:
+  nginx.conf: |
+    worker_processes 1;
+    error_log /tmp/error.log;
+    pid /tmp/nginx.pid;
+
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      port_in_redirect off;
+
+      client_body_temp_path /tmp/client_body;
+      proxy_temp_path /tmp/proxy;
+      fastcgi_temp_path /tmp/fastcgi;
+      uwsgi_temp_path /tmp/uwsgi;
+      scgi_temp_path /tmp/scgi;
+
+      server {
+        listen 8081;
+
+        location / {
+          auth_request /auth/verify;
+          auth_request_set $user_email $upstream_http_x_user_email;
+          auth_request_set $user_name  $upstream_http_x_user_name;
+
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header X-Forwarded-Host $host;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header X-User-Email $user_email;
+          proxy_set_header X-User-Name  $user_name;
+          proxy_read_timeout 3600;
+          proxy_send_timeout 3600;
+          proxy_pass http://127.0.0.1:8080;
+        }
+
+        location = /auth/callback {
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_pass http://kgqa-crowdsourcing-app-service/auth-chat-ui/callback;
+        }
+
+        location = /auth/verify {
+          internal;
+          proxy_pass http://kgqa-crowdsourcing-app-service/auth-chat-ui/verify;
+          proxy_pass_request_body off;
+          proxy_set_header Content-Length "";
+          proxy_set_header Cookie $http_cookie;
+        }
+      }
+    }

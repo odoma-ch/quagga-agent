@@ -45,7 +45,7 @@ USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
-logger = logging.getLogger("graphia-sparql-agent-api")
+logger = logging.getLogger("quagga-sparql-agent-api")
 logging.basicConfig(level=logging.INFO)
 
 
@@ -208,13 +208,13 @@ async def lifespan(app: FastAPI):
     graph_builder.set_entry_point("sparql_chat_agent")
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 
-    logger.info("Graphia SPARQL agent is ready")
+    logger.info("Quagga SPARQL agent is ready")
     yield  # application is running
-    logger.info("Shutting down Graphia SPARQL Agent API")
+    logger.info("Shutting down Quagga SPARQL Agent API")
 
 
 app = FastAPI(
-    title="Graphia SPARQL Agent API",
+    title="Quagga SPARQL Agent API",
     description="OpenAI-compatible API wrapping the LangGraph ShEx-based SPARQL agent",
     version="0.1.0",
     lifespan=lifespan,
