@@ -41,7 +41,8 @@ from tool_helpers import _after_tool
 load_dotenv()
 
 
-USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
+# disable this for now as we are not enabling the local model mode for the agent API
+# USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
@@ -58,10 +59,12 @@ def sparql_chat(state: State, config: RunnableConfig):
     _shex_prefixes = runtime.context["shex_prefixes"]
     prefix_anchor = "You might need to use these prefixes in the SPARQL query:"
     all_system_messages: list[str] = []
-    seed_signatures = [
-        "helpful assistant called Quagga to generate SPARQL queries",
-        "`scope_checker_tool`",
-        "always use the validate_sparql_tool to validate the query",
+    # Use stable anchors that map to actual injected seed prompt text.
+    seed_anchors = [
+        "You are a helpful assistant called Quagga to generate SPARQL queries.",
+        "Rules for `scope_checker_tool`:",
+        "Rules for `shex_retriever`:",
+        "Rules for `validate_sparql_tool`:",
         "A ShEx (Shape Expressions) file defines the expected structure of RDF nodes",
     ]
     for msg in state["messages"]:
@@ -74,8 +77,8 @@ def sparql_chat(state: State, config: RunnableConfig):
                 all_system_messages.append(content)
 
     has_seed_system_messages = all(
-        any(signature in system_msg for system_msg in all_system_messages)
-        for signature in seed_signatures
+        any(anchor in system_msg for system_msg in all_system_messages)
+        for anchor in seed_anchors
     )
     clean_prefixes = (_shex_prefixes or "").replace(prefix_anchor, "").strip()
     existing_prefix_payloads = [
@@ -94,17 +97,42 @@ def sparql_chat(state: State, config: RunnableConfig):
                 content="You are a helpful assistant called Quagga to generate SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."
             ),
             SystemMessage(
-                content="""
+            content="""
 If the user asks which knowledge graphs, KGs, or datasets are available to query, or wants to know details such as 
-endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory. 
-Call the `scope_checker_tool` on every turn only when the target knowledge graph is unknown, ambiguous, or the user explicitly asks to switch to a different KG."""
+endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory.
+
+Rules for `scope_checker_tool`:
+1. Call it AT MOST ONCE per user turn.
+2. Only call it when ALL of the following are true:
+   a. No knowledge graph has been confirmed yet in this conversation, OR the user explicitly asks to switch to a different KG.
+   b. You have NOT already called `scope_checker_tool` in this turn.
+3. A KG is only considered "confirmed" when `scope_checker_tool` has returned a single, unambiguous KG in a previous turn. If the previous turn ended with you asking the user to choose between multiple KGs, the KG is NOT yet confirmed — you MUST call `scope_checker_tool` with the user's reply to formally confirm their selection.
+4. Once `scope_checker_tool` returns a result (whether it identifies a KG or says the query is out of scope), treat that result as final for this turn. Do NOT call `scope_checker_tool` again in the same turn regardless of the outcome.
+5. If the KG was confirmed in a previous turn (per rule 3) and the user has not requested a change, skip `scope_checker_tool` entirely and proceed directly to schema retrieval.
+6. If `scope_checker_tool` returns an out-of-scope or ambiguous result, inform the user and wait for clarification. Do NOT retry the tool."""
             ),
             SystemMessage(
-                content="""Use the `shex_retriever` tool to retrieve the relevant schemas for a user question before generating the SPARQL query.
-            After generating the SPARQL query, always use the `validate_sparql_tool` tool to validate the query."""
+                content="""
+Rules for `shex_retriever`:
+1. Call it only AFTER the target knowledge graph is known — either just confirmed by `scope_checker_tool` in this turn, or already established in a prior turn and not changed since.
+2. If the KG is already established and the user has not switched, skip `scope_checker_tool` and call `shex_retriever` directly with the user's input.
+3. Pass the user's input as-is to the tool.
+4. If the tool returns no relevant shapes, inform the user that the requested concept may not exist in the selected KG. Do NOT guess a schema.
+5. Use the returned ShEx shapes as the sole basis for building triple patterns, following the ShEx interpretation rules provided separately."""
             ),
-            SystemMessage(content="""
-A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. When multiple predicates lead to semantically similar targets, prefer the most direct path to the actual entity class — intermediate or wrapper classes that represent metadata about an entity rather than the entity itself should not be substituted for the actual target class unless explicitly requested."""),
+            SystemMessage(
+                content="""
+Rules for `validate_sparql_tool`:
+1. Always validate the generated SPARQL query before presenting it to the user.
+2. If validation fails, you may use either or both of the following recovery strategies in any order:
+   a. Revise the query based on the error message and re-validate.
+   b. Call `shex_retriever` again with the user's input to check if alternative or additional shapes are available, then regenerate and re-validate.
+3. If the query still fails after multiple retries, present the best attempt to the user along with the validation error and ask for guidance."""
+            ),
+            SystemMessage(
+                content="""
+A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. When multiple predicates lead to semantically similar targets, prefer the most direct path to the actual entity class — intermediate or wrapper classes that represent metadata about an entity rather than the entity itself should not be substituted for the actual target class unless explicitly requested."""
+            ),
         ]
         logging.info("Added seed system messages")
     inject_prefix_for_llm = bool(clean_prefixes)
@@ -136,20 +164,12 @@ A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: whi
         llm_system_messages.append(
             SystemMessage(content=f"{prefix_anchor}\n{clean_prefixes}")
         )
-    print(
-        f"[sparql_chat] added_system_messages={len(added_system_messages)} "
-        f"seed_present={has_seed_system_messages} "
-        f"prefix_present={has_prefix_system_message} "
-        f"prefix_injected_this_turn={inject_prefix_for_llm}"
-    )
-    print("[sparql_chat] existing_system_messages_start")
     for idx, content in enumerate(all_system_messages, start=1):
         print(f"[sparql_chat] existing_system_message_{idx}: {content}")
-    print("[sparql_chat] existing_system_messages_end")
-    print("[sparql_chat] added_system_messages_start")
-    for idx, message in enumerate(llm_system_messages, start=1):
-        print(f"[sparql_chat] added_system_message_{idx}: {message.content}")
-    print("[sparql_chat] added_system_messages_end")
+
+    # for idx, message in enumerate(llm_system_messages, start=1):
+    #     print(f"[sparql_chat] added_system_message_{idx}: {message.content}")
+
     llm_input = llm_system_messages + filtered_state_messages if llm_system_messages else filtered_state_messages
     llm_message = runtime_state.llm_with_tools.invoke(llm_input)
     return {"messages": added_system_messages + [llm_message]}
@@ -170,21 +190,21 @@ async def lifespan(app: FastAPI):
         openai_api_key="EMPTY"
     )
 
-    if USE_OLLAMA:
-        llm = ChatOllama(model="qwen3:30b-a3b", temperature=0.7)
-    else:
-        base_url = os.getenv("PSNC_OKD_BASE_URL")
-        model = os.getenv("PSNC_OKD_MEDIUM_MODEL")
-        api_key = os.getenv("PSNC_OKD_API_KEY")
-        http_client = httpx.Client(verify=False)
-        llm = ChatOpenAI(
-            base_url=base_url,
-            model=model,
-            api_key=api_key,
-            temperature=0.1,
-            top_p=0.9,
-            http_client=http_client,
-        )
+    # if USE_OLLAMA:
+    #     # llm = ChatOllama(model="qwen3:30b-a3b", temperature=0.7)
+    # else:
+    base_url = os.getenv("PSNC_OKD_BASE_URL")
+    model = os.getenv("PSNC_OKD_MEDIUM_MODEL")
+    api_key = os.getenv("PSNC_OKD_API_KEY")
+    http_client = httpx.Client(verify=False)
+    llm = ChatOpenAI(
+        base_url=base_url,
+        model=model,
+        api_key=api_key,
+        temperature=0.1,
+        top_p=0.9,
+        http_client=http_client,
+    )
 
     # Initialize dynamic retriever tool
     retriever_tool = ShexRetrieverTool(k=RETRIEVER_K)
