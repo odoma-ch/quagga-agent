@@ -97,11 +97,11 @@ def sparql_chat(state: State, config: RunnableConfig):
                 content="""
 If the user asks which knowledge graphs, KGs, or datasets are available to query, or wants to know details such as 
 endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory. 
-Call the `scope_checker_tool` only when the target knowledge graph is unknown, ambiguous, or the user explicitly asks to switch to a different KG."""
+Call the `scope_checker_tool` on every turn only when the target knowledge graph is unknown, ambiguous, or the user explicitly asks to switch to a different KG."""
             ),
             SystemMessage(
-                content="""Use always the SHEX retriever tool to retrieve the relevant schemas for the question before generating the SPARQL query.
-            After generating the SPARQL query, always use the validate_sparql_tool to validate the query."""
+                content="""Use the `shex_retriever` tool to retrieve the relevant schemas for a user question before generating the SPARQL query.
+            After generating the SPARQL query, always use the `validate_sparql_tool` tool to validate the query."""
             ),
             SystemMessage(content="""
 A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. When multiple predicates lead to semantically similar targets, prefer the most direct path to the actual entity class — intermediate or wrapper classes that represent metadata about an entity rather than the entity itself should not be substituted for the actual target class unless explicitly requested."""),
