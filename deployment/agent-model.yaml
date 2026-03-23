@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: qwen-2b-cache-pvc
+  namespace: graphia-app1-staging
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-openai-qwen-2b
+  namespace: graphia-app1-staging
+spec:
+  strategy:
+    type: Recreate
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm-openai-qwen-2b
+  template:
+    metadata:
+      labels:
+        app: vllm-openai-qwen-2b
+    spec:
+      containers:
+        - name: vllm-openai-qwen-2b
+          image: vllm/vllm-openai:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-token-secret
+                  key: HUGGING_FACE_HUB_TOKEN
+            - name: VLLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vllm-api-key-secret
+                  key: VLLM_API_KEY
+            - name: HF_HOME
+              value: /tmp/.cache/huggingface
+            - name: HOME 
+              value: /tmp
+          ports:
+            - containerPort: 8000
+              name: http
+          volumeMounts:
+            - name: hf-cache
+              mountPath: /tmp
+            - name: dshm
+              mountPath: /dev/shm
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+              memory: "8Gi"
+              cpu: "4"
+            requests:
+              nvidia.com/gpu: "1"
+              memory: "8Gi"
+              cpu: "4"
+          args:
+            - "--model"
+            - "Qwen/Qwen3.5-2B"
+            - "--port"
+            - "8000"
+            - "--tensor-parallel-size"
+            - "1"
+            - "--max-model-len"
+            - "32768"
+            - "--enable-auto-tool-choice"
+            - "--tool-call-parser"
+            - "qwen3_coder"
+            - "--gpu-memory-utilization"
+            - "0.90"
+            - "--api-key"
+            - "$(VLLM_API_KEY)"
+      volumes:
+        - name: hf-cache
+          persistentVolumeClaim:
+            claimName: qwen-2b-cache-pvc
+        - name: dshm
+          emptyDir:
+            medium: Memory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-openai-qwen-2b
+  namespace: graphia-app1-staging
+spec:
+  selector:
+    app: vllm-openai-qwen-2b
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: vllm-openai-qwen-2b
+  namespace: graphia-app1-staging
+  labels:
+    app: vllm-openai-qwen-2b
+  annotations:
+    haproxy.router.openshift.io/ip_whitelist: "0.0.0.0/0"
+spec:
+  to:
+    kind: Service
+    name: vllm-openai-qwen-2b
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  wildcardPolicy: None
