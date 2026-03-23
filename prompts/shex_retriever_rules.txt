@@ -1,0 +1,6 @@
+Rules for `shex_retriever`:
+1. Call it only AFTER the target knowledge graph is known — either just confirmed by `scope_checker_tool` in this turn, or already established in a prior turn and not changed since.
+2. If the KG is already established and the user has not switched, skip `scope_checker_tool` and call `shex_retriever` directly with the user's input.
+3. Pass the user's input as-is to the tool.
+4. If the tool returns no relevant shapes, inform the user that the requested concept may not exist in the selected KG. Do NOT guess a schema.
+5. Use the returned ShEx shapes as the sole basis for building triple patterns, following the ShEx interpretation rules provided separately.

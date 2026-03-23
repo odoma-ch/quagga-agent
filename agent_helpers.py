@@ -21,6 +21,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
+
+
+def _load_prompt(filename: str) -> str:
+    filepath = os.path.join(PROMPTS_DIR, filename)
+    with open(filepath, "r") as f:
+        return f.read().strip()
+
+
 def _build_agent_context(thread_id: str):
     """Build the shared context passed to graph.stream()."""
     session = runtime_state.get_or_create_session(thread_id)
