@@ -1,6 +1,6 @@
 ## Description
 
-This repository contains the code for `quagga agent`, an LLM agent for conservational question answering over knowledge graphs. The agent uses the [EXYGEN API](https://github.com/odoma-ch/exygen) to generate KG metadata (e.g. ShEX schemas, graph samples, etc.) to enable and guide the generation of SPARQL queries based on user questions. The agent integrates an OpenWebUI frontend and LiteLLM/OKD for LLM-powered query generation.
+This repository contains the code for `quagga agent`, an LLM agent for conversational question answering over knowledge graphs. The agent uses the [EXYGEN API](https://github.com/odoma-ch/exygen) to generate KG metadata (e.g. ShEX schemas, graph samples, etc.) to enable and guide the generation of SPARQL queries based on user questions. The agent integrates an OpenWebUI frontend and LiteLLM/OKD for LLM-powered query generation.
 
 For some technical documentation about the agent's architecture, see [docs/AGENT_ARCHITECTURE.md](./docs/AGENT_ARCHITECTURE.md)
 
