@@ -13,7 +13,7 @@ from tool_helpers import (
     _format_tool_call,
     _format_tool_result,
 )
-from models import State
+from models import State, ContextSchema
 from langchain_core.runnables import RunnableConfig
 
 
@@ -21,27 +21,26 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _build_agent_context() -> dict:
-    """Build the shared context dict passed to graph.stream()."""
-    prefixes_str = (
-        "You might need to use these prefixes in the SPARQL query: " + runtime_state.shex_prefixes
-        if runtime_state.shex_prefixes
-        else ""
+def _build_agent_context(thread_id: str):
+    """Build the shared context passed to graph.stream()."""
+    session = runtime_state.get_or_create_session(thread_id)
+    prefixes_str = session.shex_prefixes or ""
+    sparql_endpoint = session.sparql_endpoint or SPARQL_ENDPOINT
+    
+    return ContextSchema(
+        thread_id=thread_id,
+        selected_kg=session.selected_kg,
+        sparql_endpoint=sparql_endpoint,
+        shex_prefixes=prefixes_str,
+        chunk_titles=session.chunk_titles,
+        retrieved_chunks=set(),
     )
-    return {
-        "sparql_endpoint": SPARQL_ENDPOINT,
-        "shex_prefixes": prefixes_str,
-        "chunk_titles": runtime_state.chunk_titles,
-        "retrieved_chunks": set(),
-        "benchmark_mode": False,
-        "benchmark_method_description": "ShEX",
-    }
 
 
 async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
     """Invoke the LangGraph agent and collect the full response including thinking."""
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
-    context = _build_agent_context()
+    context = _build_agent_context(thread_id)
 
     parts: list[str] = []
     # Run synchronous graph.stream in a thread so we don't block the event loop.
@@ -74,7 +73,7 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
 async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     """Yield SSE chunks as tool steps + tokenized assistant output."""
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
-    context = _build_agent_context()
+    context = _build_agent_context(thread_id)
     stream_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
     queue: asyncio.Queue = asyncio.Queue()
     loop = asyncio.get_running_loop()

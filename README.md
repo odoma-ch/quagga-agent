@@ -63,6 +63,9 @@ curl https://quagga-llm-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1/cha
     - Sometimes, OpenWebUI can cause issues, do the `lsof -i:8000` command and kill the process with the right PID.
 - Might need to delete the `chroma_db` from the repo and rebuild the vector for some reason it causes hangup locally.
 
+## For setting up the filter on OpenWebUI for `chat_id`:
 
-- localhost:8000/admin/functions and add a function
-- and then copy/paste the filters/__init__.py
+- We need the `chat_id` to keep track of the conversations and its corresponding history.
+- Go to: `localhost:8000/admin/functions` (or where the UI is hosted but with the corresponding path suffix) and add a function
+- and then copy/paste the code in: `filters/__init__.py`
+- After saving it, click on the toggle to `Enable` it and then press on the three dot menu to enable the `Global` toggle.

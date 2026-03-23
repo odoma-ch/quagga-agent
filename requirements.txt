@@ -16,4 +16,6 @@ uvicorn==0.40.0
 python-dotenv==1.1.0
 requests==2.32.5
 rdflib==7.1.4
-open-webui==0.8.8
+sentence-transformers==5.2.2
+transformers==5.1.0
+# open-webui==0.8.8

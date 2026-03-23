@@ -1,0 +1,101 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quagga-agent-api
+  labels:
+    app: quagga-agent-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quagga-agent-api
+  template:
+    metadata:
+      labels:
+        app: quagga-agent-api
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: quagga-agent-api
+        tty: true
+        stdin: true
+        image: registry.paas.psnc.pl/graphia/quagga-agent-api:v0.10
+        env:
+        - name: HF_HOME
+          value: /tmp/.cache/huggingface
+        - name: TRANSFORMERS_CACHE
+          value: /tmp/.cache/huggingface
+        - name: PSNC_HPC_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_HPC_BASE_URL
+        - name: PSNC_OKD_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_OKD_BASE_URL
+        - name: PSNC_OKD_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_OKD_API_KEY
+        - name: PSNC_HPC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_HPC_API_KEY
+        - name: PSNC_OKD_MEDIUM_MODEL
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_OKD_MEDIUM_MODEL
+        - name: PSNC_OKD_LARGE_MODEL
+          valueFrom:
+            secretKeyRef:
+              name: quagga-agent-api-secrets
+              key: PSNC_OKD_LARGE_MODEL
+        resources:
+          limits:
+            memory: "8Gi"
+            cpu: "8"
+          requests:
+            memory: "4Gi"
+            cpu: "4"
+        ports:
+        - containerPort: 8004
+          protocol: TCP
+          name: http
+        volumeMounts:
+        - name: chroma-data
+          mountPath: /data/chroma_db
+      volumes:
+      - name: chroma-data
+        persistentVolumeClaim:
+          claimName: quagga-agent-chroma-pvc
+      imagePullSecrets:
+      - name: registry-paas-psnc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: quagga-agent-chroma-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quagga-agent-api-service
+spec:
+  type: ClusterIP
+  selector:
+    app: quagga-agent-api
+  ports:
+    - port: 8004
+      targetPort: 8004
+      protocol: TCP

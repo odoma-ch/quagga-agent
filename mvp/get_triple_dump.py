@@ -2,6 +2,7 @@ import re
 import time
 import requests
 import argparse
+import urllib3
 
 
 def is_valid_uri(uri: str) -> bool:
@@ -90,18 +91,35 @@ def fix_ntriples_line(line: str) -> str | None:
     return fixed
 
 
-def download_triples(endpoint: str, output_file: str, limit: int, headers: dict):
+def download_triples(
+    endpoint: str,
+    output_file: str,
+    limit: int,
+    headers: dict,
+    with_specific_named_graph: str = None,
+    verify_tls: bool | str = True,
+):
     offset = 0
     total_triples = 0
     total_skipped = 0
 
     with open(output_file, "w", encoding="utf-8") as f:
         while True:
-            query = f"CONSTRUCT {{ ?s ?p ?o }} WHERE {{ ?s ?p ?o }} LIMIT {limit} OFFSET {offset}"
+            if with_specific_named_graph:
+                query = f"CONSTRUCT {{ ?s ?p ?o }} FROM <{with_specific_named_graph}> WHERE {{ ?s ?p ?o }} LIMIT {limit} OFFSET {offset}"
+                print(f"Downloading triples from specific named graph: {with_specific_named_graph}")
+            else:
+                query = f"CONSTRUCT {{ ?s ?p ?o }} WHERE {{ ?s ?p ?o }} LIMIT {limit} OFFSET {offset}"
             print(f"Downloading triples at offset {offset}...")
 
             try:
-                response = requests.post(endpoint, data={"query": query}, headers=headers, timeout=300)
+                response = requests.post(
+                    endpoint,
+                    data={"query": query},
+                    headers=headers,
+                    timeout=300,
+                    verify=verify_tls,
+                )
                 response.raise_for_status()
             except requests.exceptions.RequestException as e:
                 print(f"Error at offset {offset}: {e}")
@@ -182,8 +200,36 @@ if __name__ == "__main__":
     parser.add_argument("--endpoint",    type=str, default="https://lod.ehri-project-test.eu/sparql")
     parser.add_argument("--output-file", type=str, default="ehri_dump_cleaned.nt")
     parser.add_argument("--limit",       type=int, default=100000)
+    parser.add_argument("--with-specific-named-graph", type=str, default=None)
+    parser.add_argument(
+        "--insecure",
+        action="store_true",
+        help="Disable TLS certificate verification (use only for trusted endpoints).",
+    )
+    parser.add_argument(
+        "--ca-bundle",
+        type=str,
+        default=None,
+        help="Path to a custom CA bundle file to verify TLS certificates.",
+    )
     args = parser.parse_args()
 
+    if args.ca_bundle:
+        verify_tls = args.ca_bundle
+    else:
+        verify_tls = not args.insecure
+
+    if args.insecure and not args.ca_bundle:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        print("WARNING: TLS certificate verification is disabled (--insecure).")
+
     headers = {"Accept": "application/n-triples"}
-    download_triples(args.endpoint, args.output_file, args.limit, headers)
+    download_triples(
+        args.endpoint,
+        args.output_file,
+        args.limit,
+        headers,
+        args.with_specific_named_graph,
+        verify_tls=verify_tls,
+    )
     print(f"Downloaded to {args.output_file}")

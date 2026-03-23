@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+import json
 import requests
 
 from models import State
@@ -40,6 +41,26 @@ def _format_tool_result(message) -> str:
     tool_name = getattr(message, "name", "tool")
     display = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
     preview = content[:500] + ("…" if len(content) > 500 else "")
+
+    # Sometimes the model returns a JSON blob that encodes the *next* tool call
+    # (instead of emitting a native tool_calls message)
+    try:
+        parsed = json.loads(content)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, dict) and isinstance(parsed.get("tool_calls"), list):
+        rendered_calls = []
+        for tc in parsed["tool_calls"]:
+            if not isinstance(tc, dict):
+                continue
+            name = tc.get("name")
+            if not name and isinstance(tc.get("name="), str):
+                name = tc.get("name=")
+            if not name:
+                continue
+            rendered_calls.append(f"**{_TOOL_DISPLAY_NAMES.get(name, name)}**")
+        if rendered_calls:
+            return "\n".join(rendered_calls) + "\n"
 
     if tool_name == "validate_sparql_tool":
         return (
