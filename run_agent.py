@@ -1,4 +1,5 @@
 import os
+import json
 import uuid
 import httpx
 import shutil
@@ -10,6 +11,7 @@ from langchain_chroma import Chroma
 
 from rich.prompt import Prompt
 from rich.console import Console
+from langchain_openai import OpenAIEmbeddings
 
 from langchain_ollama import ChatOllama
 from langchain_litellm import ChatLiteLLM
@@ -22,7 +24,6 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import tools_condition
 from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
-from langchain_community.embeddings import InfinityEmbeddings
 
 from models import ContextSchema, State
 from helper_functions import get_embeddings_for_chunks, load_shex_file, chunk_shex_file, chunk_sample_file
@@ -58,10 +59,12 @@ def setup_rag_environment(path_to_shex, collection_name, k=3):
         return retriever_tool, shex_prefixes, chunk_titles # , sample_retriever_tool
     else:
         client = chromadb.PersistentClient(path="chroma_db")
-        infinity_api_url = "https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl"
-        embedding_model = InfinityEmbeddings(
-            model="Qwen/Qwen3-Embedding-0.6B", infinity_api_url=infinity_api_url
+        embedding_model = OpenAIEmbeddings(
+            model="Qwen/Qwen3-Embedding-0.6B",
+            openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
+            openai_api_key="EMPTY"
         )
+
         available_collections = [_.name for _ in client.list_collections()]
 
         if not shex_collection_name in available_collections:
@@ -93,6 +96,8 @@ def setup_rag_environment(path_to_shex, collection_name, k=3):
 def sparql_chat(state: State, config: RunnableConfig):
     runtime = config["configurable"]["__pregel_runtime"]
     shex_prefixes = runtime.context["shex_prefixes"]
+    endpoint = runtime.context["sparql_endpoint"]
+    benchmark_method_description = runtime.context["benchmark_method_description"]
     shex_already_added = any(
         hasattr(msg, "type") and msg.type == "system" and msg.content == shex_prefixes 
         for msg in state["messages"]
@@ -101,8 +106,12 @@ def sparql_chat(state: State, config: RunnableConfig):
     if not shex_already_added and shex_prefixes:
         state["messages"].insert(0, ("system", shex_prefixes))
         state["messages"].insert(0, (
-            "system", """
-            Use the SHEX retriever tool to retrieve the relevant schemas for the question.
+            "system", f"""
+            You are a helpful assistant that can help with SPARQL queries.
+
+            Generate the SPARQL query for a given user input for the endpoint: {endpoint}
+
+            Use the {benchmark_method_description} retriever tool to retrieve the relevant schemas for the question.
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query.
             """
         ))
@@ -111,7 +120,7 @@ def sparql_chat(state: State, config: RunnableConfig):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--k", type=int, default=3)
+    parser.add_argument("--k", type=int, default=5)
     # Example endpoint URL: "https://sparql.opencitations.net/meta"
     parser.add_argument("--endpoint-url", type=str, required=True)
     # Example path: "../test/artifacts/shex/shex_2025-08-11T17-01-11_oc_meta.ttl"
@@ -120,6 +129,9 @@ if __name__ == "__main__":
     # parser.add_argument("--path-to-sample", type=str, required=True)
     # Example collection name: "opencitations_meta"
     parser.add_argument("--collection-name", type=str, required=True)
+    parser.add_argument("--benchmark-mode", action="store_true", default=False)
+    parser.add_argument("--benchmark-model", type=str, default="M", choices=["S", "M", "L"])
+    parser.add_argument("--benchmark-method", type=str, default="3", choices=["2", "3", "4", "5", "6", "7"])
     args = parser.parse_args()
 
     retriever_tool, shex_prefixes, chunk_titles = setup_rag_environment(
@@ -134,15 +146,31 @@ if __name__ == "__main__":
         tools = [retriever_tool, validate_sparql_tool]
         llm_with_tools = llm.bind_tools(tools)
     else:
+        base_url, model, api_key = os.getenv("PSNC_OKD_BASE_URL"), os.getenv("PSNC_OKD_MODEL"), os.getenv("PSNC_OKD_API_KEY")
+        if args.benchmark_mode:
+            if args.benchmark_model == "S":
+                base_url, api_key, model = (
+                    os.getenv("SMALL_MODEL_BASE_URL"), os.getenv("SMALL_MODEL_API_KEY"), "Qwen/Qwen2.5-Coder-7B-Instruct"
+                )
+            elif args.benchmark_model == "M":
+                base_url, api_key, model = (
+                    os.getenv("PSNC_OKD_BASE_URL"), os.getenv("PSNC_OKD_API_KEY"), "Qwen3-Coder-30B-A3B-Instruct-Q8_0"
+                )
+            elif args.benchmark_model == "L":
+                base_url, api_key, model = (
+                    os.getenv("PSNC_HPC_BASE_URL"), os.getenv("PSNC_HPC_API_KEY"), "DeepSeek-V3.1-vLLM"
+                )
+
         http_client = httpx.Client(verify=False)
-llm = ChatOpenAI(
-    base_url=os.getenv("PSNC_OKD_BASE_URL"),
-    model=os.getenv("PSNC_OKD_MODEL"),
-    api_key=os.getenv("PSNC_OKD_API_KEY"),
-    temperature=0.7,
-    http_client=http_client,
-    max_tokens=None
-)
+        llm = ChatOpenAI(
+            base_url=base_url,
+            model=model,
+            api_key=api_key,
+            temperature=0.1,
+            top_p=0.9,
+            http_client=http_client,
+            max_tokens=None
+        )
         tools = [retriever_tool, validate_sparql_tool]
         llm_with_tools = llm.bind_tools(tools)
 
@@ -163,27 +191,80 @@ llm = ChatOpenAI(
 
     config = {"configurable": {"thread_id": str(uuid.uuid4())}}
 
-    while True:
-        user_input = Prompt.ask("[bold red]\nUser[/bold red]")
-        if user_input.lower() in ["/bye", "/quit", "/exit", "bye", "quit", "exit"]:
-            console.print("Goodbye!", style="bold blue")
-            break
+    # normal mode for the agent to interact with the user
+    if not args.benchmark_mode:
+        while True:
+            user_input = Prompt.ask("[bold red]\nUser[/bold red]")
+            if user_input.lower() in ["/bye", "/quit", "/exit", "bye", "quit", "exit"]:
+                console.print("Goodbye!", style="bold blue")
+                break
 
-        prefixes_str = "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
+            prefixes_str = "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
 
-        for event in graph.stream(
-            {"messages": [("user", user_input)]},
-            config, context={"sparql_endpoint": args.endpoint_url, 
-            "shex_prefixes": prefixes_str, "chunk_titles": chunk_titles, "retrieved_chunks": set()}):
-            for value in event.values():
-                if value["messages"]:
-                    latest_message = value["messages"][-1]
-                    # tool call message
-                    if hasattr(latest_message, "tool_calls") and len(latest_message.tool_calls) > 0:
-                        tool_name = latest_message.tool_calls[0]["name"]
-                        # if tool_name == "shex_retriever":
-                        continue
-                    # tool result message
-                    elif hasattr(latest_message, "type") and latest_message.type == "tool":
-                        continue
-                    console.print(f"\nAssistant:\n{latest_message.content}", style="bold green")
+            for event in graph.stream(
+                {"messages": [("user", user_input)]},
+                config, context={"sparql_endpoint": args.endpoint_url, 
+                "shex_prefixes": prefixes_str, "chunk_titles": chunk_titles, "retrieved_chunks": set()}):
+                for value in event.values():
+                    if value["messages"]:
+                        latest_message = value["messages"][-1]
+                        # tool call message
+                        if hasattr(latest_message, "tool_calls") and len(latest_message.tool_calls) > 0:
+                            tool_name = latest_message.tool_calls[0]["name"]
+                            # if tool_name == "shex_retriever":
+                            continue
+                        # tool result message
+                        elif hasattr(latest_message, "type") and latest_message.type == "tool":
+                            continue
+                        console.print(f"\nAssistant:\n{latest_message.content}", style="bold green")
+
+    # run only when the benchamrk mode is enabled
+    if args.benchmark_mode:
+        home_dir = os.getenv("HOME")
+        with open(f"{home_dir}/quagga-agent/benchmark/dataset/orkg_sciqa_rows.json", "r") as f:
+            sciqa_test_rows = json.load(f)
+
+            for row in sciqa_test_rows:
+                ground_truth_id = row["id"]
+                user_input = row["question"]["string"]
+                ground_truth_query = row["query"]["sparql"]
+
+                # only used when the RAG involves VoID and ShEX files
+                prefixes_str = "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
+
+                context = {
+                    "sparql_endpoint": args.endpoint_url, "shex_prefixes": prefixes_str, "chunk_titles": chunk_titles, "retrieved_chunks": set()
+                }
+                # benchmark model: S, M and L 
+                # benchmark prompt: from SCiQA test set
+                # benchmark method: 2, 3, 4, 5, 6, 7
+                if args.benchmark_mode:
+                    benckmark_method_mapping = {"2": "VoID", "3": "ShEX", "4": "Sample"}
+                    added_context = {
+                        "benchmark_method": args.benchmark_method, 
+                        "benchmark_prompt": user_input, 
+                        "benchmark_model": args.benchmark_model,
+                        "benchmark_method_description": benckmark_method_mapping[args.benchmark_method],
+                        "benchmark_mode": args.benchmark_mode,
+                        "ground_truth_query": ground_truth_query,
+                        "ground_truth_id": ground_truth_id,
+
+                    }
+                    context.update(added_context)
+
+                console.print(f"Using the following context: {context}", style="bold blue")
+
+                for event in graph.stream(
+                    {"messages": [("user", user_input)]}, config, context=context):
+                    for value in event.values():
+                        if value["messages"]:
+                            latest_message = value["messages"][-1]
+                            # tool call message
+                            if hasattr(latest_message, "tool_calls") and len(latest_message.tool_calls) > 0:
+                                tool_name = latest_message.tool_calls[0]["name"]
+                                # if tool_name == "shex_retriever":
+                                continue
+                            # tool result message
+                            elif hasattr(latest_message, "type") and latest_message.type == "tool":
+                                continue
+                            console.print(f"\nAssistant:\n{latest_message.content}", style="bold green")
