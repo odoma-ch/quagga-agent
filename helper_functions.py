@@ -1,12 +1,14 @@
 import torch
 from tqdm import tqdm
+from rdflib import Graph
 from chonkie import TokenChunker
 from langchain_chroma import Chroma
-from langchain.schema import Document
+# from langchain.schema import Document
+from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import TextLoader
 
-from langchain_community.embeddings import InfinityEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 # tried with this but doesnt perform well: https://huggingface.co/Salesforce/SFR-Embedding-Code-400M_R
 # currently using this: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
@@ -18,13 +20,14 @@ from langchain_community.embeddings import InfinityEmbeddings
 #     model_kwargs={"trust_remote_code": True, "device": device}, 
 #     encode_kwargs={"padding_side": "left", "device": device}
 # )
-# reference: https://python.langchain.com/docs/integrations/text_embedding/infinity/
-infinity_api_url = "https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl"
-embedding_model = InfinityEmbeddings(
-    model="Qwen/Qwen3-Embedding-0.6B", infinity_api_url=infinity_api_url
+# VLLM with OpenAI-compatible API
+embedding_model = OpenAIEmbeddings(
+    model="Qwen/Qwen3-Embedding-0.6B",
+    openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
+    openai_api_key="EMPTY"
 )
 
-chunker = TokenChunker(chunk_size=1024, chunk_overlap=50, tokenizer="gpt2")
+chunker = TokenChunker(chunk_size=1024, chunk_overlap=50, tokenizer="Qwen/Qwen3-Embedding-0.6B")
 
 def load_shex_file(file_path: str) -> str:
     if not file_path.endswith(".ttl"):
@@ -53,16 +56,44 @@ def chunk_shex_file(shex_content: str) -> tuple[str, list[Document], list[str]]:
     return shex_prefixes, doc_chunks, chunk_titles
 
 
-def chunk_sample_file(sample_content: str) -> tuple[str, list[Document], list[str]]:
-    sample_content_split = sample_content.split("\n\n")
-    sample_prefixes = sample_content_split[0]
-    sample_rows = sample_content_split[1:]
+def load_sample_file(file_path: str) -> str:
+    if not file_path.endswith(".nt"):
+        raise Exception("File is not a sample file")
+    loader = TextLoader(file_path)
+    return loader.load()[0].page_content
+
+
+def chunk_sample_file(sample_content: str) -> list[Document]:
+    sample_content_split = sample_content.split("\n")
+    doc_chunks = []
+    for index, chunk in enumerate(sample_content_split):
+
+        # for cleaning the labels (since the labels can have URLs which can pollute the embeddings)
+        try:
+            g = Graph()
+            g.parse(data=chunk, format="nt")
+            s, p, o = next(iter(g))
+            chunk_content = f"{s} {p} {o}"
+        except StopIteration:
+            # Skip empty chunks
+            print(f"Warning: Chunk {index} is empty or invalid, skipping")
+            continue
+
+        doc_chunks.append(
+            Document(page_content=chunk_content, metadata={"chunk_index": index}))
+    return doc_chunks
+
+
+def chunk_void_file(void_content: str) -> tuple[str, list[Document]]:
+    void_content_split = void_content.split("\n\n")
+    void_prefixes = void_content_split[0]
 
     doc_chunks = []
-    for index, chunk in enumerate(sample_rows):
+    for index, chunk in enumerate(void_content_split[1:]):
         doc_chunks.append(
             Document(page_content=chunk, metadata={"chunk_index": index}))
-    return sample_prefixes, doc_chunks
+
+    return void_prefixes, doc_chunks
 
 
 def get_embeddings_for_chunks(collection_name: str, doc_chunks: list[Document], use_chonkie: bool = False):

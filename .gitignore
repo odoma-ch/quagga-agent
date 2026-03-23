@@ -1,5 +1,9 @@
 # do not add chroma DB
 chroma_db/
+mvp/dumps/
+.env.api
+.webui_secret_key
+mvp/shex_2025-08-11T17-01-11_oc_meta.ttl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
