@@ -1,3 +1,7 @@
+## Description
+
+This repository contains the SPARQL generating agent for the GRAPHIA project. It uses metadata such as ShEX schemas and samples to generate SPARQL queries based on user prompts, integrating with OpenWebUI and LiteLLM/OKD for LLM-powered query generation.
+
 ## Pre requisite:
 
 ```
