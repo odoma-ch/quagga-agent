@@ -15,6 +15,7 @@ from tool_helpers import (
 )
 from models import State, ContextSchema
 from langchain_core.runnables import RunnableConfig
+from langgraph.errors import GraphRecursionError
 
 
 from dotenv import load_dotenv
@@ -42,30 +43,35 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
     context = _build_agent_context(thread_id)
 
+    # Only send the last user message; the checkpointer provides prior history.
+    last_message = messages[-1:]
+
     parts: list[str] = []
-    # Run synchronous graph.stream in a thread so we don't block the event loop.
-    for event in await asyncio.to_thread(
-        lambda: list(runtime_state.graph.stream({"messages": messages}, config, context=context))
-    ):
-        for value in event.values():
-            if value.get("messages"):
-                latest = value["messages"][-1]
-                # Tool-call message (LLM decided to call a tool)
-                if hasattr(latest, "tool_calls") and len(latest.tool_calls) > 0:
-                    parts.append(_format_tool_call(latest))
-                    continue
-                # Tool-result message
-                if hasattr(latest, "type") and latest.type == "tool":
-                    terminal_answer = _extract_terminal_tool_answer(latest)
-                    if terminal_answer:
-                        parts.append(terminal_answer)
+    try:
+        for event in await asyncio.to_thread(
+            lambda: list(runtime_state.graph.stream({"messages": last_message}, config, context=context))
+        ):
+            for value in event.values():
+                if value.get("messages"):
+                    latest = value["messages"][-1]
+                    # Tool-call message (LLM decided to call a tool)
+                    if hasattr(latest, "tool_calls") and len(latest.tool_calls) > 0:
+                        parts.append(_format_tool_call(latest))
                         continue
-                    parts.append(_format_tool_result(latest))
-                    continue
-                # Final assistant response
-                text = _message_content_to_text(latest.content)
-                if text:
-                    parts.append(text)
+                    # Tool-result message
+                    if hasattr(latest, "type") and latest.type == "tool":
+                        terminal_answer = _extract_terminal_tool_answer(latest)
+                        if terminal_answer:
+                            parts.append(terminal_answer)
+                            continue
+                        parts.append(_format_tool_result(latest))
+                        continue
+                    # Final assistant response
+                    text = _message_content_to_text(latest.content)
+                    if text:
+                        parts.append(text)
+    except GraphRecursionError:
+        parts.append("I've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?")
 
     return "\n".join(parts)
 
@@ -74,6 +80,9 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     """Yield SSE chunks as tool steps + tokenized assistant output."""
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
     context = _build_agent_context(thread_id)
+
+    # Only send the last user message; the checkpointer provides prior history.
+    last_message = messages[-1:]
     stream_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
     queue: asyncio.Queue = asyncio.Queue()
     loop = asyncio.get_running_loop()
@@ -98,7 +107,7 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
 
     def _producer():
         try:
-            for event in runtime_state.graph.stream({"messages": messages}, config, context=context):
+            for event in runtime_state.graph.stream({"messages": last_message}, config, context=context):
                 for value in event.values():
                     if not value.get("messages"):
                         continue
@@ -146,6 +155,16 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
                             queue.put_nowait,
                             text_chunk,
                         )
+        except GraphRecursionError:
+            error_chunk = _make_chat_completion_chunk(
+                "\n\nI've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?",
+                chunk_id=stream_id,
+                chunk_type="error"
+            )
+            loop.call_soon_threadsafe(
+                queue.put_nowait,
+                error_chunk,
+            )
         except Exception as exc:
             error_chunk = _make_chat_completion_chunk(
                 f"\n\n**Error:** {exc}", chunk_id=stream_id, chunk_type="error"
