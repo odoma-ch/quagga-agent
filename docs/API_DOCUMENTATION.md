@@ -407,6 +407,13 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | `MAX_AGENT_STEPS` | No | 20 | Maximum agent recursion depth |
 
 
+## Change the suggestive prompt questions in OpenWebUI:
+
+- Go to the OpenWebUI URL, and then go to the URL suffix: `admin/settings/models`, click on the `SPARQL Agent` and add/change the **Default Prompt Suggestions**.
+
+![Where to change the prompts in OpenWebUI?](images/prompt_screenshot.png)
+
+
 ## Get other contextual data about the chat:
 
 ```
