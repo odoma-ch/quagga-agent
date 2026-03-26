@@ -543,6 +543,7 @@ Use `shex_retriever_tool` again to inspect other classes and properties, then ge
         "```sparql\n"
         f"{pretty_query}\n"
         "```\n"
+        "Here are the results:\n"
         f"{table}"
     )
 
