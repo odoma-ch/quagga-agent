@@ -19,7 +19,7 @@ spec:
       - name: quagga-agent-api
         tty: true
         stdin: true
-        image: registry.paas.psnc.pl/graphia/quagga-agent-api:v0.10
+        image: registry.paas.psnc.pl/graphia/quagga-agent-api:v0.12
         env:
         - name: HF_HOME
           value: /tmp/.cache/huggingface

@@ -63,7 +63,7 @@ def sparql_chat(state: State, config: RunnableConfig):
 
     # Seed system messages are never stored in state; always injected fresh so they
     # remain at the very start of every LLM call and never appear mid-conversation.
-    added_system_messages: list[SystemMessage] = added_system_messages = [
+    added_system_messages: list[SystemMessage] = [
         SystemMessage(content=_load_prompt("seed_prompt.txt")),
         SystemMessage(content=_load_prompt("scope_checker_rules.txt")),
         SystemMessage(content=_load_prompt("shex_retriever_rules.txt")),
