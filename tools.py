@@ -521,14 +521,30 @@ A new textual query has been generated:
 {new_text_query}
 ```
 Use `shex_retriever_tool` again to inspect other classes and properties, then generate a revised SPARQL query."""
-    # returns markdown without leading indentation so the SPARQL block renders cleanly
+
+    headers = [str(v) for v in results.vars] if hasattr(results, "vars") and results.vars else []
+    if headers:
+        header_row = "| " + " | ".join(headers) + " |"
+        separator_row = "| " + " | ".join("---" for _ in headers) + " |"
+        data_rows = []
+        for row in results_list:
+            cells = []
+            for h in headers:
+                val = row.get(h)
+                cells.append(str(val) if val is not None else "")
+            data_rows.append("| " + " | ".join(cells) + " |")
+        table = "\n".join([header_row, separator_row] + data_rows)
+    else:
+        table = "\n".join(str(row) for row in results_list)
+
     pretty_query = _pretty_sparql(query)
     return (
         "The SPARQL has been executed:\n"
         "```sparql\n"
         f"{pretty_query}\n"
         "```\n"
-        f"```text\nQuery returned some results, lets return this query as the end result if there exists a result: {results_list[0][:5]}\n```"
+        "Here are the results:\n"
+        f"{table}"
     )
 
 

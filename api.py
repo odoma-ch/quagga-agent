@@ -43,6 +43,7 @@ load_dotenv()
 
 # disable this for now as we are not enabling the local model mode for the agent API
 # USE_OLLAMA = os.getenv("LOCAL_MODE", "False") == "True"
+MERGE_SYSTEM_MESSAGES = os.getenv("MERGE_SYSTEM_MESSAGES") == "True"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
@@ -58,69 +59,27 @@ def sparql_chat(state: State, config: RunnableConfig):
     runtime = config["configurable"]["__pregel_runtime"]
     _shex_prefixes = runtime.context["shex_prefixes"]
     prefix_anchor = "You might need to use these prefixes in the SPARQL query:"
-    all_system_messages: list[str] = []
-    # Use stable anchors that map to actual injected seed prompt text.
-    seed_anchors = [
-        "You are a helpful assistant called Quagga to generate SPARQL queries.",
-        "Rules for `scope_checker_tool`:",
-        "Rules for `shex_retriever`:",
-        "Rules for `validate_sparql_tool`:",
-        "A ShEx (Shape Expressions) file defines the expected structure of RDF nodes",
-    ]
-    for msg in state["messages"]:
-        if isinstance(msg, (tuple, list)) and len(msg) >= 2 and msg[0] == "system" and isinstance(msg[1], str):
-            all_system_messages.append(msg[1])
-            continue
-        if getattr(msg, "type", "") == "system":
-            content = getattr(msg, "content", None)
-            if isinstance(content, str):
-                all_system_messages.append(content)
-
-    has_seed_system_messages = all(
-        any(anchor in system_msg for system_msg in all_system_messages)
-        for anchor in seed_anchors
-    )
     clean_prefixes = (_shex_prefixes or "").replace(prefix_anchor, "").strip()
-    existing_prefix_payloads = [
-        system_msg.split(prefix_anchor, 1)[1].strip()
-        for system_msg in all_system_messages
-        if prefix_anchor in system_msg
+
+    # Seed system messages are never stored in state; always injected fresh so they
+    # remain at the very start of every LLM call and never appear mid-conversation.
+    added_system_messages: list[SystemMessage] = added_system_messages = [
+        SystemMessage(content=_load_prompt("seed_prompt.txt")),
+        SystemMessage(content=_load_prompt("scope_checker_rules.txt")),
+        SystemMessage(content=_load_prompt("shex_retriever_rules.txt")),
+        SystemMessage(content=_load_prompt("validate_sparql_rules.txt")),
+        SystemMessage(content=_load_prompt("shex_explanation.txt")),
     ]
-    has_prefix_system_message = any(
-        payload == clean_prefixes for payload in existing_prefix_payloads
-    ) if clean_prefixes else False
-
-    added_system_messages: list[SystemMessage] = []
-    if not has_seed_system_messages:
-        added_system_messages = [
-            SystemMessage(content=_load_prompt("seed_prompt.txt")),
-            SystemMessage(content=_load_prompt("scope_checker_rules.txt")),
-            SystemMessage(content=_load_prompt("shex_retriever_rules.txt")),
-            SystemMessage(content=_load_prompt("validate_sparql_rules.txt")),
-            SystemMessage(content=_load_prompt("shex_explanation.txt")),
-        ]
-        logging.info("Added seed system messages")
     inject_prefix_for_llm = bool(clean_prefixes)
-    if inject_prefix_for_llm and not has_prefix_system_message:
-        logging.info("Using updated ShEx prefix system message for current turn")
 
-    # Build llm_input in place: remove any previous prefix message(s) from history
-    # and inject only the current KG prefix block for this turn.
+    # Strip all system messages from state history (seeds + any stale prefix messages).
+    # Seeds are re-injected fresh above; the current prefix is appended below.
+    # This guarantees all SystemMessages appear before any human/AI/tool messages.
     filtered_state_messages = []
     for msg in state["messages"]:
-        if (
-            isinstance(msg, (tuple, list))
-            and len(msg) >= 2
-            and msg[0] == "system"
-            and isinstance(msg[1], str)
-            and prefix_anchor in msg[1]
-        ):
+        if isinstance(msg, (tuple, list)) and len(msg) >= 2 and msg[0] == "system":
             continue
-        if (
-            getattr(msg, "type", "") == "system"
-            and isinstance(getattr(msg, "content", None), str)
-            and prefix_anchor in msg.content
-        ):
+        if getattr(msg, "type", "") == "system":
             continue
         filtered_state_messages.append(msg)
 
@@ -129,15 +88,19 @@ def sparql_chat(state: State, config: RunnableConfig):
         llm_system_messages.append(
             SystemMessage(content=f"{prefix_anchor}\n{clean_prefixes}")
         )
-    for idx, content in enumerate(all_system_messages, start=1):
-        print(f"[sparql_chat] existing_system_message_{idx}: {content}")
 
-    # for idx, message in enumerate(llm_system_messages, start=1):
-    #     print(f"[sparql_chat] added_system_message_{idx}: {message.content}")
+    # Merge all system messages into one — vLLM (and many small models) only
+    # accept a single system message at position 0. Controlled via MERGE_SYSTEM_MESSAGES.
+    if MERGE_SYSTEM_MESSAGES and len(llm_system_messages) > 1:
+        merged_system_content = "\n\n".join(
+            m.content for m in llm_system_messages if isinstance(m.content, str)
+        )
+        llm_system_messages = [SystemMessage(content=merged_system_content)]
 
-    llm_input = llm_system_messages + filtered_state_messages if llm_system_messages else filtered_state_messages
+    llm_input = llm_system_messages + filtered_state_messages
     llm_message = runtime_state.llm_with_tools.invoke(llm_input)
-    return {"messages": added_system_messages + [llm_message]}
+    # Only store the LLM response in state — system messages are always rebuilt fresh.
+    return {"messages": [llm_message]}
 
 
 @asynccontextmanager
@@ -261,7 +224,10 @@ async def chat_completions(request: Request):
         # OpenWebUI sends internal metadata requests (title/tags/follow-ups)
         # as regular chat completions. Handle them directly to avoid running scope/tools.
         if internal_task and not stream and runtime_state.llm is not None:
-            response = await asyncio.to_thread(lambda: runtime_state.llm.invoke(messages))
+            sys_msgs = [m for m in messages if isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system"]
+            other_msgs = [m for m in messages if not (isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system")]
+            ordered_messages = sys_msgs + other_msgs
+            response = await asyncio.to_thread(lambda: runtime_state.llm.invoke(ordered_messages))
             content = _message_content_to_text(getattr(response, "content", ""))
             return JSONResponse(_make_chat_completion(content))
 
