@@ -35,7 +35,7 @@ from message_format_helpers import (
     _make_openai_error,
     _message_content_to_text,
 )
-from agent_helpers import _run_agent, _stream_agent
+from agent_helpers import _run_agent, _stream_agent, _load_prompt
 from tool_helpers import _after_tool
 
 load_dotenv()
@@ -63,48 +63,13 @@ def sparql_chat(state: State, config: RunnableConfig):
 
     # Seed system messages are never stored in state; always injected fresh so they
     # remain at the very start of every LLM call and never appear mid-conversation.
-    added_system_messages: list[SystemMessage] = [
-            SystemMessage(
-                content="You are a helpful assistant called Quagga to generate SPARQL queries. If the user is just greeting you or making small talk, respond normally without generating a query."
-            ),
-            SystemMessage(
-            content="""
-If the user asks which knowledge graphs, KGs, or datasets are available to query, or wants to know details such as 
-endpoint URLs, always call the `describe_knowledge_graphs_tool` tool immediately before responding. Do not answer from memory.
-
-Rules for `scope_checker_tool`:
-1. Call it AT MOST ONCE per user turn.
-2. Only call it when ALL of the following are true:
-   a. No knowledge graph has been confirmed yet in this conversation, OR the user explicitly asks to switch to a different KG.
-   b. You have NOT already called `scope_checker_tool` in this turn.
-3. A KG is only considered "confirmed" when `scope_checker_tool` has returned a single, unambiguous KG in a previous turn. If the previous turn ended with you asking the user to choose between multiple KGs, the KG is NOT yet confirmed — you MUST call `scope_checker_tool` with the user's reply to formally confirm their selection.
-4. Once `scope_checker_tool` returns a result (whether it identifies a KG or says the query is out of scope), treat that result as final for this turn. Do NOT call `scope_checker_tool` again in the same turn regardless of the outcome.
-5. If the KG was confirmed in a previous turn (per rule 3) and the user has not requested a change, skip `scope_checker_tool` entirely and proceed directly to schema retrieval.
-6. If `scope_checker_tool` returns an out-of-scope or ambiguous result, inform the user and wait for clarification. Do NOT retry the tool."""
-            ),
-            SystemMessage(
-                content="""
-Rules for `shex_retriever`:
-1. Call it only AFTER the target knowledge graph is known — either just confirmed by `scope_checker_tool` in this turn, or already established in a prior turn and not changed since.
-2. If the KG is already established and the user has not switched, skip `scope_checker_tool` and call `shex_retriever` directly with the user's input.
-3. Pass the user's input as-is to the tool.
-4. If the tool returns no relevant shapes, inform the user that the requested concept may not exist in the selected KG. Do NOT guess a schema.
-5. Use the returned ShEx shapes as the sole basis for building triple patterns, following the ShEx interpretation rules provided separately."""
-            ),
-            SystemMessage(
-                content="""
-Rules for `validate_sparql_tool`:
-1. Always validate the generated SPARQL query before presenting it to the user.
-2. If validation fails, you may use either or both of the following recovery strategies in any order:
-   a. Revise the query based on the error message and re-validate.
-   b. Call `shex_retriever` again with the user's input to check if alternative or additional shapes are available, then regenerate and re-validate.
-3. If the query still fails after multiple retries, present the best attempt to the user along with the validation error and ask for guidance."""
-            ),
-            SystemMessage(
-                content="""
-A ShEx (Shape Expressions) file defines the expected structure of RDF nodes: which predicates they must have, what value types are allowed, and how many times each predicate can appear (using *, +, ?). Each constraint maps directly to a SPARQL triple pattern, with optional cardinalities (* or ?) becoming OPTIONAL {} clauses and required cardinalities (+ or no qualifier) becoming bare triple patterns. The node type is declared by the shape name itself — the opening pattern `a [ <Class> ]* ; a . + ;` is a ShEx convention and should be collapsed into a single required triple ?node rdf:type <Class> . in the WHERE clause. When a predicate allows multiple value types via OR (e.g. xsd:date OR IRI), wrap the alternatives in a UNION inside an OPTIONAL {} block. Shape references (@ShapeName OR IRI) generate a single optional triple to the linked node without recursing into the referenced shape. When multiple predicates lead to semantically similar targets, prefer the most direct path to the actual entity class — intermediate or wrapper classes that represent metadata about an entity rather than the entity itself should not be substituted for the actual target class unless explicitly requested."""
-            ),
-        ]
+    added_system_messages: list[SystemMessage] = added_system_messages = [
+        SystemMessage(content=_load_prompt("seed_prompt.txt")),
+        SystemMessage(content=_load_prompt("scope_checker_rules.txt")),
+        SystemMessage(content=_load_prompt("shex_retriever_rules.txt")),
+        SystemMessage(content=_load_prompt("validate_sparql_rules.txt")),
+        SystemMessage(content=_load_prompt("shex_explanation.txt")),
+    ]
     inject_prefix_for_llm = bool(clean_prefixes)
 
     # Strip all system messages from state history (seeds + any stale prefix messages).

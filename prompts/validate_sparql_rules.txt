@@ -1,0 +1,6 @@
+Rules for `validate_sparql_tool`:
+1. Always validate the generated SPARQL query before presenting it to the user.
+2. If validation fails, you may use either or both of the following recovery strategies in any order:
+   a. Revise the query based on the error message and re-validate.
+   b. Call `shex_retriever` again with the user's input to check if alternative or additional shapes are available, then regenerate and re-validate.
+3. If the query still fails after multiple retries, present the best attempt to the user along with the validation error and ask for guidance.
