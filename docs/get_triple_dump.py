@@ -23,10 +23,9 @@ def has_illegal_literal(line: str) -> bool:
     """Check if any literal contains line-break control chars."""
     for m in re.finditer(r'"((?:[^"\\]|\\.)*)"', line):
         literal = m.group(1)
-        # Raw control chars are invalid for our downstream parsers.
         if '\n' in literal or '\r' in literal:
             return True
-        # Escaped \r/\n are legal N-Triples, but some Turtle conversion paths
+        # escaped \r/\n are legal N-Triples, but some Turtle conversion paths
         # materialize them as raw control chars and fail parse; drop proactively.
         if "\\r" in literal or "\\n" in literal:
             return True
@@ -127,8 +126,6 @@ def download_triples(
                 time.sleep(10)
                 continue
 
-            # Normalise line endings before splitting so embedded \r\n
-            # don't create phantom empty lines
             raw_text = response.content.decode("utf-8", errors="replace")
             raw_text = raw_text.replace('\r\n', '\n').replace('\r', '\n').strip()
 
@@ -146,14 +143,10 @@ def download_triples(
                     continue
 
                 if in_open_literal:
-                    # Continue dropping fragmented lines until the quote closes.
                     in_open_literal = quote_state_after(raw_line, in_open_literal)
                     continue
 
-                if quote_state_after(raw_line):
-                    # N-Triples must be one statement per line; if a line opens
-                    # a literal and doesn't close it, drop this malformed statement
-                    # and skip continuation lines until the quote closes.
+                if quote_state_after(raw_line):§
                     skipped_multiline += 1
                     in_open_literal = True
                     continue
@@ -163,7 +156,6 @@ def download_triples(
                 else:
                     skipped_multiline += 1
 
-            # Unclosed literal at page end counts as one malformed statement.
             if in_open_literal:
                 skipped_multiline += 1
 
