@@ -26,17 +26,17 @@ from tools import (
     ShexRetrieverTool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
 )
 
-from agent_constants import MODEL_ID
-from agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
-from agent_runtime_state import runtime_state
-from message_format_helpers import (
+from agent_utils.agent_constants import MODEL_ID
+from agent_utils.agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
+from agent_utils.agent_runtime_state import runtime_state
+from helpers.message_format_helpers import (
     _extract_messages,
     _make_chat_completion,
     _make_openai_error,
     _message_content_to_text,
 )
-from agent_helpers import _run_agent, _stream_agent, _load_prompt
-from tool_helpers import _after_tool
+from agent_utils.agent_helpers import _run_agent, _stream_agent, _load_prompt
+from helpers.tool_helpers import _after_tool
 
 load_dotenv()
 
@@ -107,7 +107,7 @@ def sparql_chat(state: State, config: RunnableConfig):
 async def lifespan(app: FastAPI):
     """Initialise the LangGraph agent once at startup."""
 
-    from agent_config import RETRIEVER_K
+    from agent_utils.agent_config import RETRIEVER_K
     
     # Initialize ChromaDB client and embedding model
     chroma_path = "/data/chroma_db" if os.getenv("LOCAL_MODE", "False") != "True" else "chroma_db"

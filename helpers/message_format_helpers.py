@@ -3,7 +3,7 @@ import time
 import uuid
 import json
 
-from agent_constants import MODEL_ID
+from agent_utils.agent_constants import MODEL_ID
 
 
 def _make_chat_completion(content: str, finish_reason: str = "stop") -> dict:

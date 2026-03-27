@@ -26,7 +26,7 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
 
 from models import ContextSchema, State
-from helper_functions import get_embeddings_for_chunks, load_shex_file, chunk_shex_file, chunk_sample_file
+from helpers.helper_functions import get_embeddings_for_chunks, load_shex_file, chunk_shex_file, chunk_sample_file
 from tools import (
     CustomShexRetrieverTool, validate_sparql_tool, 
     generate_hypothetical_description_tool, CustomSampleRetrieverTool
