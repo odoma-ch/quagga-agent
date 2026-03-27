@@ -25,9 +25,9 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-8B", trust_remote_code=Tru
 
 import httpx
 from langchain_openai import ChatOpenAI
-from tool_helpers import _is_sparql_endpoint_up
-from message_format_helpers import _message_content_to_text, _pretty_sparql
-from agent_constants import (
+from helpers.tool_helpers import _is_sparql_endpoint_up
+from helpers.message_format_helpers import _message_content_to_text, _pretty_sparql
+from agent_utils.agent_constants import (
     GRAPHS_INVOLVED,
     GRAPH_KG_DESCRIPTIONS_URL,
     GRAPH_METADATA_URL,
@@ -83,7 +83,7 @@ def _get_thread_context():
 
 def _resolve_session_values():
     """Resolve endpoint/chunk titles for current thread first, then fallback to defaults."""
-    from agent_runtime_state import runtime_state
+    from agent_utils.agent_runtime_state import runtime_state
 
     thread_id, context = _get_thread_context()
     endpoint = ""
@@ -139,8 +139,8 @@ Respond with ONLY valid JSON matching this schema, nothing else:
 @tool
 def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
     """Classify input user messages and tool messages against known KGs, load the selected KG metadata into runtime, and return confirmation."""
-    from kg_metadata_helper import setup_kg_rag_environment
-    from agent_runtime_state import runtime_state
+    from helpers.kg_metadata_helper import setup_kg_rag_environment
+    from agent_utils.agent_runtime_state import runtime_state
     
     retriever_k = int(os.getenv("RETRIEVER_K", "10"))
     
@@ -287,7 +287,7 @@ class ShexRetrieverTool(BaseTool):
                 retriever = self.vectorstore.as_retriever
             else:
                 # Get vectorstore from runtime state (dynamic mode)
-                from agent_runtime_state import runtime_state
+                from agent_utils.agent_runtime_state import runtime_state
                 _, selected_kg, _, _ = _resolve_session_values()
                 if not selected_kg:
                     return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."

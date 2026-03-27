@@ -2,13 +2,13 @@ import os
 import uuid
 import asyncio
 
-from agent_runtime_state import runtime_state
-from agent_config import MAX_AGENT_STEPS, SPARQL_ENDPOINT
-from message_format_helpers import (
+from agent_utils.agent_runtime_state import runtime_state
+from agent_utils.agent_config import MAX_AGENT_STEPS, SPARQL_ENDPOINT
+from helpers.message_format_helpers import (
     _message_content_to_text,
     _make_chat_completion_chunk,
 )
-from tool_helpers import (
+from helpers.tool_helpers import (
     _extract_terminal_tool_answer,
     _format_tool_call,
     _format_tool_result,
