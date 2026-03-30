@@ -51,6 +51,8 @@ spec:
               value: "X-User-Email"
             - name: WEBUI_AUTH_TRUSTED_NAME_HEADER
               value: "X-User-Name"
+            - name: BYPASS_MODEL_ACCESS_CONTROL
+              value: "true"
           volumeMounts:
             - name: open-webui-data
               mountPath: /app/backend/data
