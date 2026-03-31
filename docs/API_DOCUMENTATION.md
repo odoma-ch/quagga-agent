@@ -414,6 +414,19 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 ![Where to change the prompts in OpenWebUI?](images/prompt_screenshot.png)
 
 
+## Change the model/agent tag in OpenWebUI:
+
+- Go to the OpenWebUI URL, and then go to the URL suffix: `admin/settings/connections`, click on edit wheel button for the Quagga Agent URL and add/change the **tags**. A tag format should be in the format of `0.1.0`.
+
+- Rules for bumping up the version. These are the following examples:
+  - We are at v0.2.0. You fix the authentication/mode bug, you bump to v0.2.1 (patch).
+  - We are at v0.2.0. You add a new tool to the tool calling belt; new functionality but API is likely to stay the same -> bump to v0.3.0 (minor).
+  - We are the v0.3.0 and you deploy a redesign of the agent API that breaks compatibility with frontends supporting the older version; bump to 1.0.0.
+
+![Where to change the version tag for the agent in OpenWebUI?](images/connection_tag_screenshot.png)
+
+
+
 ## Get other contextual data about the chat:
 
 ```
