@@ -96,12 +96,15 @@ spec:
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: quagga-agent-webui
+  name: quagga-agent-graphia-ui
   namespace: graphia-app1-staging
+  labels: {}
   annotations:
     haproxy.router.openshift.io/ip_whitelist: "0.0.0.0/0"
-    openshift.io/host.generated: "true"
+    cert-utils-operator.redhat-cop.io/certs-from-secret: "quagga-agent-ui-tls"
 spec:
+  host: quagga-agent.graphia-ssh.eu
+  path: /
   to:
     kind: Service
     name: quagga-agent-webui
@@ -111,7 +114,9 @@ spec:
   tls:
     termination: edge
     insecureEdgeTerminationPolicy: Redirect
+    destinationCACertificate: ''
   wildcardPolicy: None
+
 ---
 apiVersion: v1
 kind: ConfigMap
