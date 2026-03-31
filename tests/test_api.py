@@ -15,7 +15,22 @@ EVAL_QUESTIONS = [
     "What is Quagga?",
     "How many publications are in the OpenCitations dataset?",
     "List all authors who published more than 5 papers.",
+    # "Are there other ways to categorize publications in GESIS, perhaps by field or research area?",
+    # "What is the most cited article in OpenCitations?",
+    # "Give me a list of organizations in GESIS together with the number of datasets they published.",
+    # "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
+    # "who is the most prolific Humanities author in terms of number of publications?"
 ]
+
+# Questions that may be answered directly by the model
+# without going through a tool call/result path.
+TRACE_ASSERT_EXCEPTIONS = {
+    "What is Quagga?",
+}
+
+# Interesting conversation extracts:
+# https://quagga-agent-webui-graphia-app1-staging.apps.bst2.paas.psnc.pl/s/957b2ffc-6872-4008-a733-49953d116cb2
+# https://quagga-agent-webui-graphia-app1-staging.apps.bst2.paas.psnc.pl/s/4df38006-07c6-4017-8b71-1338cd9edf8f
 
 TEST_ANSWER_PHRASES = {
     "What is Quagga?": ["Quagga", "SPARQL", "query"],
@@ -23,6 +38,15 @@ TEST_ANSWER_PHRASES = {
         "Retrieving knowledge graph metadata", "Generating, validating and executing SPARQL query", "| count |"],
      "List all authors who published more than 5 papers.": [
         "Checking available knowledge graphs", "Selecting knowledge graph(s)", "Ask the user which knowledge graph would they want me to query"]
+}
+
+TEST_ANSWER_TOOLS = {
+    "How many publications are in the OpenCitations dataset": [
+        "**Selecting knowledge graph(s)**\n\n\n", 
+        "**Retrieving knowledge graph metadata**\n\n\n", 
+        "**Generating, validating and executing SPARQL query**\n\n\n"
+    ],
+    "List all authors who published more than 5 papers.":["**Checking available knowledge graphs**\n\n\n"]
 }
 
 
@@ -48,29 +72,25 @@ def _chat(client, question: str, chat_id: str | None = None, stream: bool = Fals
     return resp.json()
 
 
-# @pytest.mark.parametrize("question", EVAL_QUESTIONS)
-# def test_full_flow(agent_client: TestClient, question: str):
-#     """
-#     Send each evaluation question through the full agent pipeline and
-#     assert that a non-empty answer comes back.
+@pytest.mark.parametrize("question", EVAL_QUESTIONS)
+def test_full_flow(agent_client: TestClient, question: str):
+    """
+    Send each evaluation question through the full agent pipeline and
+    assert that a non-empty answer comes back.
 
-#     Add assertions below based on what you expect for each question.
-#     """
-#     response = _chat(agent_client, question)
-#     # check if the response is a valid chat completion [data model check]
-#     assert response["object"] == "chat.completion"
-#     answer = response["choices"][0]["message"]["content"]
-#     # check type and if there is some kind of answer
-#     assert isinstance(answer, str)
-#     assert len(answer) > 0
-#     # check if the answer contains the expected phrases
-#     for phrase in TEST_ANSWER_PHRASES[question]:
-#         assert phrase in answer
+    Add assertions below based on what you expect for each question.
+    """
+    response = _chat(agent_client, question)
+    # check if the response is a valid chat completion [data model check]
+    assert response["object"] == "chat.completion"
+    answer = response["choices"][0]["message"]["content"]
+    # check type and if there is some kind of answer
+    assert isinstance(answer, str)
+    assert len(answer) > 0
+    # check if the answer contains the expected phrases
+    for phrase in TEST_ANSWER_PHRASES[question]:
+        assert phrase in answer
 
-
-# ============================================================
-# Test 2: Execution trace — nodes visited + tool result checks
-# ============================================================
 
 @pytest.mark.parametrize("question", EVAL_QUESTIONS)
 def test_execution_trace(agent_client: TestClient, question: str):
@@ -102,10 +122,11 @@ def test_execution_trace(agent_client: TestClient, question: str):
     assert chunks, "No SSE chunks received"
 
     # Categorise chunks by their x_chunk_type
-    nodes_visited: list[str] = []     # e.g. "tool_call", "tool_result", "llm_text"
-    tool_calls: list[str] = []        # markdown-rendered tool call text
-    tool_results: list[str] = []      # markdown-rendered tool result text
-    llm_texts: list[str] = []         # final assistant text chunks
+    # e.g. "tool_call", "tool_result", "llm_text"
+    nodes_visited: list[str] = []
+    tool_calls: list[str] = []
+    tool_results: list[str] = []
+    llm_texts: list[str] = []
 
     for chunk in chunks:
         chunk_type = chunk.get("x_chunk_type", "unknown")
@@ -115,28 +136,20 @@ def test_execution_trace(agent_client: TestClient, question: str):
 
         if chunk_type == "tool_call":
             tool_calls.append(content)
-            print(f"Tool call: {content}")
         elif chunk_type == "tool_result":
             tool_results.append(content)
-            print(f"Tool result: {content}")
         elif chunk_type == "llm_text":
             llm_texts.append(content)
 
+    # node/flow assertions of the result chunks
+    if question not in TRACE_ASSERT_EXCEPTIONS:
+        assert "tool_call" in nodes_visited, "Expected at least one tool call"
+        assert "tool_result" in nodes_visited, "Expected at least one tool result"
 
-    # --- Node / flow assertions ---
-    # PLACEHOLDER: assert that specific nodes were (or were not) called
-    # Example:
-    #   assert "tool_call" in nodes_visited, "Expected at least one tool call"
-    #   assert "llm_text" in nodes_visited, "Expected a final LLM response"
+    assert "llm_text" in nodes_visited, "Expected a final LLM response"
+    assert "final" in nodes_visited, "Expected a final chunk"
 
-    # --- Tool call assertions ---
-    # PLACEHOLDER: check which tools were invoked
-    # Example:
-    #   tool_call_text = " ".join(tool_calls)
-    #   assert "Retrieving knowledge graph metadata" in tool_call_text
-
-    # --- Tool result assertions ---
-    # PLACEHOLDER: spot-check tool results
-    # Example:
-    #   tool_result_text = " ".join(tool_results)
-    #   assert "PLACEHOLDER: expected content in tool result" in tool_result_text
+    # check if tool calls of the expected list are present in the generated ones
+    for tool_calls in TEST_ANSWER_TOOLS[question]:
+        for call_string in tool_calls:
+            assert call_string in tool_calls, "Expected tool call to be present"
