@@ -23,37 +23,37 @@ TRACE_ASSERT_EXCEPTIONS = {
 TEST_ANSWER_TOOLS = {
     "What is Quagga?": [],
     "How many publications are in the OpenCitations dataset?": [
-        "**Selecting knowledge graph(s)**\n\n\n", 
-        "**Retrieving knowledge graph metadata**\n\n\n", 
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**", 
+        "**Retrieving knowledge graph metadata**", 
+        "**Generating, validating and executing SPARQL query**"
     ],
     "List all authors who published more than 5 papers.":[
-        "**Checking available knowledge graphs**\n\n\n", 
-        "**Selecting knowledge graph(s)**\n\n\n"
+        "**Checking available knowledge graphs**", 
+        "**Selecting knowledge graph(s)**"
     ],
     "Are there other ways to categorize publications in GESIS, perhaps by field or research area?": [
-        "**Selecting knowledge graph(s)**\n\n\n",
-        "**Retrieving knowledge graph metadata**\n\n\n",
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**",
+        "**Retrieving knowledge graph metadata**",
+        "**Generating, validating and executing SPARQL query**"
     ],
     "What is the most cited article in OpenCitations?": [
-        "**Selecting knowledge graph(s)**\n\n\n",
-        "**Retrieving knowledge graph metadata**\n\n\n",
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**",
+        "**Retrieving knowledge graph metadata**",
+        "**Generating, validating and executing SPARQL query**"
     ],
     "Give me a list of organizations in GESIS together with the number of datasets they published.": [
-        "**Selecting knowledge graph(s)**\n\n\n",
-        "**Retrieving knowledge graph metadata**\n\n\n",
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**",
+        "**Retrieving knowledge graph metadata**",
+        "**Generating, validating and executing SPARQL query**"
     ],
     "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology": [
-        "**Selecting knowledge graph(s)**\n\n\n",
-        "**Retrieving knowledge graph metadata**\n\n\n",
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**",
+        "**Retrieving knowledge graph metadata**",
+        "**Generating, validating and executing SPARQL query**"
     ],
     "who is the most prolific Humanities author in terms of number of publications?": [
-        "**Selecting knowledge graph(s)**\n\n\n",
-        "**Retrieving knowledge graph metadata**\n\n\n",
-        "**Generating, validating and executing SPARQL query**\n\n\n"
+        "**Selecting knowledge graph(s)**",
+        "**Retrieving knowledge graph metadata**",
+        "**Generating, validating and executing SPARQL query**"
     ],
 }
