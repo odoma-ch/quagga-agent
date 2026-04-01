@@ -1,12 +1,12 @@
 EVAL_QUESTIONS = [
     "What is Quagga?",
-    # "How many publications are in the OpenCitations dataset?",
-    # "List all authors who published more than 5 papers.",
-    # "Are there other ways to categorize publications in GESIS, perhaps by field or research area?",
+    "How many publications are in the OpenCitations dataset?",
+    "List all authors who published more than 5 papers.",
+    "Are there other ways to categorize publications in GESIS, perhaps by field or research area?",
     "What is the most cited article in OpenCitations?",
-    # "Give me a list of organizations in GESIS together with the number of datasets they published.",
-    # "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
-    # "who is the most prolific Humanities author in terms of number of publications?"
+    "Give me a list of organizations in GESIS together with the number of datasets they published.",
+    "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
+    "who is the most prolific Humanities author in terms of number of publications?"
 ]
 
 # Questions that may be answered directly by the model
@@ -21,7 +21,8 @@ TRACE_ASSERT_EXCEPTIONS = {
 
 
 TEST_ANSWER_TOOLS = {
-    "How many publications are in the OpenCitations dataset": [
+    "What is Quagga?": [],
+    "How many publications are in the OpenCitations dataset?": [
         "**Selecting knowledge graph(s)**\n\n\n", 
         "**Retrieving knowledge graph metadata**\n\n\n", 
         "**Generating, validating and executing SPARQL query**\n\n\n"
