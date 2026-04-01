@@ -57,8 +57,10 @@ load_dotenv()
 # Disable LangChain verbose output
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
+def _as_bool(v: str | None) -> bool:
+  return (v or "").strip().lower() in {"1", "true", "yes", "on", "True"}
 
-console = Console()
+console = Console(quiet=_as_bool(os.getenv("DISABLE_CONSOLE_PRINT")))
 # date = datetime.now().strftime("%Y%m%dT%H:%M:%S")
 # filename = f"conversation_logs_{date}.log"
 # file_handler = logging.FileHandler(filename)
