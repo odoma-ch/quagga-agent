@@ -1,4 +1,5 @@
 # do not add chroma DB
+.deepeval/
 chroma_db/
 mvp/dumps/
 .env.api

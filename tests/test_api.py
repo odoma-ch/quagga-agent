@@ -3,51 +3,23 @@ import sys
 import uuid
 import json
 import pytest
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
 
+import logging
+logging.basicConfig(level=logging.INFO)
+
+logger = logging.getLogger(__name__)
+
 from api import app
-
-
-EVAL_QUESTIONS = [
-    "What is Quagga?",
-    "How many publications are in the OpenCitations dataset?",
-    "List all authors who published more than 5 papers.",
-    # "Are there other ways to categorize publications in GESIS, perhaps by field or research area?",
-    # "What is the most cited article in OpenCitations?",
-    # "Give me a list of organizations in GESIS together with the number of datasets they published.",
-    # "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
-    # "who is the most prolific Humanities author in terms of number of publications?"
-]
-
-# Questions that may be answered directly by the model
-# without going through a tool call/result path.
-TRACE_ASSERT_EXCEPTIONS = {
-    "What is Quagga?",
-}
-
-# Interesting conversation extracts:
-# https://quagga-agent-webui-graphia-app1-staging.apps.bst2.paas.psnc.pl/s/957b2ffc-6872-4008-a733-49953d116cb2
-# https://quagga-agent-webui-graphia-app1-staging.apps.bst2.paas.psnc.pl/s/4df38006-07c6-4017-8b71-1338cd9edf8f
-
-TEST_ANSWER_PHRASES = {
-    "What is Quagga?": ["Quagga", "SPARQL", "query"],
-    "How many publications are in the OpenCitations dataset?": [
-        "Retrieving knowledge graph metadata", "Generating, validating and executing SPARQL query", "| count |"],
-     "List all authors who published more than 5 papers.": [
-        "Checking available knowledge graphs", "Selecting knowledge graph(s)", "Ask the user which knowledge graph would they want me to query"]
-}
-
-TEST_ANSWER_TOOLS = {
-    "How many publications are in the OpenCitations dataset": [
-        "**Selecting knowledge graph(s)**\n\n\n", 
-        "**Retrieving knowledge graph metadata**\n\n\n", 
-        "**Generating, validating and executing SPARQL query**\n\n\n"
-    ],
-    "List all authors who published more than 5 papers.":["**Checking available knowledge graphs**\n\n\n"]
-}
+from tests.answers_const import (
+    EVAL_QUESTIONS, TRACE_ASSERT_EXCEPTIONS, TEST_ANSWER_TOOLS
+)
+from dotenv import load_dotenv
+load_dotenv()
 
 
 @pytest.fixture(scope="module")
@@ -80,16 +52,67 @@ def test_full_flow(agent_client: TestClient, question: str):
 
     Add assertions below based on what you expect for each question.
     """
+    start_time = datetime.now()
     response = _chat(agent_client, question)
+    end_time = datetime.now()
     # check if the response is a valid chat completion [data model check]
     assert response["object"] == "chat.completion"
     answer = response["choices"][0]["message"]["content"]
     # check type and if there is some kind of answer
     assert isinstance(answer, str)
     assert len(answer) > 0
-    # check if the answer contains the expected phrases
-    for phrase in TEST_ANSWER_PHRASES[question]:
-        assert phrase in answer
+    logger.info(f"Time taken for {question}: {end_time - start_time}")
+
+    # semantic quality check (instead of just checking for phrases)
+    try:
+        from deepeval.metrics import GEval
+        from deepeval.test_case import LLMTestCase, LLMTestCaseParams
+    except ModuleNotFoundError:
+        pytest.skip("deepeval is not installed. Install with: pip install deepeval")
+
+    deepeval_api_key = os.getenv("DEEPEVAL_API_KEY")
+    deepeval_base_url = os.getenv("DEEPEVAL_BASE_URL")
+    deepeval_model = os.getenv("DEEPEVAL_MODEL")
+
+    if not deepeval_api_key:
+        pytest.skip("DEEPEVAL_API_KEY is required for DeepEval GEval")
+
+    os.environ["OPENAI_API_KEY"] = deepeval_api_key
+    if deepeval_base_url:
+        os.environ["OPENAI_BASE_URL"] = deepeval_base_url
+
+    metric = GEval(
+        name="answer_relevance_and_correctness",
+        criteria=(
+"""
+Evaluate whether the final answer is logical and relevant given the user's input and the
+full API response context. The answer should directly address the user's question, and any
+final query or reported result must include all columns and fields the user requested. The
+fields present in the final results should match what was asked for and align with the query
+logic — there should be no obvious contradictions or omitted fields. If the user did not
+explicitly specify a knowledge graph, it is acceptable for the assistant to prompt the user
+to select one rather than generating a fabricated query or result.
+"""
+        ),
+        evaluation_params=[
+            LLMTestCaseParams.INPUT,
+            LLMTestCaseParams.ACTUAL_OUTPUT,
+            LLMTestCaseParams.CONTEXT,
+        ],
+        threshold=0.7,
+        model=deepeval_model,
+    )
+    response_context = json.dumps(response, ensure_ascii=True, default=str)
+    test_case = LLMTestCase(
+        input=question,
+        actual_output=answer,
+        context=[response_context],
+    )
+    metric.measure(test_case)
+    assert metric.score is not None, f"DeepEval returned no score. reason={metric.reason}"
+    assert metric.score >= 0.7, (
+        f"DeepEval score too low: {metric.score:.2f}. reason={metric.reason}"
+    )
 
 
 @pytest.mark.parametrize("question", EVAL_QUESTIONS)
@@ -151,5 +174,6 @@ def test_execution_trace(agent_client: TestClient, question: str):
 
     # check if tool calls of the expected list are present in the generated ones
     for tool_calls in TEST_ANSWER_TOOLS[question]:
+        assert "Retrieving metadata" not in str(tool_calls[-1]), "Last tool call should not be retrieving metadata"
         for call_string in tool_calls:
             assert call_string in tool_calls, "Expected tool call to be present"
