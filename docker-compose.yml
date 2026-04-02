@@ -12,9 +12,10 @@ services:
       - LOCAL_MODE=${LOCAL_MODE:-True}
       - PSNC_OKD_BASE_URL=${PSNC_OKD_BASE_URL}
       - PSNC_OKD_API_KEY=${PSNC_OKD_API_KEY}
+      - PSNC_OKD_MEDIUM_MODEL=${PSNC_OKD_MEDIUM_MODEL}
       - PSNC_HPC_API_KEY=${PSNC_HPC_API_KEY}
       - PSNC_HPC_BASE_URL=${PSNC_HPC_BASE_URL}
-      - PSNC_OKD_MEDIUM_MODEL=${PSNC_OKD_MEDIUM_MODEL}
+      - PSNC_OKD_LARGE_MODEL=${PSNC_OKD_LARGE_MODEL}
       - MERGE_SYSTEM_MESSAGES=${MERGE_SYSTEM_MESSAGES:-False}
     volumes:
       - ./data:/data
@@ -36,12 +37,12 @@ services:
       - OPENAI_API_BASE_URL=http://quagga-api:8004/v1
       - OPENAI_API_KEY=sk-dummy
     depends_on:
-      quagga-api:
-        condition: service_healthy
+      - quagga-api
     networks:
       - quagga-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
+ 
 
 networks:
   quagga-network:
