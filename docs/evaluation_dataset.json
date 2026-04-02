@@ -1,0 +1,66 @@
+{
+    "data": [
+        {
+            "query": "generate a sparql query to get the title and publication date of the article with the DOI: 10.1162/qss_a_00023",
+            "sparql_query": "SELECT ?id ?title ?pub_date { ?identifier literal:hasLiteralValue '10.1162/qss_a_00023'. ?br purlSD:hasIdentifier ?identifier; dcterms:title ?title; prismstandardNB2:publicationDate ?publicationDate. BIND(STR(?publicationDate) AS ?pub_date) BIND((CONCAT('doi:', '10.1162/qss_a_00023')) AS ?id) }",
+            "provided_by": "human",
+            "runnable": "true"
+        },
+        {
+            "query": "how many journal articles exist?",
+            "sparql_query": "PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX dcterms: <http://purl.org/dc/terms/> SELECT (COUNT(*) AS ?articleCount) WHERE { ?article a purlSF:JournalArticle . }",
+            "provided_by": "model",
+            "runnable": "true"
+        },
+        {
+            "query":  "how many journal articles in OCM were published in 2024?",
+            "sparql_query": "PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> SELECT (COUNT(?publication) AS ?count_2024) WHERE { ?publication a purlSF:JournalArticle ; prismstandardNB2:publicationDate ?date . FILTER(STRSTARTS(STR(?date), '2024')) }",
+            "provided_by": "human+model",
+            "runnable": "true"
+        },
+        {
+            "query": "What are the titles and publication dates of book chapters written by authors whose family name is Singh?",
+            "sparql_query": "PREFIX dcterms: <http://purl.org/dc/terms/> PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX purlSP: <http://purl.org/spar/pro/> PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?title ?pub_date ?familyName WHERE { ?bookChapter a purlSF:BookChapter ; dcterms:title ?title ; prismstandardNB2:publicationDate ?publicationDate . BIND(STR(?publicationDate) AS ?pub_date) ?bookChapter purlSP:isDocumentContextFor ?role . ?role purlSP:isHeldBy ?author . ?author a foaf:Agent ; foaf:familyName ?familyName . FILTER (?familyName = 'Singh') }",
+            "provided_by": "human+model",
+            "runnable": "true"
+        },
+        {
+            "query": "Which journal articles from the 19th century have both starting and ending pages recorded in the database?",
+            "sparql_query": "PREFIX dcterms: <http://purl.org/dc/terms/> PREFIX pc: <http://purl.org/vocab/frbr/core#> PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> SELECT ?article ?title ?startPage ?endPage WHERE { ?article a purlSF:JournalArticle ; dcterms:title ?title ; prismstandardNB2:publicationDate ?date ; pc:embodiment ?manifestation . ?manifestation prismstandardNB2:startingPage ?startPage ; prismstandardNB2:endingPage ?endPage . FILTER(STRSTARTS(STR(?date), '18')) }",
+            "provided_by": "model",
+            "runnable": "true"
+        },
+        {
+            "query": "Show me the titles, authors, and publication years of up to 15 recent journal articles (2020+) about digital humanities, sorted by year and title.",
+            "sparql_query": "PREFIX dc: <http://purl.org/dc/elements/1.1/> PREFIX dcterms: <http://purl.org/dc/terms/> PREFIX foaf: <http://xmlns.com/foaf/0.1/> PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX purlSP: <http://purl.org/spar/pro/> PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> PREFIX purlSD: <http://purl.org/spar/datacite/> SELECT ?title ?author_name ?year WHERE { ?article a purlSF:JournalArticle ; dcterms:title ?title ; prismstandardNB2:publicationDate ?date ; purlSP:isDocumentContextFor ?role . ?role purlSP:isHeldBy ?author . ?author foaf:name ?author_name . BIND(SUBSTR(STR(?date), 1, 4) AS ?year) FILTER(CONTAINS(LCASE(?title), 'digital') && CONTAINS(LCASE(?title), 'humanities')) FILTER(?year >= '2020') } ORDER BY ?year ?title LIMIT 15",
+            "provided_by": "model",
+            "runnable": "false"
+        },
+        {
+            "query": "Which 10 author-title combinations appear most frequently in the journal article database?",
+            "sparql_query": "PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX purlSP: <http://purl.org/spar/pro/> PREFIX foaf: <http://xmlns.com/foaf/0.1/> PREFIX dcterms: <http://purl.org/dc/terms/> SELECT ?title ?author_name (COUNT(?article) AS ?article_count) WHERE { ?article a purlSF:JournalArticle ; dcterms:title ?title ; purlSP:isDocumentContextFor ?role . ?role purlSP:isHeldBy ?author . ?author foaf:name ?author_name . } GROUP BY ?title ?author_name ORDER BY DESC(?article_count) LIMIT 10",
+            "provided_by": "model",
+            "runnable": "true"
+        },
+        {
+            "query": "Show me the titles and author names of journal articles that contain the word 'quantum' in their title. Just give me the first 5 results.",
+            "sparql_query": "PREFIX dcterms: <http://purl.org/dc/terms/> PREFIX foaf: <http://xmlns.com/foaf/0.1/> PREFIX purlSF: <http://purl.org/spar/fabio/> PREFIX purlSP: <http://purl.org/spar/pro/> SELECT ?title ?authorName WHERE { ?article a purlSF:JournalArticle ; dcterms:title ?title ; purlSP:isDocumentContextFor ?roleInTime . ?roleInTime a purlSP:RoleInTime ; purlSP:isHeldBy ?author . ?author foaf:name ?authorName . FILTER(CONTAINS(LCASE(?title), 'quantum')) } LIMIT 5",
+            "provided_by": "model",
+            "runnable": "true"
+        },
+        {
+            "query": "Which journal articles published in 2023 have at least one author whose given name is Ada?",
+            "sparql_query": "'PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> PREFIX purlSF:          <http://purl.org/spar/fabio/> PREFIX purlSP:          <http://purl.org/spar/pro/> PREFIX dcterms:         <http://purl.org/dc/terms/> PREFIX foaf:            <http://xmlns.com/foaf/0.1/> SELECT ?title WHERE { ?article a purlSF:JournalArticle ; dcterms:title ?title ; prismstandardNB2:publicationDate ?date ; purlSP:isDocumentContextFor ?role . ?role purlSP:isHeldBy ?author . ?author foaf:givenName 'Ada' . FILTER( STRSTARTS( STR(?date), '2023' ) ) }'",
+            "provided_by": "model",
+            "runnable": "true"
+        },
+        {
+            "query": "Which journal articles published in 2021 have 'archaeology' in their titles and list their titles together with the DOI of each article when the authors surname is Brown?",
+            "sparql_query": "PREFIX prismstandardNB2: <http://prismstandard.org/namespaces/basic/2.0/> PREFIX purlSF:          <http://purl.org/spar/fabio/> PREFIX purlSP:          <http://purl.org/spar/pro/> PREFIX purlSD:          <http://purl.org/spar/datacite/> PREFIX essepuntato20L:  <http://www.essepuntato.it/2010/06/literalreification/> PREFIX dcterms:         <http://purl.org/dc/terms/> PREFIX foaf:            <http://xmlns.com/foaf/0.1/> SELECT ?title ?doi WHERE { ?article a purlSF:JournalArticle ; dcterms:title               ?title ; prismstandardNB2:publicationDate ?date ; purlSP:isDocumentContextFor ?role ; purlSD:hasIdentifier        ?id . ?role   purlSP:isHeldBy ?author . ?author foaf:familyName  'Brown' . FILTER( STRSTARTS( STR(?date), '2021' ) ) FILTER regex( ?title, 'archaeology', 'i' ) ?id essepuntato20L:hasLiteralValue ?doiLiteral . BIND( CONCAT( 'doi:, ?doiLiteral ) AS ?doi ) }",
+            "provided_by": "model",
+            "runnable": "true"
+        }
+    ]
+}
+
+

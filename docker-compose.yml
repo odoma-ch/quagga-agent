@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  quagga-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quagga-api
+    ports:
+      - "8004:8004"
+    environment:
+      - LOCAL_MODE=${LOCAL_MODE:-True}
+      - PSNC_OKD_BASE_URL=${PSNC_OKD_BASE_URL}
+      - PSNC_OKD_API_KEY=${PSNC_OKD_API_KEY}
+      - PSNC_HPC_API_KEY=${PSNC_HPC_API_KEY}
+      - PSNC_HPC_BASE_URL=${PSNC_HPC_BASE_URL}
+      - PSNC_OKD_MEDIUM_MODEL=${PSNC_OKD_MEDIUM_MODEL}
+      - MERGE_SYSTEM_MESSAGES=${MERGE_SYSTEM_MESSAGES:-False}
+    volumes:
+      - ./data:/data
+    networks:
+      - quagga-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    ports:
+      - "3000:8080"
+    environment:
+      - OPENAI_API_BASE_URL=http://quagga-api:8004/v1
+      - OPENAI_API_KEY=sk-dummy
+    depends_on:
+      quagga-api:
+        condition: service_healthy
+    networks:
+      - quagga-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  quagga-network:
+    driver: bridge
