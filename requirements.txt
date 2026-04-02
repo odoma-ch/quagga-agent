@@ -19,3 +19,6 @@ rdflib==7.1.4
 sentence-transformers==5.2.2
 transformers==5.1.0
 # open-webui==0.8.8
+httpx==0.28.0
+html2text==2024.2.26
+SPARQLWrapper==2.0.0
