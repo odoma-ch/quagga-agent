@@ -4,7 +4,7 @@ services:
     runtime: image
     image:
       url: ghcr.io/open-webui/open-webui:main
-    plan: starter
+    plan: standard
     region: frankfurt
     healthCheckPath: /health
     autoDeploy: false
