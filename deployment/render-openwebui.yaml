@@ -19,10 +19,6 @@ services:
         sync: false
       - key: WEBUI_SECRET_KEY
         generateValue: true
-      - key: WEBUI_AUTH_TRUSTED_EMAIL_HEADER
-        value: "X-User-Email"
-      - key: WEBUI_AUTH_TRUSTED_NAME_HEADER
-        value: "X-User-Name"
       - key: BYPASS_MODEL_ACCESS_CONTROL
         value: "true"
       - key: DEFAULT_USER_ROLE
