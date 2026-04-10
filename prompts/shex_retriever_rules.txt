@@ -1,6 +1,4 @@
-Rules for `shex_retriever`:
-1. Call it only AFTER the target knowledge graph is known — either just confirmed by `scope_checker_tool` in this turn, or already established in a prior turn and not changed since.
-2. If the KG is already established and the user has not switched, skip `scope_checker_tool` and call `shex_retriever` directly with the user's input.
-3. Pass the user's input as-is to the tool.
-4. If the tool returns no relevant shapes, inform the user that the requested concept may not exist in the selected KG. Do NOT guess a schema.
-5. Use the returned ShEx shapes as the sole basis for building triple patterns, following the ShEx interpretation rules provided separately.
+Rules for `run_sparql_subagent_tool`:
+1. Always call `scope_checker_tool` first for every new user question, even if a KG was confirmed in a previous turn. The user may be asking about a different KG without naming it. Only after `scope_checker_tool` returns a confirmed KG may you call `run_sparql_subagent_tool`.
+2. Pass the user's original question as-is to the tool.
+3. After `run_sparql_subagent_tool` returns, do NOT respond to the user — the system will automatically validate and execute the result.

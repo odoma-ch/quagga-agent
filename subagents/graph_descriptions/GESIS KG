@@ -1,0 +1,186 @@
+Now I have all the data needed. Let me compile the final report:
+
+---
+
+# GESIS Knowledge Graph Exploration Report
+
+## Overview
+The GESIS KG endpoint uses a **multi-graph architecture** with 6 named graphs discovered.
+
+---
+
+## Graph 1: `http://www.openlinksw.com/schemas/virtrdf#`
+**Purpose:** Virtuoso RDF Quad Map Format schema (database virtualization layer)
+
+### Entity Types (Top 5)
+| Type | Count |
+|------|-------|
+| QuadMapFormat | 130 |
+| array-of-QuadMapFormat | 98 |
+| QuadMapValue | 8 |
+| array-of-QuadMapColumn | 8 |
+| QuadMapColumn | 8 |
+
+### Top Properties
+- `rdf:type` (270)
+- `qmfValRange-rvrRestrictions` (172)
+- `qmfName` (130)
+- `inheritFrom` (99)
+- `qmfSuperFormats` (98)
+
+### Sample Triple
+```
+<http://www.openlinksw.com/virtrdf-data-formats#default-iid> 
+  a <http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat>
+```
+
+### Relationship Patterns
+- `inheritFrom → qmfValRange-rvrRestrictions` (225)
+- `item → qmfValRange-rvrRestrictions` (166)
+- `item → rdf:type` (134)
+
+---
+
+## Graph 2: `http://www.w3.org/ns/ldp#`
+**Purpose:** W3C Linked Data Platform vocabulary
+
+### Entity Types
+*None found*
+
+### Properties
+- `rdfs:subClassOf` (3)
+
+### Sample Triple
+```
+<http://www.w2.org/ns/ldp#DirectContainer> 
+  rdfs:subClassOf <http://www.w2.org/ns/ldp#Container>
+```
+
+---
+
+## Graph 3: `http://localhost:8890/sparql`
+**Purpose:** SPARQL Service Description (self-describing endpoint)
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Service | 1 |
+
+### Properties
+- `resultFormat` (8)
+- `feature` (2)
+- `supportedLanguage` (1)
+- `endpoint` (1)
+
+### Sample Triple
+```
+<http://localhost:8890/sparql> 
+  a <http://www.w3.org/ns/sparql-service-description#Service>
+```
+
+---
+
+## Graph 4: `http://localhost:8890/DAV/`
+**Purpose:** WebDAV file system metadata
+
+### Entity Types
+*None found (no rdf:type statements)*
+
+### Properties
+- `dc:created` (754)
+- `dc:modified` (754)
+- `DAV#ownerUser` (754)
+- `dc:extent` (741)
+
+### Sample Triple
+```
+<http://localhost:8890/DAV//home/> 
+  dc:created "2026-01-05T11:42:16.470418"
+```
+
+---
+
+## Graph 5: `http://www.w3.org/2002/07/owl#`
+**Purpose:** OWL Web Ontology Language schema
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| rdf:Property | 23 |
+| rdfs:Class | 15 |
+| owl:AnnotationProperty | 5 |
+| owl:OntologyProperty | 4 |
+| owl:Class | 3 |
+
+### Properties
+- `rdf:type` (51)
+- `rdfs:label` (40)
+- `rdfs:domain` (21)
+- `rdfs:range` (20)
+- `rdfs:subClassOf` (12)
+
+### Sample Triple
+```
+<http://www.w3.org/2002/07/owl#equivalentClass> 
+  a rdf:Property
+```
+
+### Relationship Patterns
+- `rdfs:domain → rdfs:label` (20)
+- `rdfs:domain → rdf:type` (20)
+- `rdfs:domain → rdfs:subClassOf` (13)
+
+---
+
+## Graph 6: `https://data.gesis.org/gesiskg`
+**Purpose:** **Main GESIS research data graph** (largest, contains scholarly data)
+
+### Entity Types (Top 10)
+| Type | Count |
+|------|-------|
+| lifecycle:Variable | 1,407,148 |
+| schema:Person | 466,311 |
+| schema:ScholarlyArticle | 583,079 |
+| LinkMetadata | 405,357 |
+| DuplicateMetadata | 362,342 |
+| PublicationReference | 318,753 |
+| DatasetReference | 74,374 |
+| schema:Place | 28,314 |
+| schema:Organization | 20,534 |
+| schema:Dataset | 7,553 |
+
+### Top Properties
+| Property | Count |
+|----------|-------|
+| gesiskg:linkContext | 16,576,108 |
+| schema:spatialCoverage | 14,860,306 |
+| schema:name | 7,983,615 |
+| gesiskg:locationsId | 7,801,680 |
+| gesiskg:studyGroup | 4,233,891 |
+| rdf:type | 3,724,623 |
+| gesiskg:citationString | 2,751,392 |
+| schema:hasPart | 1,688,233 |
+
+### Sample Triple
+```
+<https://data.gesis.org/gesiskg/resource/gesis-bib-59486_Allmendinger_Jutta> 
+  a schema:Person
+```
+
+### Relationship Patterns
+- `schema:contributor → rdf:type` (dominant pattern observed in 50 samples)
+
+---
+
+## Summary
+
+| Graph | URI | Purpose | Size |
+|-------|-----|---------|------|
+| 1 | openlinksw.com/virtrdf# | Virtuoso quad storage schema | Small |
+| 2 | w3.org/ns/ldp# | LDP vocabulary | Minimal |
+| 3 | localhost:8890/sparql | SPARQL service description | Minimal |
+| 4 | localhost:8890/DAV/ | WebDAV metadata | Small |
+| 5 | w3.org/2002/07/owl# | OWL ontology | Small |
+| 6 | **data.gesis.org/gesiskg** | **Main research data** | **Very Large** |
+
+The GESIS KG is primarily a **single large research data graph** (`https://data.gesis.org/gesiskg`) containing social science research metadata including variables, publications, persons, and datasets. The other graphs are primarily schema/ontology definitions and infrastructure metadata.

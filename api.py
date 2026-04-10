@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from langchain_chroma import Chroma
 from langchain_ollama import ChatOllama
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import AIMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -23,7 +23,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from models import ContextSchema, State
 from tools import (
-    ShexRetrieverTool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
+    run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
 )
 
 from agent_utils.agent_constants import MODEL_ID
@@ -67,8 +67,8 @@ def sparql_chat(state: State, config: RunnableConfig):
         SystemMessage(content=_load_prompt("seed_prompt.txt")),
         SystemMessage(content=_load_prompt("scope_checker_rules.txt")),
         SystemMessage(content=_load_prompt("shex_retriever_rules.txt")),
-        SystemMessage(content=_load_prompt("validate_sparql_rules.txt")),
         SystemMessage(content=_load_prompt("shex_explanation.txt")),
+        SystemMessage(content=_load_prompt("validate_sparql_rules.txt")),
     ]
     inject_prefix_for_llm = bool(clean_prefixes)
 
@@ -103,12 +103,29 @@ def sparql_chat(state: State, config: RunnableConfig):
     return {"messages": [llm_message]}
 
 
+def force_validate(state: State, config: RunnableConfig):
+    """Force validation immediately after SPARQL subagent execution."""
+    return {
+        "messages": [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "id": f"call_validate_{uuid.uuid4().hex[:8]}",
+                        "name": "validate_sparql_tool",
+                        "args": {"summary": "validate"},
+                        "type": "tool_call",
+                    }
+                ],
+            )
+        ]
+    }
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialise the LangGraph agent once at startup."""
 
-    from agent_utils.agent_config import RETRIEVER_K
-    
     # Initialize ChromaDB client and embedding model
     chroma_path = "/data/chroma_db" if os.getenv("LOCAL_MODE", "False") != "True" else "chroma_db"
     runtime_state.chroma_client = chromadb.PersistentClient(path=chroma_path)
@@ -134,25 +151,28 @@ async def lifespan(app: FastAPI):
         http_client=http_client,
     )
 
-    # Initialize dynamic retriever tool
-    retriever_tool = ShexRetrieverTool(k=RETRIEVER_K)
-    
-    tools = [retriever_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
+    # validate_sparql_tool is intentionally excluded from llm_tools — the LLM must never
+    # call it directly. It is only invoked by force_validate (graph-enforced) to ensure
+    # it always runs AFTER run_sparql_subagent_tool's result is committed to state.
+    llm_tools = [run_sparql_subagent_tool, describe_knowledge_graphs_tool, scope_checker_tool]
+    all_tools = [run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
     runtime_state.llm = llm
-    runtime_state.llm_with_tools = llm.bind_tools(tools)
+    runtime_state.llm_with_tools = llm.bind_tools(llm_tools)
     # runtime_state.scope_graph = scope_subgraph()
 
     graph_builder = StateGraph(State)
     # graph_builder.add_node("scope_subgraph", scope_subgraph())
     graph_builder.add_node("sparql_chat_agent", sparql_chat)
+    graph_builder.add_node("force_validate", force_validate)
 
-    tool_node = ToolNode(tools=tools)
+    tool_node = ToolNode(tools=all_tools)
     graph_builder.add_node("tools", tool_node)
 
     # graph_builder.add_edge(START, "scope_subgraph")
     # graph_builder.add_edge("scope_subgraph", "sparql_chat_agent")
     graph_builder.add_conditional_edges("sparql_chat_agent", tools_condition)
     graph_builder.add_conditional_edges("tools", _after_tool)
+    graph_builder.add_edge("force_validate", "tools")
 
     graph_builder.set_entry_point("sparql_chat_agent")
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)

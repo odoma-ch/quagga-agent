@@ -8,12 +8,13 @@ from models import State
 from langgraph.graph import END
 
 _TOOL_DISPLAY_NAMES = {
-    "shex_retriever": "Retrieving knowledge graph metadata",
-    "validate_sparql_tool": "Generating, validating and executing SPARQL query",
+    "run_sparql_subagent_tool": "Querying knowledge graph",
+    "validate_sparql_tool": "Validating and executing SPARQL query",
     "describe_knowledge_graphs_tool": "Checking available knowledge graphs",
     "scope_checker_tool": "Selecting knowledge graph(s)",
 }
 _TERMINAL_SPARQL_MARKER = "The SPARQL has been executed:"
+_NO_KG_SELECTED_MESSAGE = "No knowledge graph selected. Call scope_checker_tool first."
 
 
 def _format_tool_call(message) -> str:
@@ -84,16 +85,27 @@ def _extract_terminal_tool_answer(message) -> str | None:
     ):
         return None
     content = message.content if isinstance(message.content, str) else str(message.content)
-    if _TERMINAL_SPARQL_MARKER in content:
-        return content
-    return None
+    return content
 
 
 def _after_tool(state: State):
-    """Route to END once query validation has succeeded."""
+    """Route after tool execution with enforced SPARQL validation flow."""
     last_message = state["messages"][-1]
-    if _extract_terminal_tool_answer(last_message):
+    if (
+        getattr(last_message, "type", None) == "tool"
+        and getattr(last_message, "name", "") == "validate_sparql_tool"
+    ):
         return END
+    if (
+        getattr(last_message, "type", None) == "tool"
+        and getattr(last_message, "name", "") == "run_sparql_subagent_tool"
+    ):
+        content = last_message.content if isinstance(last_message.content, str) else str(last_message.content)
+        # run_sparql_subagent_tool can return a precondition error instead of subagent output;
+        # only force validation when there is an actual subagent result to validate.
+        if content.strip() == _NO_KG_SELECTED_MESSAGE:
+            return "sparql_chat_agent"
+        return "force_validate"
     return "sparql_chat_agent"
 
 

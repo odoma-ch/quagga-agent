@@ -1,0 +1,193 @@
+Now I have enough data to compile the report. Here's a comprehensive summary of the OpenCitations Meta endpoint:
+
+---
+
+# OpenCitations Meta Endpoint Analysis Report
+
+## Endpoint
+**URL:** https://sparql.opencitations.net/meta
+
+---
+
+## Step 1: Discovered Graphs
+
+The endpoint contains **14 graphs**, of which **6 have proper HTTP(S) URIs**:
+
+| Graph URI | Description |
+|-----------|-------------|
+| `http://www.openlinksw.com/schemas/virtrdf#` | Virtuoso RDF schema definitions |
+| `http://www.w3.org/ns/ldp#` | W3C Linked Data Platform vocabulary (empty) |
+| `https://w3id.org/oc/meta/ar/` | **Agent Roles** - authorship/contribution roles |
+| `https://w3id.org/oc/meta/ra/` | **Responsible Agents** - people/authors |
+| `https://w3id.org/oc/meta/id/` | **Identifiers** - DOIs, ORCIDs, etc. |
+| `https://w3id.org/oc/meta/br/` | **Bibliographic Resources** - publications |
+| `https://w3id.org/oc/meta/re/` | **Representations/Manifestations** - specific editions |
+
+---
+
+## Graph-by-Graph Analysis
+
+### 1. Graph: `https://w3id.org/oc/meta/br/` — Bibliographic Resources
+
+**Entity Types (Top 5):**
+| Type | Count |
+|------|-------|
+| fabio:Expression | 129,436,832 |
+| fabio:JournalArticle | 82,279,503 |
+| fabio:BookChapter | 7,570,244 |
+| fabio:AcademicProceedings | 6,246,379 |
+| fabio:ProceedingsPaper | 6,109,128 |
+
+**Property Usage (Top 5):**
+| Property | Count |
+|----------|-------|
+| pro:isDocumentContextFor | 491,457,655 |
+| rdf:type | 250,797,833 |
+| datacite:hasIdentifier | 219,347,825 |
+| dc:title | 113,891,078 |
+| frbr:partOf | 104,652,793 |
+
+**Sample Entity Properties:**
+- `rdf:type` → fabio:Expression, fabio:JournalArticle
+- `prism:publicationDate` → "2009-04-20"
+- `dc:title` → "Soil And Plant Response To Applications Of Municipal Solid Waste Compost And Fertilizer To Willamette Raspberries"
+- `frbr:partOf` → Journal/issue reference
+- `frbr:embodiment` → Links to manifestation (re/ graph)
+- `datacite:hasIdentifier` → Links to identifiers
+
+---
+
+### 2. Graph: `https://w3id.org/oc/meta/ar/` — Agent Roles (Authorship)
+
+**Entity Types:**
+| Type | Count |
+|------|-------|
+| pro:RoleInTime | 498,722,861 |
+
+**Property Usage:**
+| Property | Count |
+|----------|-------|
+| rdf:type | 498,722,861 |
+| pro:withRole | 498,722,860 |
+| pro:isHeldBy | 498,721,575 |
+| oc:hasNext | 291,583,744 |
+
+**Sample Values:**
+- `pro:withRole` → pro:author
+- `pro:isHeldBy` → Links to foaf:Agent (in ra/ graph)
+
+---
+
+### 3. Graph: `https://w3id.org/oc/meta/ra/` — Responsible Agents (People)
+
+**Entity Types:**
+| Type | Count |
+|------|-------|
+| foaf:Agent | 353,719,377 |
+
+**Property Usage:**
+| Property | Count |
+|----------|-------|
+| rdf:type | 353,719,377 |
+| foaf:familyName | 312,115,030 |
+| foaf:givenName | 310,088,560 |
+| foaf:name | 41,650,627 |
+| datacite:hasIdentifier | 10,879,198 |
+
+**Sample Values:**
+- `foaf:familyName` → "2" (surname)
+- `foaf:givenName` → First name
+- `foaf:name` → Full name
+
+---
+
+### 4. Graph: `https://w3id.org/oc/meta/id/` — Identifiers
+
+**Entity Types:**
+| Type | Count |
+|------|-------|
+| datacite:Identifier | 229,516,634 |
+
+**Property Usage:**
+| Property | Count |
+|----------|-------|
+| literalreification:hasLiteralValue | 229,516,634 |
+| rdf:type | 229,516,634 |
+| datacite:usesIdentifierScheme | 229,516,634 |
+
+**Sample Values:**
+- `hasLiteralValue` → "W105607414", "W125792226" (likely ORCID-like identifiers)
+- `usesIdentifierScheme` → Identifier scheme reference
+
+---
+
+### 5. Graph: `https://w3id.org/oc/meta/re/` — Representations/Manifestations
+
+**Entity Types:**
+| Type | Count |
+|------|-------|
+| fabio:Manifestation | 78,030,720 |
+
+**Property Usage:**
+| Property | Count |
+|----------|-------|
+| rdf:type | 78,030,720 |
+| prism:endingPage | 76,682,323 |
+| prism:startingPage | 76,682,321 |
+
+**Sample Values:**
+- `prism:startingPage` → "35"
+- `prism:endingPage` → "45"
+
+---
+
+### 6. Graph: `http://www.openlinksw.com/schemas/virtrdf#` — Virtuoso Schema
+
+**Entity Types (12 types):**
+- QuadMapFormat, QuadMapColumn, QuadMapValue, QuadStorage, etc.
+
+**Property Usage:** Internal Virtuoso storage properties (qmfValRange-rvrRestrictions, qmfName, inheritFrom, etc.)
+
+**Purpose:** This is infrastructure metadata from the Virtuoso RDF database, not OpenCitations data.
+
+---
+
+## Data Model Summary
+
+The OpenCitations Meta dataset follows the **FRBR/FAIR** model:
+
+```
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│   br/ (Work)    │──────▶│   ar/ (Role)    │──────▶│   ra/ (Agent)   │
+│ Bibliographic   │       │   Agent Role    │       │   Responsible  │
+│   Resource      │       │   (author, etc) │       │   Person        │
+└─────────────────┘       └─────────────────┘       └─────────────────┘
+         │                                                 ▲
+         │                                                 │
+         ▼                                                 │
+┌─────────────────┐       ┌─────────────────┐             │
+│   re/ (Manifest)│       │   id/ (ID)      │─────────────┘
+│  Representation │       │   Identifier    │
+│  (pages, etc)   │       │  (DOI, ORCID)   │
+└─────────────────┘       └─────────────────┘
+```
+
+**Key Relationships:**
+- `br/` → `re/` via `frbr:embodiment`
+- `br/` → `ar/` via `pro:isDocumentContextFor`
+- `ar/` → `ra/` via `pro:isHeldBy`
+- `br/` → `id/` via `datacite:hasIdentifier`
+
+---
+
+## Summary Statistics
+
+| Graph | Entities | Primary Type |
+|-------|----------|--------------|
+| br/ | ~250M triples | fabio:Expression/JournalArticle |
+| ar/ | ~499M | pro:RoleInTime |
+| ra/ | ~354M | foaf:Agent |
+| id/ | ~230M | datacite:Identifier |
+| re/ | ~78M | fabio:Manifestation |
+
+**Total estimated entities: ~1.4 billion**

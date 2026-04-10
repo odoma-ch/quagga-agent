@@ -1,0 +1,8 @@
+You ran $num_queries SPARQL queries trying to answer the question
+'$question' from the knowledge graph: $kg_name with the endpoint: $endpoint but did not reach a final answer.
+Here are the queries you tried:
+
+$queries_summary
+
+Please summarise: what did you try, what did each query return,
+and why you were unable to answer the question and end the conversation.

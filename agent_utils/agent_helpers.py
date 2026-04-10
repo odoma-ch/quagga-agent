@@ -80,6 +80,7 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
                     if text:
                         parts.append(text)
     except GraphRecursionError:
+        print("[DEBUG] GraphRecursionError caught in _run_agent", flush=True)
         parts.append("I've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?")
 
     return "\n".join(parts)
@@ -165,6 +166,7 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
                             text_chunk,
                         )
         except GraphRecursionError:
+            print("[DEBUG] GraphRecursionError caught in _stream_agent/_producer", flush=True)
             error_chunk = _make_chat_completion_chunk(
                 "\n\nI've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?",
                 chunk_id=stream_id,

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Optional
 from langgraph.graph.message import add_messages
 
 
@@ -28,7 +28,12 @@ class ShexRetrieverInput(BaseModel):
 
 
 class SPARQLValidationInput(BaseModel):
-    query: str = Field(description="The sparql query to validate")
+    summary: str = Field(..., description="The full response text returned by the subagent")
+
+
+class SPARQLExtractionResult(BaseModel):
+    query: Optional[str] = Field(None, description="The SPARQL query extracted verbatim from the text, or null if no query is present")
+    description: str = Field(..., description="The human-readable result or answer, with the SPARQL code block removed")
 
 
 class State(TypedDict):

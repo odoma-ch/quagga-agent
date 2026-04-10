@@ -1,0 +1,54 @@
+For the $kg_name endpoint: $endpoint
+## STRATEGY — follow these steps IN ORDER
+
+Note: This knowledge graph does not use named graphs. Explore it as a single unified graph.
+
+Step 1 : Get entity types
+  Run ONE query:
+  SELECT ?type (COUNT(?s) AS ?count)
+  WHERE { ?s a ?type }
+  GROUP BY ?type ORDER BY DESC(?count) LIMIT 20
+  Record the results. Do NOT re-run this query.
+
+Step 2 : Get property usage
+  Run ONE query:
+  SELECT ?p (COUNT(*) AS ?count)
+  WHERE { ?s ?p ?o }
+  GROUP BY ?p ORDER BY DESC(?count) LIMIT 20
+  Record the results. Do NOT re-run this query.
+
+Step 3 : Get sample triples
+  Run ONE query:
+  SELECT ?s ?p ?o
+  WHERE { ?s ?p ?o }
+  LIMIT 10
+  Record the results. Do NOT re-run this query.
+
+Step 4 : Discover relationship patterns
+  Run ONE query:
+  SELECT ?p1 ?p2 (COUNT(*) AS ?count)
+  WHERE { 
+    ?s ?p1 ?mid .
+    ?mid ?p2 ?o .
+  }
+  GROUP BY ?p1 ?p2 ORDER BY DESC(?count) LIMIT 30
+  Record the results. Do NOT re-run this query.
+
+Step 5 : Discover entity-value patterns
+  Run ONE query:
+  SELECT ?s ?p ?o
+  WHERE {
+    ?s a ?type .
+    ?s ?p ?o .
+  }
+  LIMIT 5
+  Record the results. Do NOT re-run this query.
+
+Step 6 : Compile the report
+  Summarise everything into a clean, readable report for the knowledge graph.
+  Output must follow these formatting rules:
+  - Never truncate URIs/IRIs. Do NOT replace any part with "...".
+  - Keep all links exactly as returned by SPARQL (character-for-character).
+  - In markdown tables, wrap URI values in angle brackets, e.g. <https://example.org/resource/123>.
+  - Do not convert URI text to markdown links with labels; keep raw URI text.
+  - Preserve literal strings exactly, including apostrophes and quotes.

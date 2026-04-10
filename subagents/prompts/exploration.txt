@@ -1,0 +1,45 @@
+For the $kg_name endpoint: $endpoint
+## STRATEGY — follow these steps IN ORDER
+
+Step 1 : Discover graphs
+  Run ONE query:  SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }
+  Record the results. Do NOT re-run this query.
+  Only consider graphs whose URI is a proper URI (starts with http:// or https://); skip blank nodes or non-URI graph names.
+
+Step 2 : For EACH graph, get entity types (run one query per graph)
+  SELECT ?type (COUNT(?s) AS ?count)
+  WHERE { GRAPH <GRAPH_URI> { ?s a ?type } }
+  GROUP BY ?type ORDER BY DESC(?count) LIMIT 20
+
+Step 3 : For EACH graph, get property usage (run one query per graph)
+  SELECT ?p (COUNT(*) AS ?count)
+  WHERE { GRAPH <GRAPH_URI> { ?s ?p ?o } }
+  GROUP BY ?p ORDER BY DESC(?count) LIMIT 20
+
+Step 4 : For EACH graph, get sample triples (run one query per graph)
+  SELECT ?s ?p ?o
+  WHERE { GRAPH <GRAPH_URI> { ?s ?p ?o } }
+  LIMIT 10
+
+Step 5 : For EACH graph, discover relationship patterns
+  SELECT ?p1 ?p2 (COUNT(*) AS ?count)
+  WHERE { 
+    GRAPH <GRAPH_URI> { 
+      ?s ?p1 ?mid .
+      ?mid ?p2 ?o .
+    } 
+  }
+  GROUP BY ?p1 ?p2 ORDER BY DESC(?count) LIMIT 30
+
+Step 6 : For EACH graph, discover entity-value patterns
+  SELECT ?s ?p ?o
+  WHERE {
+    GRAPH <GRAPH_URI> {
+      ?s a ?type .
+      ?s ?p ?o .
+    }
+  }
+  LIMIT 5
+
+Step 7 : Compile the report
+  Summarise everything into a clean, readable report grouped by graph.

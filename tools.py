@@ -5,7 +5,7 @@ import logging
 import requests
 from datetime import datetime
 from pydantic import BaseModel, Field
-from typing import Type, Annotated
+from typing import Type, Annotated, Optional
 
 # from langchain.tools import tool
 from langchain_core.tools import tool
@@ -18,6 +18,9 @@ from langchain_core.tools import BaseTool
 from langgraph.runtime import get_runtime
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers.ensemble import EnsembleRetriever
+
+from SPARQLWrapper import SPARQLWrapper, JSON
+from concurrent.futures import ThreadPoolExecutor
 
 from transformers import AutoTokenizer
 
@@ -37,6 +40,7 @@ from models import (
     ContextSchema,
     ShexRetrieverInput,
     SPARQLValidationInput,
+    SPARQLExtractionResult,
     GraphRelevanceBatchResponse,
     State,
 )
@@ -68,8 +72,8 @@ console = Console(quiet=_as_bool(os.getenv("DISABLE_CONSOLE_PRINT")))
 logging.getLogger().setLevel(logging.INFO)
 
 openai_client = openai.OpenAI(
-    api_key=os.getenv("PSNC_OKD_API_KEY"),
-    base_url=os.getenv("PSNC_OKD_BASE_URL"),
+    api_key=os.getenv("PSNC_SMALL_TOOL_API_KEY"),
+    base_url=os.getenv("PSNC_SMALL_TOOL_BASE_URL"),
 )
 
 
@@ -112,7 +116,7 @@ def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
         for i, p in enumerate(passages)
     )
     response = openai_client.chat.completions.parse(
-        model=os.getenv("PSNC_OKD_MEDIUM_MODEL"),
+        model=os.getenv("PSNC_SMALL_TOOL_MODEL"),
         max_tokens=2048,
         response_format=GraphRelevanceBatchResponse,
         messages=[
@@ -464,83 +468,178 @@ def describe_knowledge_graphs_tool():
     return json.dumps(graph_kg_descriptions)
 
 
-@tool(args_schema=SPARQLValidationInput)
-def validate_sparql_tool(query: str):
-    """Tool to execute a sparql query and validate the result against a remote endpoint"""
-    _, _, endpoint, chunk_titles = _resolve_session_values()
+@tool
+def run_sparql_subagent_tool(question: str) -> str:
+    """Run the SPARQL exploration subagent for the currently selected knowledge graph.
+    Returns a JSON string with 'query' (the final SPARQL query, or null if none was produced)
+    and 'summary' (the prose answer)."""
+    # Lazy import to avoid circular dependency (run_sparql_subagent imports RunSPARQLTool from tools)
+    from subagents.run_sparql_subagent import run_pipeline as _run_pipeline
 
-    try:
+    _, selected_kg, endpoint, _ = _resolve_session_values()
+
+    if not endpoint or not selected_kg:
+        return "No knowledge graph selected. Call scope_checker_tool first."
+
+    return _run_pipeline(endpoint, selected_kg, question)
+
+
+class RunSPARQLToolInput(BaseModel):
+    query: str = Field(description="The SPARQL query to execute")
+
+class RunSPARQLTool(BaseTool):
+    """Tool to run SPARQL queries for exploration (lightweight execution)."""
+    name: str = "run_sparql_tool"
+    description: str = (
+        "Execute SPARQL queries against the currently selected SPARQL endpoint for knowledge graph exploration. "
+        "Use this to query triples, discover schema, and test patterns with small result sets."
+    )
+    args_schema: type[BaseModel] = RunSPARQLToolInput
+    endpoint: str = ""
+
+    def _run(self, query: str) -> str:
+        """Execute SPARQL query and return limited results."""
+        endpoint = self.endpoint
         if not endpoint:
             return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
-        
-        console.print(
-            f"Running the query against the SPARQL endpoint", style="bold blue"
-        )
-    
-        results = []
-        console.print(
-            f"Querying the SPARQL endpoint: {endpoint}", style="bold blue"
-        )
+        try:
+            # Prepend loaded prefixes if the query has no PREFIX declarations of its own.
+            # if shex_prefixes and not query.lstrip().upper().startswith("PREFIX"):
+            #     query = shex_prefixes.strip() + "\n" + query
 
-        if not _is_sparql_endpoint_up(endpoint):
-            return f"The SPARQL endpoint is not reachable. Currently the knowledge graph is not available."
+            console.print(
+                f"Executing SPARQL query against {endpoint}",
+                style="bold blue"
+            )
 
+            sparql = SPARQLWrapper(endpoint)
+            sparql.setQuery(query)
+            sparql.setReturnFormat(JSON)
+            sparql.setTimeout(60)
+
+            with ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(lambda: sparql.query().convert())
+                try:
+                    results = future.result(timeout=60)
+                except TimeoutError:
+                    return f"Query timed out after 60s. Try a simpler query with a smaller LIMIT."
+
+            if "results" in results and "bindings" in results["results"]:
+                bindings = results["results"]["bindings"]
+                vars_list = results.get("head", {}).get("vars", [])
+
+                if bindings:
+                    display_bindings = bindings[:50]
+
+                    table = ["| " + " | ".join(vars_list) + " |"]
+                    table.append("| " + " | ".join("---" for _ in vars_list) + " |")
+
+                    for binding in display_bindings:
+                        row = []
+                        for var in vars_list:
+                            val = binding.get(var, {})
+                            if "value" in val:
+                                row.append(str(val["value"]))
+                            else:
+                                row.append("")
+                        table.append("| " + " | ".join(row) + " |")
+
+                    result_str = "\n".join(table)
+                    return (
+                        f"```sparql\n{query}\n```\n"
+                        f"Results (showing {len(display_bindings)}/{len(bindings)} rows):\n{result_str}"
+                    )
+                else:
+                    return f"```sparql\n{query}\n```\nNo results returned."
+            else:
+                return f"```sparql\n{query}\n```\nQuery executed successfully."
+
+        except Exception as e:
+            return f"Error executing SPARQL query: {str(e)}"
+
+    async def _arun(self, query: str) -> str:
+        """Async version."""
+        return self._run(query)
+
+
+@tool
+def validate_sparql_tool(summary: str, state: Annotated[State, InjectedState]) -> str:
+    """Extract the SPARQL query (if any) from the subagent's response, re-run it, and
+    format the results as markdown. Returns both the prose description and the query results. 
+    This tool is always called by the main agent after the `run_sparql_subagent_tool` has run."""
+    # Read the full subagent result from state directly — avoids the LLM truncating
+    # the summary when constructing the tool-call argument.
+    summary = ""
+    for msg in reversed(state["messages"]):
+        if getattr(msg, "type", "") == "tool" and getattr(msg, "name", None) == "run_sparql_subagent_tool":
+            summary = msg.content if isinstance(msg.content, str) else str(msg.content)
+            break
+
+    if not summary:
+        return "No subagent result found to validate."
+
+    console.print("Extracting SPARQL query from subagent response", style="bold blue")
+
+    extraction_response = openai_client.chat.completions.parse(
+        model=os.getenv("PSNC_SMALL_TOOL_MODEL"),
+        response_format=SPARQLExtractionResult,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+"""
+Extract the SPARQL query from the text exactly as written if one is present, and return null otherwise. 
+Also extract the human-readable description exactly as written, excluding the SPARQL code block itself. 
+Do not modify, remove, or alter any content in either the query or the description — preserve all text, 
+including any numeric values, counts, totals, percentages, or other specifics exactly as they appear.
+"""
+                ),
+            },
+            {"role": "user", "content": summary},
+        ],
+    )
+    extracted: SPARQLExtractionResult = extraction_response.choices[0].message.parsed
+
+    if not extracted.query:
+        return f"The SPARQL has been executed:\n{extracted.description}"
+
+    _, _, endpoint, _ = _resolve_session_values()
+
+    if not endpoint:
+        return f"The SPARQL has been executed:\n{extracted.description}"
+
+    if not _is_sparql_endpoint_up(endpoint):
+        return f"The SPARQL has been executed:\n{extracted.description}"
+
+    try:
+        console.print(f"Re-running extracted query against {endpoint}", style="bold blue")
         store = sparqlstore.SPARQLStore(query_endpoint=endpoint)
         g = Graph(store=store)
-
-        logging.info(f"Query to be validated: {query}")
-        results = g.query(query)
-        console.print(f"Results: {results}", style="bold green")
-        console.print(f"""```sparql\n{query}\n```""")
+        logging.info(f"Re-running extracted query: {extracted.query}")
+        results = g.query(extracted.query)
     except Exception as e:
-        console.print(
-            f"Error running the query with the following exception: {e}",
-            style="bold red",
-        )
-        return f"Rewrite the query: ```sparql\n{query}\n``` given the context and tools and try again, this is the error: {e}"
+        console.print(f"Query re-run failed: {e}", style="bold red")
+        return f"The SPARQL has been executed:\n{extracted.description}"
 
     results_list = list(results)
-    logging.info(
-        f"Results retrieved for the query: {len(results_list)} with results: {results_list}"
-    )
-    if len(results_list) == 0:
-        new_text_query = generate_hypothetical_description_tool(query, chunk_titles)
-        query_triple_errors = validate_by_ask_sparql_tool(query)
-        console.print(
-            f"New formulated query to the KG schema: {new_text_query}",
-            style="bold green",
-        )
-        return f"""No results were found for the previous query:
-```sparql
-{query}
-```
-The following triple patterns are invalid:
-```text
-{query_triple_errors}
-```
-A new textual query has been generated:
-```text
-{new_text_query}
-```
-Use `shex_retriever_tool` again to inspect other classes and properties, then generate a revised SPARQL query."""
+    if not results_list:
+        return f"The SPARQL has been executed:\n{extracted.description}"
 
     headers = [str(v) for v in results.vars] if hasattr(results, "vars") and results.vars else []
     if headers:
         header_row = "| " + " | ".join(headers) + " |"
         separator_row = "| " + " | ".join("---" for _ in headers) + " |"
-        data_rows = []
-        for row in results_list:
-            cells = []
-            for h in headers:
-                val = row.get(h)
-                cells.append(str(val) if val is not None else "")
-            data_rows.append("| " + " | ".join(cells) + " |")
+        data_rows = [
+            "| " + " | ".join(str(row.get(h)) if row.get(h) is not None else "" for h in headers) + " |"
+            for row in results_list
+        ]
         table = "\n".join([header_row, separator_row] + data_rows)
     else:
         table = "\n".join(str(row) for row in results_list)
 
-    pretty_query = _pretty_sparql(query)
+    pretty_query = _pretty_sparql(extracted.query)
     return (
+        f"{extracted.description}\n\n"
         "The SPARQL has been executed:\n"
         "```sparql\n"
         f"{pretty_query}\n"
@@ -644,7 +743,7 @@ ASK {{
 
 
 def generate_hypothetical_description_tool(question: str, chunk_titles: list[str]):
-    """Tool to generate a hypothetical description to a query user has asked for"""
+    """Tool to align the user question with the knowledge graph ontology"""
     console.print(
         f"Making the query suitable for the required schema", style="bold blue"
     )
