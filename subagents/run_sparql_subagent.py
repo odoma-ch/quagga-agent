@@ -338,7 +338,9 @@ if __name__ == "__main__":
     ))
 
     # gesis_questions = [
-    #     "how many articles are in the GESIS KG?"
+    #     "how many articles are in the GESIS KG?",
+    #     "Which variables have been used in the study ZA5282?",
+    #     "Which organizations have the most studies archived at GESIS?"
     # ]
     # question = gesis_questions[0]
     # print(f"Running pipeline for question: {question}")
