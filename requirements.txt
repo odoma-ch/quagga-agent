@@ -22,3 +22,8 @@ transformers==5.1.0
 httpx==0.28.0
 html2text==2024.2.26
 SPARQLWrapper==2.0.0
+# for postgres checkpointer
+langgraph-checkpoint-postgres==3.0.5
+psycopg==3.3.3
+psycopg-binary==3.3.3
+psycopg-pool==3.3.0

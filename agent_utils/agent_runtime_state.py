@@ -1,4 +1,11 @@
-from langgraph.checkpoint.memory import InMemorySaver
+# from langgraph.checkpoint.memory import InMemorySaver
+import os
+from contextlib import asynccontextmanager
+from psycopg_pool import AsyncConnectionPool
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class SessionRuntimeState:
@@ -20,7 +27,16 @@ class AgentRuntimeState:
         self.graph = None
         self.scope_graph = None
         # Per-session checkpointer living in memory (thread_id -> conversation)
-        self.checkpointer = InMemorySaver()
+        # self.checkpointer = InMemorySaver()
+        postgres_db = os.getenv("POSTGRES_DB")
+        postgres_user = os.getenv("POSTGRES_USER")
+        postgres_host = os.getenv("POSTGRES_HOST")
+        postgres_password = os.getenv("POSTGRES_PASSWORD")
+        postgres_conn_string = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}/{postgres_db}"
+        self.pool = AsyncConnectionPool(
+            conninfo=postgres_conn_string, open=False, kwargs={"autocommit": True, "prepare_threshold": 0},
+        )
+        self.checkpointer = AsyncPostgresSaver(self.pool)
         # cached KG metadata: {kg_name: {sparql_endpoint, shex_content, retriever_tool}}
         self.kg_metadata_cache: dict = {}
         # per-thread runtime values (thread_id -> SessionRuntimeState)

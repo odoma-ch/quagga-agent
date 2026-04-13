@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from langchain_chroma import Chroma
 from langchain_ollama import ChatOllama
-from langchain_core.messages import AIMessage, SystemMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -35,6 +35,7 @@ from helpers.message_format_helpers import (
     _make_openai_error,
     _message_content_to_text,
 )
+from helpers.tool_helpers import _TOOL_DISPLAY_NAMES
 from agent_utils.agent_helpers import _run_agent, _stream_agent, _load_prompt
 from helpers.tool_helpers import _after_tool
 
@@ -175,6 +176,8 @@ async def lifespan(app: FastAPI):
     graph_builder.add_edge("force_validate", "tools")
 
     graph_builder.set_entry_point("sparql_chat_agent")
+    await runtime_state.pool.open()
+    await runtime_state.checkpointer.setup()
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
 
     logger.info("Quagga SPARQL agent is ready")
@@ -275,3 +278,87 @@ async def chat_completions(request: Request):
 @app.get("/health")
 async def health():
     return {"status": "Agent is functioning"}
+
+
+@app.get("/get_chat_by_id")
+async def get_chat_by_id(chat_id: str):
+    if runtime_state.graph is None:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "runtime_state.graph is not initialized"},
+        )
+
+    config = {"configurable": {"thread_id": chat_id}}
+
+    try:
+        snaps = [s async for s in runtime_state.graph.aget_state_history(config)]
+    except Exception as exc:
+        logger.exception("get_chat_by_id failed while reading state history")
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(exc)},
+        )
+
+    snaps.reverse()  # chronological order
+    openai_messages = []
+    seen_keys = set()
+
+    for snap in snaps:
+        values = snap.values or {}
+        messages = values.get("messages", [])
+
+        for msg in messages:
+            key = (
+                type(msg).__name__,
+                getattr(msg, "id", None),
+                getattr(msg, "tool_call_id", None),
+                str(getattr(msg, "content", ""))[:200],
+            )
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+
+            if isinstance(msg, HumanMessage):
+                openai_messages.append(
+                    {
+                        "role": "user",
+                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                    }
+                )
+            elif isinstance(msg, SystemMessage):
+                openai_messages.append(
+                    {
+                        "role": "system",
+                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                    }
+                )
+            elif isinstance(msg, AIMessage):
+                assistant = {
+                    "role": "assistant",
+                    "content": msg.content if isinstance(msg.content, str) else str(msg.content or ""),
+                }
+                tool_calls = getattr(msg, "tool_calls", None) or []
+                if tool_calls:
+                    assistant["tool_calls"] = []
+                    for tc in tool_calls:
+                        assistant["tool_calls"].append(
+                            {
+                                "id": tc.get("id"),
+                                "type": "function",
+                                "function": {
+                                    "name": _TOOL_DISPLAY_NAMES.get(tc.get("name"), tc.get("name")),
+                                    "arguments": json.dumps(tc.get("args", {}), ensure_ascii=False),
+                                },
+                            }
+                        )
+                openai_messages.append(assistant)
+            elif isinstance(msg, ToolMessage):
+                openai_messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": getattr(msg, "tool_call_id", None),
+                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                    }
+                )
+
+    return {"chat_id": chat_id, "messages": openai_messages}
