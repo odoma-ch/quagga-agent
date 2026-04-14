@@ -53,7 +53,18 @@ logging.basicConfig(level=logging.INFO)
 
 
 def is_openwebui_internal(message: str) -> bool:
-    return message.strip().startswith("### Task:")
+    stripped_message = message.strip()
+    return (stripped_message.startswith("### Task:") or stripped_message.startswith("### TASK:"))
+
+
+def check_for_follow_up_and_tags(value_string: str) -> bool:
+    try:
+        val_dict = json.loads(value_string)
+        if "tags" in val_dict or "follow_ups" in val_dict:
+            return True
+        return False
+    except (json.JSONDecodeError, ValueError):
+        return False
 
 
 def sparql_chat(state: State, config: RunnableConfig):
@@ -299,7 +310,7 @@ async def get_chat_by_id(chat_id: str):
             content={"error": str(exc)},
         )
 
-    snaps.reverse()  # chronological order
+    snaps.reverse()
     openai_messages = []
     seen_keys = set()
 
@@ -308,11 +319,16 @@ async def get_chat_by_id(chat_id: str):
         messages = values.get("messages", [])
 
         for msg in messages:
+            message_content = getattr(msg, "content", "")
+            if_it_follow_up_or_tags = check_for_follow_up_and_tags(message_content)
+            if isinstance(message_content, str) and (is_openwebui_internal(message_content) or if_it_follow_up_or_tags):
+                continue
+
             key = (
                 type(msg).__name__,
                 getattr(msg, "id", None),
                 getattr(msg, "tool_call_id", None),
-                str(getattr(msg, "content", ""))[:200],
+                str(message_content)[:200],
             )
             if key in seen_keys:
                 continue
@@ -322,20 +338,20 @@ async def get_chat_by_id(chat_id: str):
                 openai_messages.append(
                     {
                         "role": "user",
-                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                        "content": message_content,
                     }
                 )
             elif isinstance(msg, SystemMessage):
                 openai_messages.append(
                     {
                         "role": "system",
-                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                        "content": message_content,
                     }
                 )
             elif isinstance(msg, AIMessage):
                 assistant = {
                     "role": "assistant",
-                    "content": msg.content if isinstance(msg.content, str) else str(msg.content or ""),
+                    "content": message_content,
                 }
                 tool_calls = getattr(msg, "tool_calls", None) or []
                 if tool_calls:
@@ -357,7 +373,7 @@ async def get_chat_by_id(chat_id: str):
                     {
                         "role": "tool",
                         "tool_call_id": getattr(msg, "tool_call_id", None),
-                        "content": msg.content if isinstance(msg.content, str) else str(msg.content),
+                        "content": message_content,
                     }
                 )
 
