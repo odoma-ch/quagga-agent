@@ -13,7 +13,9 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.memory import MemorySaver
+# from langgraph.checkpoint.memory import MemorySaver
+from psycopg_pool import ConnectionPool
+from langgraph.checkpoint.postgres import PostgresSaver
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -119,7 +121,24 @@ def build_subagent(endpoint: str):
     graph.add_conditional_edges("agent", should_continue, {"tools": "tools", "agent": "agent", END: END})
     graph.add_edge("tools", "agent")
 
-    return graph.compile(checkpointer=MemorySaver())
+    postgres_db = "sparql_traces"
+    postgres_user = os.getenv("POSTGRES_USER")
+    postgres_host = os.getenv("POSTGRES_HOST")
+    postgres_password = os.getenv("POSTGRES_PASSWORD")
+    postgres_conn_string = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}/{postgres_db}"
+
+    pool = ConnectionPool(
+        conninfo=postgres_conn_string, open=False,
+        kwargs={
+            "autocommit": True,
+            "prepare_threshold": 0,
+        },
+    )
+    pool.open(wait=True)
+    checkpointer = PostgresSaver(pool)
+    checkpointer.setup()
+
+    return graph.compile(checkpointer=checkpointer)
 
 
 def _extract_query_from_tool_call(tool_call: dict) -> str:
@@ -301,41 +320,41 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
 
 
 if __name__ == "__main__":
-    # opencitation_questions = [
-    #     "What is the title and publication date of publication with DOI 10.1162/qss_a_00023?",
-    #     "How many publications are in the OpenCitations dataset?",
-    #     "What is the most cited article in OpenCitations?", # should fail
-    #     "How many journal articles contained in Open Citations Meta were published in 2024?",
-    #     "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
-    #     "Who is the most prolific Humanities author in terms of number of publications?", # should fail
-    #     "What are the latest 10 articles published in the journal with ISSN 2641-3337 (Quantitative Science Studies)?",
-    #     "What are the publications by the author with ORCID 0000-0003-0530-4305 published in 2024?",
-    #     "Which publications contain the words 'open science' in the title and were published in 2024?",
-    #     "Which book chapters with 'digital humanities' in their title were published in 2023?",
-    #     "Which articles about 'COVID-19' published in 2023 have more than 5 authors?",
-    # ]
-    # question = opencitation_questions[6]
-    # print(f"Running pipeline for question: {question}")
-    # run_pipeline(
-    #     endpoint="https://sparql.opencitations.net/meta",
-    #     kg_name="OpenCitations Meta",
-    #     question=question,
-    # )
-
-    ehri_questions = [
-        "Which archival institutions in the EHRI Knowledge Graph are located in Argentina, and what are their names?",
-        "How many archival descriptions does the EHRI KG contain?",
-        "Get records with the subject 'Newspapers' in EHRI KG",
-        "Which countries are listed in the EHRI Knowledge Graph, and what are their names?",
-        "What are the summaries in Dutch for the archival records held by Kazerne Dossin?"
+    opencitation_questions = [
+        "What is the title and publication date of publication with DOI 10.1162/qss_a_00023?",
+        "How many publications are in the OpenCitations dataset?",
+        "What is the most cited article in OpenCitations?", # should fail
+        "How many journal articles contained in Open Citations Meta were published in 2024?",
+        "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
+        "Who is the most prolific Humanities author in terms of number of publications?", # should fail
+        "What are the latest 10 articles published in the journal with ISSN 2641-3337 (Quantitative Science Studies)?",
+        "What are the publications by the author with ORCID 0000-0003-0530-4305 published in 2024?",
+        "Which publications contain the words 'open science' in the title and were published in 2024?",
+        "Which book chapters with 'digital humanities' in their title were published in 2023?",
+        "Which articles about 'COVID-19' published in 2023 have more than 5 authors?",
     ]
-    question = ehri_questions[1]
+    question = opencitation_questions[6]
     print(f"Running pipeline for question: {question}")
-    print(run_pipeline(
-        endpoint="https://lod.ehri-project-test.eu/sparql",
-        kg_name="EHRI - KG",
+    run_pipeline(
+        endpoint="https://sparql.opencitations.net/meta",
+        kg_name="OpenCitations Meta",
         question=question,
-    ))
+    )
+
+    # ehri_questions = [
+    #     "Which archival institutions in the EHRI Knowledge Graph are located in Argentina, and what are their names?",
+    #     "How many archival descriptions does the EHRI KG contain?",
+    #     "Get records with the subject 'Newspapers' in EHRI KG",
+    #     "Which countries are listed in the EHRI Knowledge Graph, and what are their names?",
+    #     "What are the summaries in Dutch for the archival records held by Kazerne Dossin?"
+    # ]
+    # question = ehri_questions[1]
+    # print(f"Running pipeline for question: {question}")
+    # print(run_pipeline(
+    #     endpoint="https://lod.ehri-project-test.eu/sparql",
+    #     kg_name="EHRI - KG",
+    #     question=question,
+    # ))
 
     # gesis_questions = [
     #     "how many articles are in the GESIS KG?",
