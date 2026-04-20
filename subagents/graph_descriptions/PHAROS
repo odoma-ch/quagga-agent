@@ -1,0 +1,104 @@
+<think>Now I have enough information to compile the report. Let me summarize everything.
+</think>
+
+## PHAROS Knowledge Graph Exploration Report
+
+### Graph Structure
+**Status:** SINGLE_GRAPH (no named graphs detected)
+
+The endpoint uses a single default graph rather than named graphs.
+
+---
+
+### Entity Types (Top 20)
+
+| Type | Count |
+|------|-------|
+| E41_Appellation (Name/Title) | 9,818,990 |
+| E42_Identifier | 7,244,406 |
+| E22_Human-Made_Object (Artworks) | 3,568,810 |
+| E36_Visual_Item | 3,308,683 |
+| E12_Production | 2,146,340 |
+| E30_Right | 2,081,379 |
+| E52_Time-Span | 1,836,135 |
+| E65_Creation | 1,774,343 |
+| D1_Digital_Object | 1,766,357 |
+| E55_Type | 1,717,446 |
+| E7_Activity | 983,877 |
+| E39_Actor | 513,769 |
+| E21_Person | 395,159 |
+| E53_Place | 141,626 |
+| E8_Acquisition | 125,881 |
+| E33_Linguistic_Object | 114,332 |
+| E31_Document | 101,921 |
+| Deprecated_Object_URI | 86,329 |
+| E67_Birth | 81,557 |
+| E73_Information_Object | 79,011 |
+
+---
+
+### Property Usage (Top 20)
+
+| Property | Count |
+|----------|-------|
+| P140_assigned_attribute_to | 66,218,753 |
+| P141_assigned | 66,218,668 |
+| P177_assigned_property_of_type | 66,218,668 |
+| P9i_forms_part_of | 60,833,908 |
+| rdf:type | 38,031,082 |
+| P2_has_type | 34,529,589 |
+| P2i_is_type_of | 23,700,950 |
+| P1_is_identified_by | 17,977,669 |
+| P190_has_symbolic_content | 15,964,471 |
+| P1i_identifies | 10,050,574 |
+| P134_continued | 7,146,046 |
+| P70i_is_documented_in | 3,986,475 |
+| custom:has_image | 3,857,225 |
+| P65_shows_visual_item | 3,807,270 |
+| P65i_is_shown_by | 3,308,683 |
+| P70_documents | 3,279,384 |
+| image-api:date-processed | 2,881,714 |
+| image-api:status-code | 2,651,898 |
+| image-api:identifier | 2,649,983 |
+| P50_has_current_keeper | 2,369,761 |
+
+---
+
+### Sample Triples
+
+```
+s: https://artresearch.net/resource/frick/work/991000004939707141/photo/farl_negative/51309
+  p: https://artresearch.net/custom/has_image
+  o: false
+
+s: https://artresearch.net/resource/frick/work/991000004939707141
+  p: https://artresearch.net/custom/has_image
+  o: false
+  
+s: http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation
+  p: http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by
+  o: http://vocab.getty.edu/ulan/500303557
+
+s: http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation
+  p: http://www.cidoc-crm.org/cidoc-crm/P94_has_created
+  o: http://collections.britishart.yale.edu/vufind/Record/1667923
+```
+
+---
+
+### Entity-Value Pattern Examples
+
+Shows CIDOC-CRM relationship patterns:
+- **Creation events** linked to artists (P14_carried_out_by) and artworks (P94_has_created)
+- **Catalog URLs** identified by symbolic content and identifying objects
+
+---
+
+### Summary
+
+The PHAROS endpoint is a **large art history knowledge graph** using:
+- **CIDOC-CRM ontology** as the primary schema (cultural heritage events, objects, actors, places)
+- **Custom extensions** for image handling (has_image, image-api properties)
+- **Major collections** from institutions like Frick, Yale British Art, Getty
+- **~66M+ triples** with heavy use of attribution/assignment properties
+- **No named graphs** - single unified graph structure
