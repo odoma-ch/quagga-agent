@@ -2,24 +2,31 @@ import os
 import re
 import sys
 import json
+import uuid
+import asyncio
 import logging
+import threading
+from datetime import datetime
+from langchain_core.messages.utils import count_tokens_approximately
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pathlib import Path
 from string import Template
 from typing import Annotated, TypedDict
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
-from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
-# from langgraph.checkpoint.memory import MemorySaver
+
 from psycopg_pool import ConnectionPool
 from langgraph.checkpoint.postgres import PostgresSaver
 from dotenv import load_dotenv
 load_dotenv()
 
 from tools import RunSPARQLTool
+from agent_utils.agent_runtime_state import runtime_state
+from agent_utils.provider_router import build_llm_from_health, periodic_health_check, update_runtime_llm
 
 logger = logging.getLogger(__name__)
 GRAPH_DESCRIPTIONS_DIR = Path(__file__).parent / "graph_descriptions"
@@ -49,25 +56,80 @@ class PipelineState(TypedDict):
     final_summary: str
 
 
-llm = ChatOpenAI(
-    base_url=os.getenv("PSNC_OKD_BASE_URL"),
-    model=os.getenv("PSNC_OKD_LARGE_MODEL"),
-    api_key=os.getenv("PSNC_OKD_API_KEY"),
-    temperature=0,
-    extra_body={
-        "reasoning": {"enabled": True}
-    }
-)
-logger.info(f"Using model: {os.getenv('PSNC_OKD_LARGE_MODEL')}")
-logger.info(f"Using endpoint: {os.getenv('PSNC_OKD_BASE_URL')}")
+_HEALTH_MONITOR_STARTED = False
+_HEALTH_MONITOR_LOCK = threading.Lock()
+
+
+async def _setup_routed_llm() -> None:
+    base_url = os.getenv("PSNC_OKD_BASE_URL")
+    model = os.getenv("PSNC_OKD_LARGE_MODEL")
+    api_key = os.getenv("PSNC_OKD_API_KEY")
+    fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
+    fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
+    fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
+
+    startup_llm, is_healthy, reason = await build_llm_from_health(
+        base_url=base_url,
+        api_key=api_key,
+        model_name=model,
+        fallback_base_url=fallback_base_url,
+        fallback_api_key=fallback_api_key,
+        fallback_model_name=fallback_model,
+        temperature=0.0,
+        extra_body={"reasoning": {"enabled": True}},
+    )
+    update_runtime_llm(runtime_state, startup_llm)
+    if is_healthy:
+        logger.info(f"Using model: {model}")
+        logger.info(f"Using endpoint: {base_url}")
+    else:
+        logger.warning(f"Primary subagent model unhealthy at startup ({reason}), using fallback")
+        logger.info(f"Using model: {fallback_model}")
+        logger.info(f"Using endpoint: {fallback_base_url}")
+
+
+def _start_routed_llm_health_monitor() -> None:
+    global _HEALTH_MONITOR_STARTED
+    with _HEALTH_MONITOR_LOCK:
+        if _HEALTH_MONITOR_STARTED:
+            return
+
+        def _runner() -> None:
+            asyncio.run(
+                periodic_health_check(
+                    base_url=os.getenv("PSNC_OKD_BASE_URL"),
+                    api_key=os.getenv("PSNC_OKD_API_KEY"),
+                    model_name=os.getenv("PSNC_OKD_LARGE_MODEL"),
+                    fallback_base_url=os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL"),
+                    fallback_api_key=os.getenv("GRAPHCHAT_OPENROUTER_API_KEY"),
+                    fallback_model_name=os.getenv("GRAPHCHAT_OPENROUTER_MODEL"),
+                    temperature=1.0,
+                    top_p=0.9,
+                    extra_body={"reasoning": {"enabled": True}},
+                    runtime_state=runtime_state,
+                    llm_tools=None,
+                    interval=120,
+                )
+            )
+
+        threading.Thread(target=_runner, daemon=True, name="sparql-subagent-llm-health").start()
+        _HEALTH_MONITOR_STARTED = True
+
+
+def _ensure_routed_llm_ready() -> None:
+    if runtime_state.llm is None:
+        asyncio.run(_setup_routed_llm())
+    _start_routed_llm_health_monitor()
 
 
 def build_subagent(endpoint: str):
     """Build and compile a SPARQL subagent bound to the given endpoint."""
+    _ensure_routed_llm_ready()
     tools = [RunSPARQLTool(endpoint=endpoint)]
-    llm_with_tools = llm.bind_tools(tools)
+    # initial_soft_trim_applied = False
 
     def agent(state: AgentState) -> AgentState:
+        # nonlocal initial_soft_trim_applied
         messages = list(state["messages"])
         last = messages[-1] if messages else None
         extra: list = []
@@ -86,7 +148,15 @@ def build_subagent(endpoint: str):
             messages = messages + [correction]
             extra = [correction]
 
-        response = llm_with_tools.invoke(messages)
+        current_llm = runtime_state.llm
+        if current_llm is None:
+            _ensure_routed_llm_ready()
+            current_llm = runtime_state.llm
+
+        logger.info(
+            f"Messages token count for LLM: {count_tokens_approximately(messages)}"
+        )
+        response = current_llm.bind_tools(tools).invoke(messages)
         return {"messages": extra + [response]}
 
     def should_continue(state: AgentState) -> str:
@@ -128,12 +198,19 @@ def build_subagent(endpoint: str):
     postgres_conn_string = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}/{postgres_db}"
 
     pool = ConnectionPool(
-        conninfo=postgres_conn_string, open=False,
+        conninfo=postgres_conn_string,
+        open=False,
+        min_size=2,
+        max_size=8,
+        max_lifetime=300,
+        max_idle=60,
+        timeout=30.0,
         kwargs={
             "autocommit": True,
             "prepare_threshold": 0,
         },
     )
+
     pool.open(wait=True)
     checkpointer = PostgresSaver(pool)
     checkpointer.setup()
@@ -182,9 +259,11 @@ def _stream_subagent(question: str, subagent, thread_id: str) -> str:
 def run_pipeline(endpoint: str, kg_name: str, question: str) -> str:
     """Run the two-node pipeline: explore KG (with caching) then answer the user question."""
     from langgraph.errors import GraphRecursionError as _GRE
-    print(f"[DEBUG] run_pipeline called: kg={kg_name!r}, question={question!r}", flush=True)
+    start_time = datetime.now()
+    print(f"[DEBUG] run_pipeline called at {start_time}: kg={kg_name!r}, question={question!r}", flush=True)
     subagent = build_subagent(endpoint)
-    thread_id = f"{kg_name}_session"
+    thread_id = f"{kg_name}_{uuid.uuid4().hex}"
+    print(f"[DEBUG] Thread ID: {thread_id}")
     desc_path = GRAPH_DESCRIPTIONS_DIR / f"{kg_name}"
 
     def explore_kg_node(state: PipelineState) -> PipelineState:
@@ -283,6 +362,7 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
             print(f"[Limit] Subagent hit recursion limit after {len(queries_made)} queries. Using accumulated summary.\n")
             limit_hit = True
 
+
         if limit_hit:
             queries_summary = "\n".join(
                 f"{i + 1}. {q}" for i, q in enumerate(queries_made)
@@ -315,7 +395,8 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
     except _GRE as e:
         print(f"[DEBUG] GraphRecursionError raised INSIDE run_pipeline (subagent hit its own recursion limit): {e}", flush=True)
         return "I was unable to fully answer the question — the subagent exhausted its step budget during exploration. Try a more specific question."
-    print(f"[DEBUG] run_pipeline finished successfully, final_summary length={len(result['final_summary'])}", flush=True)
+    end_time = datetime.now()
+    print(f"[DEBUG] run_pipeline finished successfully and took: {(end_time - start_time).total_seconds()} seconds: final_summary length={len(result['final_summary'])}", flush=True)
     return result["final_summary"]
 
 

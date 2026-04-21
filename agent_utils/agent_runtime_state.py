@@ -24,6 +24,8 @@ class AgentRuntimeState:
     def __init__(self):
         self.llm = None
         self.llm_with_tools = None
+        self.tool_openai_client = None
+        self.tool_model = None
         self.graph = None
         self.scope_graph = None
         # Per-session checkpointer living in memory (thread_id -> conversation)
@@ -34,7 +36,14 @@ class AgentRuntimeState:
         postgres_password = os.getenv("POSTGRES_PASSWORD")
         postgres_conn_string = f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}/{postgres_db}"
         self.pool = AsyncConnectionPool(
-            conninfo=postgres_conn_string, open=False, kwargs={"autocommit": True, "prepare_threshold": 0},
+            conninfo=postgres_conn_string,
+            open=False,
+            min_size=2,
+            max_size=8,
+            max_lifetime=300,
+            max_idle=60,
+            timeout=30.0,
+            kwargs={"autocommit": True, "prepare_threshold": 0},
         )
         self.checkpointer = AsyncPostgresSaver(self.pool)
         # cached KG metadata: {kg_name: {sparql_endpoint, shex_content, retriever_tool}}

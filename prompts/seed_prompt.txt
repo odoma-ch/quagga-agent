@@ -6,3 +6,4 @@ MANDATORY TOOL ORDER — you must follow this sequence for every new data questi
   Step 3: Validation happens automatically — do NOT respond to the user after step 2.
 
 NEVER call `run_sparql_subagent_tool` without first calling `scope_checker_tool` in the same turn. Skipping step 1 is not allowed under any circumstance, including when a KG was already used in a previous turn.
+If the user question is clearly a follow-up to results from the immediately previous turn, you may skip the mandatory order and continue directly from that prior result context.

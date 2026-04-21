@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import json
+import html
 import requests
 
 from models import State
@@ -41,14 +42,16 @@ def _format_tool_result(message) -> str:
     content = message.content if isinstance(message.content, str) else str(message.content)
     tool_name = getattr(message, "name", "tool")
     display = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
-    preview = content[:500] + ("…" if len(content) > 500 else "")
 
     # Sometimes the model returns a JSON blob that encodes the *next* tool call
     # (instead of emitting a native tool_calls message)
     try:
         parsed = json.loads(content)
     except Exception:
-        parsed = None
+        try:
+            parsed = json.loads(html.unescape(content))
+        except Exception:
+            parsed = None
     if isinstance(parsed, dict) and isinstance(parsed.get("tool_calls"), list):
         rendered_calls = []
         for tc in parsed["tool_calls"]:
@@ -63,16 +66,24 @@ def _format_tool_result(message) -> str:
         if rendered_calls:
             return "\n".join(rendered_calls) + "\n"
 
+    # If the tool returns JSON as a raw string, render it explicitly as JSON.
+    if isinstance(parsed, (dict, list)):
+        content = f"```json\n{json.dumps(parsed, indent=2, ensure_ascii=False)}\n```"
+
+    has_details = "<details" in content.lower()
+
     if tool_name == "validate_sparql_tool":
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
             f"{content}\n"
             f"</details>\n\n"
         )
-    else:   
+    elif has_details:
+        return f"**Result from {display}**\n\n{content}\n\n"
+    else:
         return (
             f"<details>\n<summary>Result from {display}</summary>\n\n"
-            f"```text\n{preview}\n```\n"
+            f"{content}\n"
             f"</details>\n\n"
         )
 

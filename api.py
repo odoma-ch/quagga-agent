@@ -2,9 +2,9 @@ import os
 import json
 import time
 import uuid
-import httpx
 import logging
 import asyncio
+import contextlib
 from contextlib import asynccontextmanager
 
 import chromadb
@@ -19,7 +19,7 @@ from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, System
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph, START, END
 from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 from models import ContextSchema, State
 from tools import (
@@ -29,6 +29,14 @@ from tools import (
 from agent_utils.agent_constants import MODEL_ID
 from agent_utils.agent_config import SPARQL_ENDPOINT, MAX_AGENT_STEPS
 from agent_utils.agent_runtime_state import runtime_state
+from agent_utils.provider_router import (
+    build_llm_from_health,
+    build_tool_client_from_health,
+    periodic_health_check,
+    periodic_tool_health_check,
+    update_runtime_llm,
+    update_runtime_tool_client,
+)
 from helpers.message_format_helpers import (
     _extract_messages,
     _make_chat_completion,
@@ -147,29 +155,54 @@ async def lifespan(app: FastAPI):
         openai_api_key="EMPTY"
     )
 
-    # if USE_OLLAMA:
-    #     # llm = ChatOllama(model="qwen3:30b-a3b", temperature=0.7)
-    # else:
     base_url = os.getenv("PSNC_OKD_BASE_URL")
     model = os.getenv("PSNC_OKD_MEDIUM_MODEL")
     api_key = os.getenv("PSNC_OKD_API_KEY")
-    http_client = httpx.Client(verify=False)
-    llm = ChatOpenAI(
-        base_url=base_url,
-        model=model,
-        api_key=api_key,
-        temperature=0.1,
-        top_p=0.9,
-        http_client=http_client,
-    )
+    fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
+    fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
+    fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
+    tool_base_url = os.getenv("PSNC_SMALL_TOOL_BASE_URL")
+    tool_api_key = os.getenv("PSNC_SMALL_TOOL_API_KEY")
+    tool_model = os.getenv("PSNC_SMALL_TOOL_MODEL")
+    tool_fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
+    tool_fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
+    tool_fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
 
     # validate_sparql_tool is intentionally excluded from llm_tools — the LLM must never
     # call it directly. It is only invoked by force_validate (graph-enforced) to ensure
     # it always runs AFTER run_sparql_subagent_tool's result is committed to state.
     llm_tools = [run_sparql_subagent_tool, describe_knowledge_graphs_tool, scope_checker_tool]
     all_tools = [run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
-    runtime_state.llm = llm
-    runtime_state.llm_with_tools = llm.bind_tools(llm_tools)
+
+    startup_llm, is_healthy, reason = await build_llm_from_health(
+        base_url=base_url,
+        api_key=api_key,
+        model_name=model,
+        fallback_base_url=fallback_base_url,
+        fallback_api_key=fallback_api_key,
+        fallback_model_name=fallback_model,
+        temperature=0.1,
+        top_p=0.9,
+    )
+    update_runtime_llm(runtime_state, startup_llm, llm_tools)
+    if is_healthy:
+        logger.info("Primary model healthy at startup")
+    else:
+        logger.warning(f"Primary model unhealthy at startup ({reason}), using fallback")
+
+    tool_client, active_tool_model, tool_is_healthy, tool_reason = await build_tool_client_from_health(
+        base_url=tool_base_url,
+        api_key=tool_api_key,
+        model_name=tool_model,
+        fallback_base_url=tool_fallback_base_url,
+        fallback_api_key=tool_fallback_api_key,
+        fallback_model_name=tool_fallback_model,
+    )
+    update_runtime_tool_client(runtime_state, tool_client, active_tool_model)
+    if tool_is_healthy:
+        logger.info("Primary tool model healthy at startup")
+    else:
+        logger.warning("Primary tool model unhealthy at startup (%s), using fallback", tool_reason)
     # runtime_state.scope_graph = scope_subgraph()
 
     graph_builder = StateGraph(State)
@@ -190,14 +223,54 @@ async def lifespan(app: FastAPI):
     await runtime_state.pool.open()
     await runtime_state.checkpointer.setup()
     runtime_state.graph = graph_builder.compile(checkpointer=runtime_state.checkpointer)
+    health_check_task = asyncio.create_task(
+        periodic_health_check(
+            base_url=base_url,
+            api_key=api_key,
+            model_name=model,
+            fallback_base_url=fallback_base_url,
+            fallback_api_key=fallback_api_key,
+            fallback_model_name=fallback_model,
+            temperature=0.1,
+            top_p=0.9,
+            runtime_state=runtime_state,
+            llm_tools=llm_tools,
+            interval=120,
+        )
+    )
+    tool_health_check_task = asyncio.create_task(
+        periodic_tool_health_check(
+            base_url=tool_base_url,
+            api_key=tool_api_key,
+            model_name=tool_model,
+            fallback_base_url=tool_fallback_base_url,
+            fallback_api_key=tool_fallback_api_key,
+            fallback_model_name=tool_fallback_model,
+            runtime_state=runtime_state,
+            interval=120,
+        )
+    )
 
     logger.info("Quagga SPARQL agent is ready")
-    yield  # application is running
-    logger.info("Shutting down Quagga SPARQL Agent API")
+
+    try:
+        # application is running
+        yield
+    finally:
+        logger.info("Shutting down GraphChat SPARQL Agent API")
+        await runtime_state.pool.close()
+        health_check_task.cancel()
+        tool_health_check_task.cancel()
+        with contextlib.suppress(asyncio.CancelledError):
+            await health_check_task
+        with contextlib.suppress(asyncio.CancelledError):
+            await tool_health_check_task
+        logger.info("Shutted down GraphChat SPARQL Agent API")
+
 
 
 app = FastAPI(
-    title="Quagga SPARQL Agent API",
+    title="GraphChat SPARQL Agent API",
     description="OpenAI-compatible API wrapping the LangGraph ShEx-based SPARQL agent",
     version="0.1.0",
     lifespan=lifespan,

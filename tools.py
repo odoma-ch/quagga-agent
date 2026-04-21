@@ -30,6 +30,7 @@ import httpx
 from langchain_openai import ChatOpenAI
 from helpers.tool_helpers import _is_sparql_endpoint_up
 from helpers.message_format_helpers import _message_content_to_text, _pretty_sparql
+from agent_utils.provider_router import create_openai_client
 from agent_utils.agent_constants import (
     GRAPHS_INVOLVED,
     GRAPH_KG_DESCRIPTIONS_URL,
@@ -65,16 +66,20 @@ def _as_bool(v: str | None) -> bool:
   return (v or "").strip().lower() in {"1", "true", "yes", "on", "True"}
 
 console = Console(quiet=_as_bool(os.getenv("DISABLE_CONSOLE_PRINT")))
-# date = datetime.now().strftime("%Y%m%dT%H:%M:%S")
-# filename = f"conversation_logs_{date}.log"
-# file_handler = logging.FileHandler(filename)
-# logging.getLogger().addHandler(file_handler)
 logging.getLogger().setLevel(logging.INFO)
 
-openai_client = openai.OpenAI(
-    api_key=os.getenv("PSNC_SMALL_TOOL_API_KEY"),
-    base_url=os.getenv("PSNC_SMALL_TOOL_BASE_URL"),
-)
+
+def _get_tool_client_and_model() -> tuple[openai.OpenAI, str]:
+    """Get the current health-routed tool client/model from runtime state."""
+    from agent_utils.agent_runtime_state import runtime_state
+
+    model = runtime_state.tool_model or os.getenv("PSNC_SMALL_TOOL_MODEL")
+    if runtime_state.tool_openai_client is None:
+        runtime_state.tool_openai_client = create_openai_client(
+            base_url=os.getenv("PSNC_SMALL_TOOL_BASE_URL"),
+            api_key=os.getenv("PSNC_SMALL_TOOL_API_KEY"),
+        )
+    return runtime_state.tool_openai_client, model
 
 
 def _get_thread_context():
@@ -111,12 +116,13 @@ def _resolve_session_values():
 
 
 def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
+    tool_client, tool_model = _get_tool_client_and_model()
     passages_content = "\n\n".join(
         f"Passage {i+1} ({p['kg_name']}): {p['description']}"
         for i, p in enumerate(passages)
     )
-    response = openai_client.chat.completions.parse(
-        model=os.getenv("PSNC_SMALL_TOOL_MODEL"),
+    response = tool_client.chat.completions.parse(
+        model=tool_model,
         max_tokens=2048,
         response_format=GraphRelevanceBatchResponse,
         messages=[
@@ -580,19 +586,19 @@ def validate_sparql_tool(summary: str, state: Annotated[State, InjectedState]) -
 
     console.print("Extracting SPARQL query from subagent response", style="bold blue")
 
-    extraction_response = openai_client.chat.completions.parse(
-        model=os.getenv("PSNC_SMALL_TOOL_MODEL"),
+    tool_client, tool_model = _get_tool_client_and_model()
+    extraction_response = tool_client.chat.completions.parse(
+        model=tool_model,
         response_format=SPARQLExtractionResult,
         messages=[
             {
                 "role": "system",
                 "content": (
-"""
-Extract the SPARQL query from the text exactly as written if one is present, and return null otherwise. 
-Also extract the human-readable description exactly as written, excluding the SPARQL code block itself. 
-Do not modify, remove, or alter any content in either the query or the description — preserve all text, 
-including any numeric values, counts, totals, percentages, or other specifics exactly as they appear.
-"""
+                    "Extract two things from the user's message:\n"
+                    "1. The SPARQL query exactly as written, preserving all whitespace, prefixes, and formatting.\n"
+                    "2. The human-readable description exactly as written, excluding the SPARQL query block.\n"
+                    "Preserve everything precisely — numeric values, counts, totals, percentages, and all other specifics "
+                    "must not be modified, paraphrased, or removed. Set a field to null if not present."
                 ),
             },
             {"role": "user", "content": summary},
@@ -625,17 +631,27 @@ including any numeric values, counts, totals, percentages, or other specifics ex
     if not results_list:
         return f"The SPARQL has been executed:\n{extracted.description}"
 
+    max_display_rows = 50
+    display_results = results_list[:max_display_rows]
+    was_truncated = len(results_list) > max_display_rows
+
     headers = [str(v) for v in results.vars] if hasattr(results, "vars") and results.vars else []
     if headers:
         header_row = "| " + " | ".join(headers) + " |"
         separator_row = "| " + " | ".join("---" for _ in headers) + " |"
         data_rows = [
             "| " + " | ".join(str(row.get(h)) if row.get(h) is not None else "" for h in headers) + " |"
-            for row in results_list
+            for row in display_results
         ]
         table = "\n".join([header_row, separator_row] + data_rows)
     else:
-        table = "\n".join(str(row) for row in results_list)
+        table = "\n".join(str(row) for row in display_results)
+
+    truncation_note = (
+        f"\n\nShowing first {max_display_rows} of {len(results_list)} results."
+        if was_truncated
+        else ""
+    )
 
     pretty_query = _pretty_sparql(extracted.query)
     return (
@@ -646,6 +662,7 @@ including any numeric values, counts, totals, percentages, or other specifics ex
         "```\n"
         "Here are the results:\n"
         f"{table}"
+        f"{truncation_note}"
     )
 
 
