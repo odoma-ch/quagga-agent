@@ -36,6 +36,8 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 # instead of using the structured tool_calls field.
 _TEXT_TOOL_CALL_RE = re.compile(r"<invoke\s|<tool_call\b|<function_calls\b", re.IGNORECASE)
 MAX_TEXT_TOOL_CALL_RETRIES = 2
+_STEP_HEADER_RE = re.compile(r"^\s*Step\s+\d+\s*:\s*.*$", re.IGNORECASE)
+
 
 
 def _looks_like_text_tool_call(content: str) -> bool:
