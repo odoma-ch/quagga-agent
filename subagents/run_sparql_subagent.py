@@ -256,6 +256,36 @@ def _stream_subagent(question: str, subagent, thread_id: str) -> str:
     return final_response
 
 
+def _build_step_prompts(exploration_prompt: str) -> list[tuple[str, str]]:
+    """Split a strategy prompt into per-step prompts while preserving shared context."""
+    lines = exploration_prompt.splitlines()
+    step_indices = [idx for idx, line in enumerate(lines) if _STEP_HEADER_RE.match(line)]
+    if not step_indices:
+        return []
+
+    preamble = "\n".join(lines[: step_indices[0]]).strip()
+    step_prompts: list[tuple[str, str]] = []
+
+    for pos, start_idx in enumerate(step_indices):
+        end_idx = step_indices[pos + 1] if pos + 1 < len(step_indices) else len(lines)
+        step_label = lines[start_idx].strip()
+        step_block = "\n".join(lines[start_idx:end_idx]).strip()
+
+        prompt_parts = [
+            preamble,
+            "",
+            "Execute ONLY this single strategy step now.",
+            "Use context already established in this thread from previous steps.",
+            "Do not execute future steps in this turn.",
+            "",
+            step_block,
+        ]
+        step_prompt = "\n".join(part for part in prompt_parts if part != "").strip()
+        step_prompts.append((step_label, step_prompt))
+
+    return step_prompts
+
+
 def run_pipeline(endpoint: str, kg_name: str, question: str) -> str:
     """Run the two-node pipeline: explore KG (with caching) then answer the user question."""
     from langgraph.errors import GraphRecursionError as _GRE
@@ -269,22 +299,17 @@ def run_pipeline(endpoint: str, kg_name: str, question: str) -> str:
     def explore_kg_node(state: PipelineState) -> PipelineState:
         """Node 1: load cached KG description or run full SPARQL exploration."""
         if desc_path.exists():
-            print(f"[Explorer] Cached description found for \'{kg_name}\', loading into context...")
-            cached = desc_path.read_text()
-            config = {"configurable": {"thread_id": thread_id}}                                                          
-            subagent.update_state(config, {                                                                              
-                "messages": [                                                                                            
-                    HumanMessage(content=f"Here is the previously cached ontology report for the knowledge graph {kg_name}:\n\n{cached}"),                                                                                                         
-                    AIMessage(content="Understood. I have the KG description loaded and will use it to answer your question."),                                                                                                                     
-                ]                                                                                                        
-            }) 
+            print(f"[Explorer] Cached description found for \'{kg_name}\'. Skipping exploration run...")
         else:
             print(f"[Explorer] No cache found for \'{kg_name}\', detecting graph structure...")
             graphs_question = f"""For the {kg_name} endpoint: {endpoint}
 Run this ONE query to detect if this knowledge graph uses named graphs:
 SELECT DISTINCT ?g WHERE {{ GRAPH ?g {{ ?s ?p ?o }} }}
 
-Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with http:// or https://), or "SINGLE_GRAPH" if you find no named graphs or only blank nodes/non-URI graph names."""
+After looking at the result, your final reply MUST end with EXACTLY ONE of these tokens on its own final line, and nothing after it:
+MULTI_GRAPH   — if the result contains one or more proper URIs (starting with http:// or https://).
+SINGLE_GRAPH  — if no results are returned, returns no rows, or contains only blank nodes / non-URI graph names.
+Do not include both tokens. Do not add quotes, punctuation, or any text after the token."""
             
             print(f"[Detector] Checking graph structure...\n")
             config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 200}
@@ -315,8 +340,22 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
             prompt_file = "exploration.txt" if graph_type == "MULTI" else "exploration_single_graph.txt"
             print(f"[Explorer] Using {prompt_file} strategy for full exploration...")
             exploration_prompt = _load_prompt(prompt_file, kg_name=kg_name, endpoint=endpoint)
-            report = _stream_subagent(exploration_prompt, subagent, thread_id)
-            desc_path.write_text(report)
+            step_prompts = _build_step_prompts(exploration_prompt)
+
+            if not step_prompts:
+                report = _stream_subagent(exploration_prompt, subagent, thread_id)
+                desc_path.write_text(report)
+            else:
+                desc_path.write_text("", encoding="utf-8")
+                total_steps = len(step_prompts)
+                for idx, (step_label, step_prompt) in enumerate(step_prompts, start=1):
+                    print(f"[Explorer] Running {step_label} ({idx}/{total_steps})...")
+                    step_result = _stream_subagent(step_prompt, subagent, thread_id)
+                    step_result = re.sub(
+                        r"<think>.*?</think>", "", step_result, flags=re.IGNORECASE | re.DOTALL).strip()
+                    with desc_path.open("a", encoding="utf-8") as f:
+                        f.write(f"## {step_label}\n\n{step_result}\n\n")
+
             print(f"[Explorer] Saved exploration report to {desc_path}")
 
         return state
@@ -324,7 +363,16 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
     def answer_question_node(state: PipelineState) -> PipelineState:
         """Node 2: answer the user question using the exploration context already in the thread."""
         MAX_QUERIES = 80
-        prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"])
+        from datetime import date
+        current_date = date.today().strftime("%a %b %d %Y")
+        prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"], current_date=current_date)
+        if desc_path.exists():
+            cached = desc_path.read_text()
+            prompt = (
+                f"Cached ontology report for knowledge graph {kg_name}:\n\n{cached}\n\n"
+                "----\n\n"
+                f"{prompt}"
+            )
         print(f"[Answer Question] Prompt:\n{prompt}\n")
 
         from langgraph.errors import GraphRecursionError as _SubagentRecursionError
@@ -335,7 +383,7 @@ Return ONLY "MULTI_GRAPH" if you find one or more proper URIs (starting with htt
 
         try:
             for event in subagent.stream(
-                {"messages": [HumanMessage(content=prompt)]},
+                {"messages": [SystemMessage(content=prompt)]},
                 config=config,
                 stream_mode="updates",
             ):
