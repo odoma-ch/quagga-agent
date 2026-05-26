@@ -1,104 +1,478 @@
-<think>Now I have enough information to compile the report. Let me summarize everything.
-</think>
+# PHAROS Knowledge Graph Exploration Report
 
-## PHAROS Knowledge Graph Exploration Report
+## Overview
+The PHAROS endpoint (https://artresearch.net/sparql) is a CIDOC-CRM based knowledge graph containing art historical data from multiple institutions. The graph does not use named graphs (SINGLE_GRAPH).
 
-### Graph Structure
-**Status:** SINGLE_GRAPH (no named graphs detected)
-
-The endpoint uses a single default graph rather than named graphs.
-
----
-
-### Entity Types (Top 20)
+## Entity types
 
 | Type | Count |
 |------|-------|
-| E41_Appellation (Name/Title) | 9,818,990 |
-| E42_Identifier | 7,244,406 |
-| E22_Human-Made_Object (Artworks) | 3,568,810 |
-| E36_Visual_Item | 3,308,683 |
-| E12_Production | 2,146,340 |
-| E30_Right | 2,081,379 |
-| E52_Time-Span | 1,836,135 |
-| E65_Creation | 1,774,343 |
-| D1_Digital_Object | 1,766,357 |
-| E55_Type | 1,717,446 |
-| E7_Activity | 983,877 |
-| E39_Actor | 513,769 |
-| E21_Person | 395,159 |
-| E53_Place | 141,626 |
-| E8_Acquisition | 125,881 |
-| E33_Linguistic_Object | 114,332 |
-| E31_Document | 101,921 |
-| Deprecated_Object_URI | 86,329 |
-| E67_Birth | 81,557 |
-| E73_Information_Object | 79,011 |
+| http://www.cidoc-crm.org/cidoc-crm/E57_Material | 231 |
+| http://www.w3.org/1999/02/22-rdf-syntax-ns#Property | 309 |
+| http://www.cidoc-crm.org/cidoc-crm/E15_Identifier_Assignment | 1,193 |
+| http://www.cidoc-crm.org/cidoc-crm/E10_Transfer_of_Custody | 6,267 |
+| http://www.cidoc-crm.org/cidoc-crm/E74_Group | 9,041 |
+| http://www.cidoc-crm.org/cidoc-crm/E13_Attribute_Assignment | 24,066 |
+| http://www.cidoc-crm.org/cidoc-crm/E34_Inscription | 28,559 |
+| http://www.cidoc-crm.org/cidoc-crm/E69_Death | 74,944 |
+| http://www.cidoc-crm.org/cidoc-crm/E73_Information_Object | 79,011 |
+| http://www.cidoc-crm.org/cidoc-crm/E67_Birth | 81,557 |
+| https://artresearch.net/custom/Deprecated_Object_URI | 86,329 |
+| http://www.cidoc-crm.org/cidoc-crm/E31_Document | 101,921 |
+| http://www.cidoc-crm.org/cidoc-crm/E33_Linguistic_Object | 114,332 |
+| http://www.cidoc-crm.org/cidoc-crm/E8_Acquisition | 125,881 |
+| http://www.cidoc-crm.org/cidoc-crm/E53_Place | 141,626 |
+| http://www.cidoc-crm.org/cidoc-crm/E21_Person | 395,159 |
+| http://www.cidoc-crm.org/cidoc-crm/E39_Actor | 513,769 |
+| http://www.cidoc-crm.org/cidoc-crm/E7_Activity | 983,877 |
+| http://www.cidoc-crm.org/cidoc-crm/E55_Type | 1,717,446 |
+| http://www.cidoc-crm.org/cidoc-crm/D1_Digital_Object | 1,766,357 |
+| http://www.cidoc-crm.org/cidoc-crm/E65_Creation | 1,774,343 |
+| http://www.cidoc-crm.org/cidoc-crm/E52_Time-Span | 1,836,135 |
+| http://www.cidoc-crm.org/cidoc-crm/E30_Right | 2,081,379 |
+| http://www.cidoc-crm.org/cidoc-crm/E12_Production | 2,146,340 |
+| http://www.cidoc-crm.org/cidoc-crm/E36_Visual_Item | 3,308,683 |
+| http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object | 3,568,810 |
+| http://www.cidoc-crm.org/cidoc-crm/E42_Identifier | 7,244,406 |
+| http://www.cidoc-crm.org/cidoc-crm/E41_Appellation | 9,818,990 |
 
----
+The knowledge graph is primarily based on CIDOC-CRM ontology, with E41_Appellation being the most frequent entity type (9.8M instances), followed by E42_Identifier (7.2M) and E22_Human-Made_Object (3.6M).
 
-### Property Usage (Top 20)
+## Property usage
+
+**Step 2 Complete - Property Usage**
 
 | Property | Count |
 |----------|-------|
-| P140_assigned_attribute_to | 66,218,753 |
-| P141_assigned | 66,218,668 |
-| P177_assigned_property_of_type | 66,218,668 |
-| P9i_forms_part_of | 60,833,908 |
-| rdf:type | 38,031,082 |
-| P2_has_type | 34,529,589 |
-| P2i_is_type_of | 23,700,950 |
-| P1_is_identified_by | 17,977,669 |
-| P190_has_symbolic_content | 15,964,471 |
-| P1i_identifies | 10,050,574 |
-| P134_continued | 7,146,046 |
-| P70i_is_documented_in | 3,986,475 |
-| custom:has_image | 3,857,225 |
-| P65_shows_visual_item | 3,807,270 |
-| P65i_is_shown_by | 3,308,683 |
-| P70_documents | 3,279,384 |
-| image-api:date-processed | 2,881,714 |
-| image-api:status-code | 2,651,898 |
-| image-api:identifier | 2,649,983 |
-| P50_has_current_keeper | 2,369,761 |
+| http://www.cidoc-crm.org/cidoc-crm/crm:P127_has_broader_term | 5,433 |
+| http://www.cidoc-crm.org/cidoc-crm/P28_custody_surrendered_by | 6,267 |
+| http://www.cidoc-crm.org/cidoc-crm/P28i_surrendered_custody_through | 6,267 |
+| http://www.cidoc-crm.org/cidoc-crm/P30_transferred_custody_of | 6,267 |
+| http://www.cidoc-crm.org/cidoc-crm/P30i_custody_transferred_through | 6,267 |
+| http://www.cidoc-crm.org/cidoc-crm/P71_lists | 8,273 |
+| http://www.cidoc-crm.org/cidoc-crm/P12_occurred_in_the_presence_of | 16,454 |
+| http://www.cidoc-crm.org/cidoc-crm/P12i_was_present_at | 16,454 |
+| http://www.cidoc-crm.org/cidoc-crm/P141i_was_assigned_by | 24,066 |
+| http://www.cidoc-crm.org/cidoc-crm/P177i_is_type_of_property_assigned | 24,066 |
+| http://www.cidoc-crm.org/cidoc-crm/P140i_was_attributed_by | 24,151 |
+| http://www.cidoc-crm.org/cidoc-crm/P71i_is_listed_in | 24,299 |
+| http://www.cidoc-crm.org/cidoc-crm/P128i_is_carried_by | 28,559 |
+| http://www.cidoc-crm.org/cidoc-crm/P128_carries | 28,559 |
+| http://www.cidoc-crm.org/cidoc-crm/P130_shows_features_of | 32,751 |
+| http://www.cidoc-crm.org/cidoc-crm/P130i_features_are_also_found_on | 32,751 |
+| http://www.cidoc-crm.org/cidoc-crm/P7_took_place_at | 38,374 |
+| http://www.cidoc-crm.org/cidoc-crm/P7i_witnessed | 38,374 |
+| http://www.cidoc-crm.org/cidoc-crm/P107i_is_current_or_former_member_of | 39,622 |
+| http://www.cidoc-crm.org/cidoc-crm/P107_has_current_or_former_member | 39,622 |
+| http://www.cidoc-crm.org/cidoc-crm/P156i_is_occupied_by | 47,404 |
+| http://www.cidoc-crm.org/cidoc-crm/P156_occupies | 47,404 |
+| http://www.cidoc-crm.org/cidoc-crm/P74i_is_current_or_former_residence_of | 48,079 |
+| http://www.cidoc-crm.org/cidoc-crm/P74_has_current_or_former_residence | 48,146 |
+| http://www.cidoc-crm.org/cidoc-crm/P100i_died_in | 54,325 |
+| http://www.cidoc-crm.org/cidoc-crm/P100_was_death_of | 54,325 |
+| http://www.cidoc-crm.org/cidoc-crm/P98i_was_born | 54,708 |
+| http://www.cidoc-crm.org/cidoc-crm/P98_brought_into_life | 54,708 |
+| http://www.cidoc-crm.org/cidoc-crm/P67i_is_referred_to_by | 79,011 |
+| https://artresearch.net/custom/sameAs | 83,289 |
+| https://artresearch.net/custom/objectSameAs | 86,329 |
+| https://artresearch.net/image-api/image-api/error-description | 87,175 |
+| http://www.cidoc-crm.org/cidoc-crm/P24_transferred_title_of | 125,881 |
+| http://www.cidoc-crm.org/cidoc-crm/P24i_changed_ownership_through | 125,881 |
+| http://www.cidoc-crm.org/cidoc-crm/P89i_contains | 134,904 |
+| http://www.cidoc-crm.org/cidoc-crm/P89_falls_within | 135,180 |
+| https://artresearch.net/custom/order | 188,702 |
+| http://www.cidoc-crm.org/cidoc-crm/P67_refers_to | 193,351 |
+| http://www.cidoc-crm.org/cidoc-crm/P82_at_some_time_within | 201,578 |
+| http://www.cidoc-crm.org/cidoc-crm/P3_has_note | 264,135 |
+| http://www.cidoc-crm.org/cidoc-crm/P46i_forms_part_of | 449,353 |
+| http://www.cidoc-crm.org/cidoc-crm/P46_is_composed_of | 449,353 |
+| http://www.cidoc-crm.org/cidoc-crm/P32i_was_technique_of | 496,822 |
+| http://www.cidoc-crm.org/cidoc-crm/P32_used_general_technique | 497,778 |
+| http://www.cidoc-crm.org/cidoc-crm/P45i_is_incorporated_in | 602,945 |
+| http://www.cidoc-crm.org/cidoc-crm/P55_has_current_location | 906,466 |
+| http://www.cidoc-crm.org/cidoc-crm/P55i_currently_holds | 906,478 |
+| http://www.cidoc-crm.org/cidoc-crm/P45_consists_of | 976,483 |
+| https://artresearch.net/custom/work_thumbnail_url | 1,315,018 |
+| http://www.cidoc-crm.org/cidoc-crm/P9_consists_of | 1,320,165 |
+| http://www.w3.org/2004/02/skos/core#inScheme | 1,417,732 |
+| http://www.cidoc-crm.org/cidoc-crm/P108_has_produced | 1,490,441 |
+| https://artresearch.net/custom/work_preferred_photo | 1,522,485 |
+| http://www.cidoc-crm.org/cidoc-crm/P127_has_broader_term | 1,593,256 |
+| http://www.cidoc-crm.org/cidoc-crm/P127i_has_narrower_term | 1,597,867 |
+| http://www.cidoc-crm.org/cidoc-crm/P4i_is_time-span_of | 1,679,634 |
+| http://www.cidoc-crm.org/cidoc-crm/P165_incorporates | 1,766,357 |
+| http://www.cidoc-crm.org/cidoc-crm/P94_has_created | 1,774,342 |
+| http://www.cidoc-crm.org/cidoc-crm/P94i_was_created_by | 1,774,342 |
+| http://www.cidoc-crm.org/cidoc-crm/P108i_was_produced_by | 1,790,064 |
+| http://www.cidoc-crm.org/cidoc-crm/P104i_applies_to | 1,840,201 |
+| http://www.cidoc-crm.org/cidoc-crm/P138i_has_representation | 1,908,387 |
+| http://www.cidoc-crm.org/cidoc-crm/P82a_begin_of_the_begin | 1,933,280 |
+| http://www.cidoc-crm.org/cidoc-crm/P82b_end_of_the_end | 1,933,465 |
+| http://www.cidoc-crm.org/cidoc-crm/P14i_performed | 2,059,448 |
+| http://www.cidoc-crm.org/cidoc-crm/P50i_is_current_keeper_of | 2,108,736 |
+| https://artresearch.net/custom/thumbnail_url | 2,123,787 |
+| https://artresearch.net/custom/iiif_url | 2,123,787 |
+| https://artresearch.net/custom/preview_url | 2,123,787 |
+| http://www.cidoc-crm.org/cidoc-crm/P4_has_time-span | 2,139,912 |
+| https://artresearch.net/image-api/image-api/storage-id | 2,169,930 |
+| http://www.cidoc-crm.org/cidoc-crm/P165i_is_incorporated_in | 2,171,067 |
+| http://www.cidoc-crm.org/cidoc-crm/P104_is_subject_to | 2,244,432 |
+| https://artresearch.net/custom/imageOrder | 2,266,026 |
+| http://www.cidoc-crm.org/cidoc-crm/P138_represents | 2,312,625 |
+| http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by | 2,349,589 |
+| http://www.cidoc-crm.org/cidoc-crm/P50_has_current_keeper | 2,369,761 |
+| https://artresearch.net/image-api/image-api/identifier | 2,649,983 |
+| https://artresearch.net/image-api/image-api/status-code | 2,651,898 |
+| https://artresearch.net/image-api/image-api/date-processed | 2,881,714 |
+| http://www.cidoc-crm.org/cidoc-crm/P70_documents | 3,279,384 |
+| http://www.cidoc-crm.org/cidoc-crm/P65i_is_shown_by | 3,308,683 |
+| http://www.cidoc-crm.org/cidoc-crm/P65_shows_visual_item | 3,807,270 |
+| https://artresearch.net/custom/has_image | 3,857,225 |
+| http://www.cidoc-crm.org/cidoc-crm/P70i_is_documented_in | 3,986,475 |
+| http://www.cidoc-crm.org/cidoc-crm/P134_continued | 7,146,046 |
+| http://www.cidoc-crm.org/cidoc-crm/P1i_identifies | 10,050,574 |
+| http://www.cidoc-crm.org/cidoc-crm/P190_has_symbolic_content | 15,964,471 |
+| http://www.cidoc-crm.org/cidoc-crm/P1_is_identified_by | 17,977,669 |
+| http://www.cidoc-crm.org/cidoc-crm/P2i_is_type_of | 23,700,950 |
+| http://www.cidoc-crm.org/cidoc-crm/P2_has_type | 34,529,589 |
+| http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 38,031,082 |
+| http://www.cidoc-crm.org/cidoc-crm/P9i_forms_part_of | 60,833,908 |
+| http://www.cidoc-crm.org/cidoc-crm/P177_assigned_property_of_type | 66,218,668 |
+| http://www.cidoc-crm.org/cidoc-crm/P141_assigned | 66,218,668 |
+| http://www.cidoc-crm.org/cidoc-crm/P140_assigned_attribute_to | 66,218,753 |
+
+The most frequently used properties are P140_assigned_attribute_to, P141_assigned, and P177_assigned_property_of_type (all ~66M), followed by P9i_forms_part_of (~60M) and rdf:type (~38M). The knowledge graph heavily uses CIDOC-CRM properties along with some custom PHAROS properties for image handling and linking.
+
+## Step 3 : Describe sample entities
+
+**Step 3 Complete - Sample Entity Descriptions**
+
+I've successfully described sample entities for all 10 top entity types from Step 1. Here's a summary of the findings:
 
 ---
 
-### Sample Triples
+### 1. **E41_Appellation** (9,818,990 instances)
+- **Sample URI:** http://creativecommons.org/licenses/by-nc-nd/3.0/id
+- **Triple Count:** 3
+- **Key Properties:**
+  - `P190_has_symbolic_content`: "CC BY-NC-ND 3.0"
+  - `P2_has_type`: preferred_name
 
+### 2. **E42_Identifier** (7,244,406 instances)
+- **Sample URI:** http://collections.britishart.yale.edu/vufind/Record/1667923/id/catalog_url
+- **Triple Count:** 4
+- **Key Properties:**
+  - `P190_has_symbolic_content`: "http://collections.britishart.yale.edu/vufind/Record/1667923"
+  - `P1i_identifies`: links to the work
+  - `P2_has_type`: catalog_url
+
+### 3. **E22_Human-Made_Object** (3,568,810 instances)
+- **Sample URI:** https://artresearch.net/resource/frick/work/991000003979707141/photo/farl_negative/51323
+- **Triple Count:** 12
+- **Key Properties:**
+  - `P1_is_identified_by`: identifier
+  - `P104_is_subject_to`: rights
+  - `P2_has_type`: photograph_negative
+  - `P50_has_current_keeper`: provider (Frick)
+  - `P65_shows_visual_item`: visual item
+  - `P70i_is_documented_in`: document
+  - Custom properties: `has_image`, `iiif_url`, `imageOrder`, `preview_url`, `thumbnail_url`
+
+### 4. **E36_Visual_Item** (3,308,683 instances)
+- **Sample URI:** https://artresearch.net/resource/frick/work/991000003979707141/photo/farl_negative/51323/visual_item
+- **Triple Count:** 5
+- **Key Properties:**
+  - `P138_represents`: the work
+  - `P165i_is_incorporated_in`: digital image
+  - `P65i_is_shown_by`: human-made object
+  - `P94i_was_created_by`: creation event
+
+### 5. **E12_Production** (2,146,340 instances)
+- **Sample URI:** https://artresearch.net/resource/frick/work/991000003979707141/production
+- **Triple Count:** 4
+- **Key Properties:**
+  - `P108_has_produced`: the work
+  - `P14_carried_out_by`: actor (anonymous American school)
+  - `P4_has_time-span`: timespan
+
+### 6. **E30_Right** (2,081,379 instances)
+- **Sample URI:** https://artresearch.net/resource/e31/frick/ownership
+- **Triple Count:** 1
+- **Key Properties:**
+  - Only `rdf:type` (minimal entity)
+
+### 7. **E52_Time-Span** (1,836,135 instances)
+- **Sample URI:** http://viaf.org/viaf/100467773/event/birth/timespan
+- **Triple Count:** 4
+- **Key Properties:**
+  - `P1_is_identified_by`: appellation
+  - `P82a_begin_of_the_begin`: "1550T00:00:00Z"
+  - `P82b_end_of_the_end`: "1550T23:59:59Z"
+
+### 8. **E65_Creation** (1,774,343 instances)
+- **Sample URI:** http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation
+- **Triple Count:** 3
+- **Key Properties:**
+  - `P14_carried_out_by`: actor (Getty ULAN)
+  - `P94_has_created`: the work
+
+### 9. **D1_Digital_Object** (1,766,357 instances)
+- **Sample URI:** https://artresearch.net/resource/frick/work/991000003979707141/photo/farl_negative/51323/visual_item/image
+- **Triple Count:** 4
+- **Key Properties:**
+  - `P1_is_identified_by`: IIIF URL
+  - `P165_incorporates`: visual item
+  - `P2_has_type`: digital_image
+
+### 10. **E55_Type** (1,717,446 instances)
+- **Sample URI:** http://creativecommons.org/licenses/by-nc-nd/3.0/
+- **Triple Count:** 104,310 (too large for DESCRIBE - used SELECT fallback)
+- **Key Properties (sample of 50):**
+  - `P1_is_identified_by`: identifier
+  - `P2_has_type`: license_type
+  - `P2i_is_type_of`: many reverse links to rights objects (Warburg collection photos)
+
+---
+
+**Key Observations:**
+- The knowledge graph follows CIDOC-CRM patterns consistently
+- Custom PHAROS properties are used for image handling (`iiif_url`, `thumbnail_url`, `preview_url`, `has_image`)
+- Entities are well-connected through inverse properties (e.g., P1/P1i, P2/P2i, P65/P65i)
+- E55_Type entities can be heavily linked (100K+ triples) as they serve as classification hubs
+- The graph integrates data from multiple institutions (Frick, Yale, Warburg, VIAF, Getty)
+
+## Step 4 : Relationship patterns
+
+### **Top Relationship Patterns (by count)**
+
+| Property 1 (p1) | Property 2 (p2) | Count | Pattern Description |
+|-----------------|-----------------|-------|---------------------|
+| P28_custody_surrendered_by | P28i_surrendered_custody_through | 8,929,797 | Custody event → inverse custody link |
+| P130_shows_features_of | P130i_features_are_also_found_on | 38,802,937 | Feature relationship → inverse feature link |
+| P130_shows_features_of | P2i_is_type_of | 10,132,424 | Feature relationship → type classification |
+| P7_took_place_at | P55i_currently_holds | 59,211,628 | Event location → current holder |
+| P89_falls_within | P89i_contains | 13,671,131 | Place hierarchy → inverse containment |
+| P138_represents | P138i_has_representation | 19,413,830 | Representation → inverse representation |
+| P138_represents | work_preferred_photo | 8,212,200 | Representation → preferred photo |
+| P1_is_identified_by | P2_has_type | 18,150,253 | Identifier → type |
+| P1_is_identified_by | rdf:type | 17,064,219 | Identifier → type |
+| P1_is_identified_by | P190_has_symbolic_content | 15,850,140 | Identifier → symbolic content |
+| P1_is_identified_by | P1i_identifies | 10,052,254 | Identifier → inverse identification |
+
+---
+
+### **Key Pattern Categories**
+
+#### **1. Identification & Classification Patterns**
+- **P1_is_identified_by → P2_has_type** (18.1M): Entities are identified by identifiers that have types
+- **P1_is_identified_by → P190_has_symbolic_content** (15.9M): Identifiers contain symbolic content (names, labels)
+- **P1_is_identified_by → P1i_identifies** (10.1M): Bidirectional identification links
+
+#### **2. Visual & Digital Object Patterns**
+- **P138_represents → P138i_has_representation** (19.4M): Visual items represent works with inverse links
+- **P138_represents → work_preferred_photo** (8.2M): Works have preferred photo representations
+- **P65_shows_visual_item → P65i_is_shown_by** (3.3M): Objects show visual items with inverse links
+- **P165_incorporates → P138_represents** (1.8M): Digital objects incorporate visual representations
+
+#### **3. Production & Creation Patterns**
+- **P108_has_produced → P1_is_identified_by** (4.7M): Production events identify produced works
+- **P108_has_produced → P2_has_type** (3.8M): Production events have types
+- **P94_has_created → P94i_was_created_by** (1.8M): Creation events with inverse links
+- **P94_has_created → P138_represents** (1.7M): Creation events represent works
+
+#### **4. Temporal & Spatial Patterns**
+- **P4_has_time-span → P82a_begin_of_the_begin** (1.9M): Time-spans have begin dates
+- **P4_has_time-span → P82b_end_of_the_end** (1.9M): Time-spans have end dates
+- **P7_took_place_at → P55i_currently_holds** (59.2M): Events at locations held by institutions
+- **P89_falls_within → P89i_contains** (13.7M): Place hierarchy relationships
+
+#### **5. Documentation & Rights Patterns**
+- **P70_documents → P2_has_type** (6.4M): Documents have types
+- **P70_documents → P1_is_identified_by** (6.3M): Documents are identified
+- **P104_is_subject_to → P2_has_type** (2.2M): Rights have types
+- **P67_refers_to → P70_documents** (3.2M): References link to documents
+
+#### **6. Provenance & Custody Patterns**
+- **P24_transferred_title_of → P1_is_identified_by** (384K): Title transfers identify objects
+- **P28_custody_surrendered_by → P28i_surrendered_custody_through** (8.9M): Custody surrender events
+- **P30_transferred_custody_of → P108i_was_produced_by** (6.3K): Custody transfers link to production
+
+#### **7. Composition & Structure Patterns**
+- **P9_consists_of → P9i_forms_part_of** (1.3M): Part-whole relationships
+- **P46_is_composed_of → P2_has_type** (1.3M): Composed parts have types
+- **P46_is_composed_of → P1_is_identified_by** (1.3M): Composed parts are identified
+
+#### **8. Actor & Group Patterns**
+- **P107_has_current_or_former_member → P2_has_type** (54K): Group members have types
+- **P107_has_current_or_former_member → P107i_is_current_or_former_member_of** (40K): Group membership inverse
+- **P98_brought_into_life → P98i_was_born** (55K): Birth events with inverse links
+- **P100_was_death_of → P100i_died_in** (54K): Death events with inverse links
+
+#### **9. Classification & Taxonomy Patterns**
+- **P71_lists → P2i_is_type_of** (829K): Lists contain type classifications
+- **P130_shows_features_of → P127i_has_narrower_term** (729K): Features link to narrower terms
+- **P127_has_broader_term** appears in multiple hierarchical patterns
+
+#### **10. Custom PHAROS Properties**
+- **P108_has_produced → has_image** (1.5M): Production events have images
+- **P108_has_produced → work_preferred_photo** (1.3M): Production events link to preferred photos
+- **P108_has_produced → work_thumbnail_url** (1.1M): Production events have thumbnail URLs
+- **P70_documents → has_image** (3.3M): Documents have images
+- **P70_documents → imageOrder** (1.8M): Documents have ordered images
+
+---
+
+### **Key Observations**
+
+1. **Highly Connected Graph**: The most frequent patterns involve inverse properties (P1/P1i, P2/P2i, P65/P65i, etc.), showing the graph maintains bidirectional relationships.
+
+2. **Image-Centric**: Many patterns involve custom PHAROS image properties (`has_image`, `work_preferred_photo`, `work_thumbnail_url`, `iiif_url`), reflecting the art research focus.
+
+3. **CIDOC-CRM Compliance**: Patterns consistently follow CIDOC-CRM ontology structure with proper use of entity types and properties.
+
+4. **Provenance Tracking**: Strong patterns for custody, title transfer, and production events show comprehensive provenance documentation.
+
+5. **Hierarchical Structures**: Place hierarchies (P89), type classifications (P2, P127), and part-whole relationships (P9, P46) are well-represented.
+
+6. **Temporal Precision**: Time-spans consistently use precise begin/end date properties (P82a, P82b).
+
+7. **Multi-Institution Integration**: Patterns show integration across multiple institutions (Frick, Yale, Warburg, etc.) through shared property structures.
+
+## Step 5 : Entity-value patterns
+
+The data reveals highly consistent patterns across entities from multiple institutions (Yale Center for British Art, Westminster School). All 100 triples follow three main entity types:
+
+### **1. E65_Creation (Creation Events) - 20 triples**
+
+**Pattern Structure:**
 ```
-s: https://artresearch.net/resource/frick/work/991000004939707141/photo/farl_negative/51309
-  p: https://artresearch.net/custom/has_image
-  o: false
-
-s: https://artresearch.net/resource/frick/work/991000004939707141
-  p: https://artresearch.net/custom/has_image
-  o: false
-  
-s: http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation
-  p: http://www.cidoc-crm.org/cidoc-crm/P14_carried_out_by
-  o: http://vocab.getty.edu/ulan/500303557
-
-s: http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation
-  p: http://www.cidoc-crm.org/cidoc-crm/P94_has_created
-  o: http://collections.britishart.yale.edu/vufind/Record/1667923
+<work>/event/creation
+├── P14_carried_out_by → <actor_uri> (Getty ULAN or institution)
+├── P94_has_created → <work_uri>
+└── rdf:type → E65_Creation
 ```
 
+**Sample Entities:**
+- `http://collections.britishart.yale.edu/vufind/Record/1667923/event/creation`
+- `http://collections.britishart.yale.edu/vufind/Record/3388689/event/creation`
+- `http://collections.westminster.org.uk/gb-2014-ws-03-pic-001-01/event/creation`
+- `http://collections.westminster.org.uk/gb-2014-ws-03-pic-001-07/event/creation`
+
+**Value Patterns:**
+- **P14_carried_out_by**: Links to actors (Getty ULAN IDs or institution repositories)
+  - `http://vocab.getty.edu/ulan/500303557` (Yale records)
+  - `http://vocab.getty.edu/ulan/500226159` (Westminster records)
+  - `https://artresearch.net/resource/pmc/repository/westminster_school`
+- **P94_has_created**: Links back to the work/document being created
+- **rdf:type**: Always `E65_Creation`
+
 ---
 
-### Entity-Value Pattern Examples
+### **2. E42_Identifier (Catalog URL Identifiers) - 40 triples**
 
-Shows CIDOC-CRM relationship patterns:
-- **Creation events** linked to artists (P14_carried_out_by) and artworks (P94_has_created)
-- **Catalog URLs** identified by symbolic content and identifying objects
+**Pattern Structure:**
+```
+<work>/id/catalog_url
+├── P190_has_symbolic_content → <work_url>
+├── P1i_identifies → <work_uri>
+├── P2_has_type → catalog_url_type
+└── rdf:type → E42_Identifier
+```
+
+**Sample Entities:**
+- `http://collections.britishart.yale.edu/vufind/Record/1667923/id/catalog_url`
+- `http://collections.westminster.org.uk/gb-2014-ws-03-pic-001-01/id/catalog_url`
+
+**Value Patterns:**
+- **P190_has_symbolic_content**: Contains the full URL of the work
+  - `http://collections.britishart.yale.edu/vufind/Record/1667923`
+  - `http://collections.westminster.org.uk/gb-2014-ws-03-pic-001-01`
+- **P1i_identifies**: Links to the work being identified
+- **P2_has_type**: Always `https://artresearch.net/resource/pharos/vocab/meta/catalog_url`
+- **rdf:type**: Always `E42_Identifier`
 
 ---
 
-### Summary
+### **3. E31_Document (Catalog Records) - 40 triples**
 
-The PHAROS endpoint is a **large art history knowledge graph** using:
-- **CIDOC-CRM ontology** as the primary schema (cultural heritage events, objects, actors, places)
-- **Custom extensions** for image handling (has_image, image-api properties)
-- **Major collections** from institutions like Frick, Yale British Art, Getty
-- **~66M+ triples** with heavy use of attribution/assignment properties
-- **No named graphs** - single unified graph structure
+**Pattern Structure:**
+```
+<work>
+├── P1_is_identified_by → <identifier_uri>
+├── P2_has_type → catalog_record_type
+├── P70_documents → <actor_uri>
+├── P94i_was_created_by → <creation_event_uri>
+└── rdf:type → E31_Document
+```
+
+**Sample Entities:**
+- `http://collections.britishart.yale.edu/vufind/Record/1667923`
+- `http://collections.westminster.org.uk/gb-2014-ws-03-pic-001-01`
+
+**Value Patterns:**
+- **P1_is_identified_by**: Links to the catalog URL identifier
+- **P2_has_type**: Always `https://artresearch.net/resource/pharos/vocab/meta/catalog_record`
+- **P70_documents**: Links to actors (Getty ULAN IDs or institution repositories)
+  - `http://vocab.getty.edu/ulan/500303557` (Yale)
+  - `http://vocab.getty.edu/ulan/500226159` (Westminster)
+  - `https://artresearch.net/resource/pmc/repository/westminster_school`
+- **P94i_was_created_by**: Links to the creation event
+- **rdf:type**: Always `E31_Document`
+
+---
+
+### **Key Entity-Value Pattern Observations**
+
+#### **1. Consistent URI Structure**
+- **Yale**: `http://collections.britishart.yale.edu/vufind/Record/<id>`
+- **Westminster**: `http://collections.westminster.org.uk/gb-2014-ws-03-pic-<id>`
+- **Creation events**: `.../<work>/event/creation`
+- **Identifiers**: `.../<work>/id/catalog_url`
+
+#### **2. Standardized Type URIs**
+- **catalog_url**: `https://artresearch.net/resource/pharos/vocab/meta/catalog_url`
+- **catalog_record**: `https://artresearch.net/resource/pharos/vocab/meta/catalog_record`
+- All types use the PHAROS vocabulary namespace
+
+#### **3. External Authority Integration**
+- **Getty ULAN**: Used for actor identification
+  - `http://vocab.getty.edu/ulan/500303557`
+  - `http://vocab.getty.edu/ulan/500226159`
+- **Institution repositories**: Used for institutional actors
+  - `https://artresearch.net/resource/pmc/repository/westminster_school`
+
+#### **4. Bidirectional Relationships**
+- **P1/P1i**: Identification is bidirectional
+- **P94/P94i**: Creation is bidirectional
+- **P2/P2i**: Type classification has inverse
+
+#### **5. Multi-Institution Consistency**
+- Both Yale and Westminster collections follow identical patterns
+- Same property usage across different institutions
+- Consistent type vocabulary (PHAROS meta types)
+
+#### **6. Value Types Observed**
+- **URIs**: All object values are URIs (no literals in this sample)
+- **External authorities**: Getty ULAN, institution repositories
+- **Internal references**: Links between related entities (work → creation → identifier)
+
+#### **7. Triple Distribution**
+- **E65_Creation**: 20 triples (3 properties × ~7 entities)
+- **E42_Identifier**: 40 triples (4 properties × ~10 entities)
+- **E31_Document**: 40 triples (5 properties × ~8 entities)
+
+---
+
+### **Pattern Summary**
+
+The PHAROS knowledge graph demonstrates:
+
+1. **Highly structured entity patterns** with consistent property usage
+2. **Standardized vocabulary** through PHAROS meta types
+3. **External authority integration** (Getty ULAN for actors)
+4. **Bidirectional relationship maintenance** (inverse properties)
+5. **Cross-institution consistency** (same patterns across Yale and Westminster)
+6. **URI-based value storage** (no literal values in this sample)
+7. **Hierarchical entity organization** (work → creation event → identifier)
+
+These patterns reflect a well-organized, standards-compliant art research knowledge graph that integrates multiple institutional collections while maintaining consistent data structures.
