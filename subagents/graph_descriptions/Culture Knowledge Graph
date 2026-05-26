@@ -1,7 +1,8 @@
-## Step 1 : Get entity types
+# Culture Knowledge Graph Exploration Report
 
-All pages collected (OFFSET 100 reached). Here is the **merged and de-duplicated result** from all 6 pages (120 distinct types total):
-
+## Overview
+Large-scale semantic infrastructure developed within NFDI4Culture to interconnect heterogeneous cultural heritage and humanities research data — including musicology, art history, performance, archives, and audiovisual collections. It aggregates metadata from distributed repositories into a shared graph based on ontologies such as NFDIcore and the NFDI4Culture Ontology (CTO), enabling cross-collection discovery, SPARQL querying, interoperability, and AI-driven exploration of cultural data across institutions and domains.
+Endpoint: https://nfdi4culture.de/sparql
 ---
 
 ## Step 1 Results — Entity Types (merged, 120 types)
