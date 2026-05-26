@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from pathlib import Path
 from string import Template
 from typing import Annotated, TypedDict
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
@@ -66,9 +66,9 @@ async def _setup_routed_llm() -> None:
     base_url = os.getenv("PSNC_OKD_BASE_URL")
     model = os.getenv("PSNC_OKD_LARGE_MODEL")
     api_key = os.getenv("PSNC_OKD_API_KEY")
-    fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
-    fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
-    fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
+    fallback_base_url = os.getenv("QUAGGA_OPENROUTER_BASE_URL")
+    fallback_api_key = os.getenv("QUAGGA_OPENROUTER_API_KEY")
+    fallback_model = os.getenv("QUAGGA_OPENROUTER_MODEL")
 
     startup_llm, is_healthy, reason = await build_llm_from_health(
         base_url=base_url,
@@ -77,7 +77,8 @@ async def _setup_routed_llm() -> None:
         fallback_base_url=fallback_base_url,
         fallback_api_key=fallback_api_key,
         fallback_model_name=fallback_model,
-        temperature=0.0,
+        temperature=1.0,
+        top_p=0.9,
         extra_body={"reasoning": {"enabled": True}},
     )
     update_runtime_llm(runtime_state, startup_llm)
@@ -102,9 +103,9 @@ def _start_routed_llm_health_monitor() -> None:
                     base_url=os.getenv("PSNC_OKD_BASE_URL"),
                     api_key=os.getenv("PSNC_OKD_API_KEY"),
                     model_name=os.getenv("PSNC_OKD_LARGE_MODEL"),
-                    fallback_base_url=os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL"),
-                    fallback_api_key=os.getenv("GRAPHCHAT_OPENROUTER_API_KEY"),
-                    fallback_model_name=os.getenv("GRAPHCHAT_OPENROUTER_MODEL"),
+                    fallback_base_url=os.getenv("QUAGGA_OPENROUTER_BASE_URL"),
+                    fallback_api_key=os.getenv("QUAGGA_OPENROUTER_API_KEY"),
+                    fallback_model_name=os.getenv("QUAGGA_OPENROUTER_MODEL"),
                     temperature=1.0,
                     top_p=0.9,
                     extra_body={"reasoning": {"enabled": True}},
@@ -375,7 +376,12 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                 "----\n\n"
                 f"{prompt}"
             )
+        user_prompt = (
+            "Answer the following user question exactly as asked.\n\n"
+            f"{state['question']}"
+        )
         print(f"[Answer Question] Prompt:\n{prompt}\n")
+        print(f"[Answer Question] User Prompt:\n{user_prompt}\n")
 
         from langgraph.errors import GraphRecursionError as _SubagentRecursionError
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 200}
@@ -385,7 +391,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
 
         try:
             for event in subagent.stream(
-                {"messages": [SystemMessage(content=prompt)]},
+                {"messages": [SystemMessage(content=prompt), HumanMessage(content=user_prompt)]},
                 config=config,
                 stream_mode="updates",
             ):

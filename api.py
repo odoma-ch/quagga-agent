@@ -133,7 +133,8 @@ def force_validate(state: State, config: RunnableConfig):
                     {
                         "id": f"call_validate_{uuid.uuid4().hex[:8]}",
                         "name": "validate_sparql_tool",
-                        "args": {"summary": "validate"},
+                        # Keep arg present for strict tool schemas; real content still comes from injected state.
+                        "args": {"summary": ""},
                         "type": "tool_call",
                     }
                 ],
@@ -158,15 +159,15 @@ async def lifespan(app: FastAPI):
     base_url = os.getenv("PSNC_OKD_BASE_URL")
     model = os.getenv("PSNC_OKD_MEDIUM_MODEL")
     api_key = os.getenv("PSNC_OKD_API_KEY")
-    fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
-    fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
-    fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
+    fallback_base_url = os.getenv("QUAGGA_OPENROUTER_BASE_URL")
+    fallback_api_key = os.getenv("QUAGGA_OPENROUTER_API_KEY")
+    fallback_model = os.getenv("QUAGGA_OPENROUTER_MODEL")
     tool_base_url = os.getenv("PSNC_SMALL_TOOL_BASE_URL")
     tool_api_key = os.getenv("PSNC_SMALL_TOOL_API_KEY")
     tool_model = os.getenv("PSNC_SMALL_TOOL_MODEL")
-    tool_fallback_base_url = os.getenv("GRAPHCHAT_OPENROUTER_BASE_URL")
-    tool_fallback_api_key = os.getenv("GRAPHCHAT_OPENROUTER_API_KEY")
-    tool_fallback_model = os.getenv("GRAPHCHAT_OPENROUTER_MODEL")
+    tool_fallback_base_url = os.getenv("QUAGGA_OPENROUTER_BASE_URL")
+    tool_fallback_api_key = os.getenv("QUAGGA_OPENROUTER_API_KEY")
+    tool_fallback_model = os.getenv("QUAGGA_OPENROUTER_MODEL")
 
     # validate_sparql_tool is intentionally excluded from llm_tools — the LLM must never
     # call it directly. It is only invoked by force_validate (graph-enforced) to ensure
@@ -257,7 +258,7 @@ async def lifespan(app: FastAPI):
         # application is running
         yield
     finally:
-        logger.info("Shutting down GraphChat SPARQL Agent API")
+        logger.info("Shutting down Quagga SPARQL Agent API")
         await runtime_state.pool.close()
         health_check_task.cancel()
         tool_health_check_task.cancel()
@@ -265,12 +266,12 @@ async def lifespan(app: FastAPI):
             await health_check_task
         with contextlib.suppress(asyncio.CancelledError):
             await tool_health_check_task
-        logger.info("Shutted down GraphChat SPARQL Agent API")
+        logger.info("Shutted down Quagga SPARQL Agent API")
 
 
 
 app = FastAPI(
-    title="GraphChat SPARQL Agent API",
+    title="Quagga SPARQL Agent API",
     description="OpenAI-compatible API wrapping the LangGraph ShEx-based SPARQL agent",
     version="0.1.0",
     lifespan=lifespan,

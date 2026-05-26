@@ -16,7 +16,7 @@
    - `http://localhost:3000/admin/functions`
 
 3. In another tab, open:
-   - `https://raw.githubusercontent.com/odoma-ch/graphchat-agent/refs/heads/main/filters/__init__.py`
+   - `https://raw.githubusercontent.com/odoma-ch/quagga-agent/refs/heads/main/filters/__init__.py`
 
 4. Copy the script that injects the `chat_id`.
 

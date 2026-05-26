@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import openai
 import logging
 import requests
@@ -521,14 +522,14 @@ class RunSPARQLTool(BaseTool):
             sparql = SPARQLWrapper(endpoint)
             sparql.setQuery(query)
             sparql.setReturnFormat(JSON)
-            sparql.setTimeout(60)
+            sparql.setTimeout(30)
 
             with ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(lambda: sparql.query().convert())
                 try:
-                    results = future.result(timeout=60)
+                    results = future.result(timeout=30)
                 except TimeoutError:
-                    return f"Query timed out after 60s. Try a simpler query with a smaller LIMIT."
+                    return f"Query timed out after 30s. Try a simpler query with a smaller LIMIT."
 
             if "results" in results and "bindings" in results["results"]:
                 bindings = results["results"]["bindings"]
@@ -569,101 +570,94 @@ class RunSPARQLTool(BaseTool):
 
 
 @tool
-def validate_sparql_tool(summary: str, state: Annotated[State, InjectedState]) -> str:
+def validate_sparql_tool(
+    summary: str,
+    state: Annotated[dict, InjectedState],
+) -> str:
     """Extract the SPARQL query (if any) from the subagent's response, re-run it, and
     format the results as markdown. Returns both the prose description and the query results. 
     This tool is always called by the main agent after the `run_sparql_subagent_tool` has run."""
-    # Read the full subagent result from state directly — avoids the LLM truncating
-    # the summary when constructing the tool-call argument.
-    summary = ""
-    for msg in reversed(state["messages"]):
-        if getattr(msg, "type", "") == "tool" and getattr(msg, "name", None) == "run_sparql_subagent_tool":
-            summary = msg.content if isinstance(msg.content, str) else str(msg.content)
-            break
-
-    if not summary:
-        return "No subagent result found to validate."
-
-    console.print("Extracting SPARQL query from subagent response", style="bold blue")
-
-    tool_client, tool_model = _get_tool_client_and_model()
-    extraction_response = tool_client.chat.completions.parse(
-        model=tool_model,
-        response_format=SPARQLExtractionResult,
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "Extract two things from the user's message:\n"
-                    "1. The SPARQL query exactly as written, preserving all whitespace, prefixes, and formatting.\n"
-                    "2. The human-readable description exactly as written, excluding the SPARQL query block.\n"
-                    "Preserve everything precisely — numeric values, counts, totals, percentages, and all other specifics "
-                    "must not be modified, paraphrased, or removed. Set a field to null if not present."
-                ),
-            },
-            {"role": "user", "content": summary},
-        ],
-    )
-    extracted: SPARQLExtractionResult = extraction_response.choices[0].message.parsed
-
-    if not extracted.query:
-        return f"The SPARQL has been executed:\n{extracted.description}"
-
-    _, _, endpoint, _ = _resolve_session_values()
-
-    if not endpoint:
-        return f"The SPARQL has been executed:\n{extracted.description}"
-
-    if not _is_sparql_endpoint_up(endpoint):
-        return f"The SPARQL has been executed:\n{extracted.description}"
-
     try:
-        console.print(f"Re-running extracted query against {endpoint}", style="bold blue")
-        store = sparqlstore.SPARQLStore(query_endpoint=endpoint)
-        g = Graph(store=store)
-        logging.info(f"Re-running extracted query: {extracted.query}")
-        results = g.query(extracted.query)
+        # Prefer full subagent result from state — avoids LLM truncation when building tool args.
+        # Keep incoming `summary` as fallback.
+        extracted_summary = ""
+        if isinstance(state, dict):
+            for msg in reversed(state.get("messages", [])):
+                if (
+                    getattr(msg, "type", "") == "tool"
+                    and getattr(msg, "name", None) == "run_sparql_subagent_tool"
+                ):
+                    extracted_summary = (
+                        msg.content if isinstance(msg.content, str) else str(msg.content)
+                    )
+                    break
+
+        if extracted_summary:
+            summary = extracted_summary
+
+        # Never forward chain-of-thought style sections to downstream extraction.
+        summary = re.sub(
+            r"<think>.*?</think>",
+            "",
+            summary,
+            flags=re.IGNORECASE | re.DOTALL,
+        ).strip()
+
+        if not summary:
+            return "No subagent result found to validate."
+
+        console.print("Extracting SPARQL query from subagent response", style="bold blue")
+
+        tool_client, tool_model = _get_tool_client_and_model()
+        extracted_query: str | None = None
+        extracted_description: str = summary
+
+        try:
+            extraction_response = tool_client.chat.completions.parse(
+                model=tool_model,
+                response_format=SPARQLExtractionResult,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Extract two things from the user's message:\n"
+                            "1. The SPARQL query exactly as written, preserving all whitespace, prefixes, and formatting.\n"
+                            "2. The human-readable description exactly as written, excluding the SPARQL query block.\n"
+                            "Preserve everything precisely — numeric values, counts, totals, percentages, and all other specifics "
+                            "must not be modified, paraphrased, or removed. Set a field to null if not present."
+                        ),
+                    },
+                    {"role": "user", "content": summary},
+                ],
+            )
+            extracted: SPARQLExtractionResult | None = extraction_response.choices[0].message.parsed
+            if extracted is not None:
+                extracted_query = extracted.query
+                extracted_description = extracted.description
+        except Exception as extraction_error:
+            logging.warning(
+                "Structured SPARQL extraction failed, using regex fallback: %s",
+                extraction_error,
+            )
+
+        if not extracted_query:
+            return f"The SPARQL has been executed:\n{extracted_description}"
+
+        _, _, endpoint, _ = _resolve_session_values()
+        if not endpoint or not _is_sparql_endpoint_up(endpoint):
+            return f"The SPARQL has been executed:\n{extracted_description}"
+
+        pretty_query = _pretty_sparql(extracted_query)
+        return (
+            f"{extracted_description}\n\n"
+            "The SPARQL has been executed:\n"
+            "```sparql\n"
+            f"{pretty_query}\n"
+            "```\n"
+        )
     except Exception as e:
-        console.print(f"Query re-run failed: {e}", style="bold red")
-        return f"The SPARQL has been executed:\n{extracted.description}"
-
-    results_list = list(results)
-    if not results_list:
-        return f"The SPARQL has been executed:\n{extracted.description}"
-
-    max_display_rows = 50
-    display_results = results_list[:max_display_rows]
-    was_truncated = len(results_list) > max_display_rows
-
-    headers = [str(v) for v in results.vars] if hasattr(results, "vars") and results.vars else []
-    if headers:
-        header_row = "| " + " | ".join(headers) + " |"
-        separator_row = "| " + " | ".join("---" for _ in headers) + " |"
-        data_rows = [
-            "| " + " | ".join(str(row.get(h)) if row.get(h) is not None else "" for h in headers) + " |"
-            for row in display_results
-        ]
-        table = "\n".join([header_row, separator_row] + data_rows)
-    else:
-        table = "\n".join(str(row) for row in display_results)
-
-    truncation_note = (
-        f"\n\nShowing first {max_display_rows} of {len(results_list)} results."
-        if was_truncated
-        else ""
-    )
-
-    pretty_query = _pretty_sparql(extracted.query)
-    return (
-        f"{extracted.description}\n\n"
-        "The SPARQL has been executed:\n"
-        "```sparql\n"
-        f"{pretty_query}\n"
-        "```\n"
-        "Here are the results:\n"
-        f"{table}"
-        f"{truncation_note}"
-    )
+        logging.exception("validate_sparql_tool failed")
+        return f"The SPARQL has been executed:\nValidation step failed: {str(e) or 'unknown error'}"
 
 
 
