@@ -1,37 +1,82 @@
 For the $kg_name endpoint: $endpoint
 ## STRATEGY — follow these steps IN ORDER
 
-Step 1 : Discover graphs
-  Run ONE query:  SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } }
-  Record the results. Do NOT re-run this query.
-  Only consider graphs whose URI is a proper URI (starts with http:// or https://); skip blank nodes or non-URI graph names.
+Important: This knowledge graph uses named graphs. Explore only meaningful named graphs and ignore local/internal graph URIs.
 
-Step 2 : For EACH graph, get entity types (run one query per graph)
+Important: Keep each query's LIMIT small to avoid endpoint timeouts — DO NOT raise the LIMIT values below. To still collect up to ~100 rows per step, you MUST paginate by issuing the SAME query multiple times, keeping LIMIT constant and increasing OFFSET by that LIMIT, until OFFSET reaches 100 (or a page returns 0 rows, whichever comes first).
+
+Within each step, run the pages STRICTLY SEQUENTIALLY: issue ONE tool call, wait for its response, then issue the next page in the next turn. Do NOT batch multiple OFFSET pages into a single message and do NOT issue parallel tool calls. Do NOT re-run the same LIMIT/OFFSET combination. After all pages are collected, merge their rows and de-duplicate before recording.
+
+Step 1 : Discover eligible named graphs
+  Use this timeout-safe strategy:
+  1. Run this lighter probe query repeatedly, sequentially (one tool call per turn; never in parallel):
+     PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     SELECT DISTINCT ?g
+     WHERE {
+       GRAPH ?g { ?s rdf:type ?o }
+       FILTER(isIRI(?g))
+     }
+     LIMIT 20 OFFSET <offset>
+     OFFSET values: 0, 20, 40, 60, 80, 100. Stop early if a page returns 0 rows.
+  2. Merge/de-duplicate all returned graph URIs.
+  3. Apply eligibility filtering locally (in your reasoning/reporting), NOT in SPARQL:
+     - keep only graph URIs that start with http:// or https://
+     - exclude any URI containing localhost, 127.0.0.1, 0.0.0.0, ::1, .local, or internal (case-insensitive where applicable)
+  4. Use only the remaining eligible graphs for all next steps.
+  If every page times out or returns no graphs, run ONE fallback query:
+     SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s ?p ?o } FILTER(isIRI(?g)) } LIMIT 10
+  Then apply the same local eligibility filtering and continue.
+
+Step 2 : For EACH eligible graph, get entity types
+  Run the following query repeatedly, sequentially (one tool call per turn, waiting for each response before issuing the next; never in parallel).
+  OFFSET values, in order: start at 0 and increment by this step's LIMIT (i.e., 0, LIMIT, 2×LIMIT, 3×LIMIT, …) until OFFSET reaches 100; do not exceed OFFSET 100.
+  Stop early ONLY if a page returns 0 rows.
   SELECT ?type (COUNT(?s) AS ?count)
   WHERE { GRAPH <GRAPH_URI> { ?s a ?type } }
-  GROUP BY ?type ORDER BY DESC(?count) LIMIT 20
+  GROUP BY ?type ORDER BY DESC(?count) LIMIT 20 OFFSET <offset>
+  Merge rows from all pages and record combined results for the graph.
 
-Step 3 : For EACH graph, get property usage (run one query per graph)
+Step 3 : For EACH eligible graph, get property usage
+  Run the following query repeatedly, sequentially (one tool call per turn, waiting for each response before issuing the next; never in parallel).
+  OFFSET values, in order: start at 0 and increment by this step's LIMIT (i.e., 0, LIMIT, 2×LIMIT, 3×LIMIT, …) until OFFSET reaches 100; do not exceed OFFSET 100.
+  Stop early ONLY if a page returns 0 rows.
   SELECT ?p (COUNT(*) AS ?count)
   WHERE { GRAPH <GRAPH_URI> { ?s ?p ?o } }
-  GROUP BY ?p ORDER BY DESC(?count) LIMIT 20
+  GROUP BY ?p ORDER BY DESC(?count) LIMIT 20 OFFSET <offset>
+  Merge rows from all pages and record combined results for the graph.
 
-Step 4 : For EACH graph, get sample triples (run one query per graph)
-  SELECT ?s ?p ?o
-  WHERE { GRAPH <GRAPH_URI> { ?s ?p ?o } }
-  LIMIT 10
+Step 4 : For EACH eligible graph, describe sample entities
+  Pick the top 10 entity types from Step 2 for that graph. For EACH of those types, run the following tool calls IN ORDER, one per turn (sequential, never in parallel):
+  1. Fetch one sample entity URI for that graph/type:
+     SELECT ?s WHERE { GRAPH <GRAPH_URI> { ?s a <topType> } } LIMIT 1
+  2. Count how many outgoing triples that entity has in that graph:
+     SELECT (COUNT(*) AS ?n) WHERE { GRAPH <GRAPH_URI> { <sampleEntityURI> ?p ?o } }
+  3. Decide based on the count:
+     - If ?n <= 200, describe the entity:
+       DESCRIBE <sampleEntityURI>
+     - If ?n > 200, skip DESCRIBE and fetch bounded properties from that graph:
+       SELECT ?p ?o WHERE { GRAPH <GRAPH_URI> { <sampleEntityURI> ?p ?o } } LIMIT 50
+  Repeat for each of the top 10 types. If an endpoint does not support DESCRIBE (returns empty or an error), use the same SELECT fallback as above.
+  Record all returned triples and use them to characterise what real entities of each top type look like.
 
-Step 5 : For EACH graph, discover relationship patterns
+Step 5 : For EACH eligible graph, discover relationship patterns
+  Run the following query repeatedly, sequentially (one tool call per turn, waiting for each response before issuing the next; never in parallel).
+  OFFSET values, in order: start at 0 and increment by this step's LIMIT (i.e., 0, LIMIT, 2×LIMIT, 3×LIMIT, …) until OFFSET reaches 100; do not exceed OFFSET 100.
+  Stop early ONLY if a page returns 0 rows.
   SELECT ?p1 ?p2 (COUNT(*) AS ?count)
-  WHERE { 
-    GRAPH <GRAPH_URI> { 
+  WHERE {
+    GRAPH <GRAPH_URI> {
       ?s ?p1 ?mid .
       ?mid ?p2 ?o .
-    } 
+    }
   }
-  GROUP BY ?p1 ?p2 ORDER BY DESC(?count) LIMIT 30
+  GROUP BY ?p1 ?p2 ORDER BY DESC(?count) LIMIT 30 OFFSET <offset>
+  Merge rows from all pages and record combined results for the graph.
 
-Step 6 : For EACH graph, discover entity-value patterns
+Step 6 : For EACH eligible graph, discover entity-value patterns
+  Run the following query repeatedly, sequentially (one tool call per turn, waiting for each response before issuing the next; never in parallel).
+  OFFSET values, in order: start at 0 and increment by this step's LIMIT (i.e., 0, LIMIT, 2×LIMIT, 3×LIMIT, …) until OFFSET reaches 100; do not exceed OFFSET 100.
+  Stop early ONLY if a page returns 0 rows.
   SELECT ?s ?p ?o
   WHERE {
     GRAPH <GRAPH_URI> {
@@ -39,7 +84,14 @@ Step 6 : For EACH graph, discover entity-value patterns
       ?s ?p ?o .
     }
   }
-  LIMIT 5
+  LIMIT 5 OFFSET <offset>
+  Merge rows from all pages and record combined results for the graph.
 
 Step 7 : Compile the report
   Summarise everything into a clean, readable report grouped by graph.
+  Output must follow these formatting rules:
+  - Never truncate URIs/IRIs. Do NOT replace any part with "...".
+  - Keep all links exactly as returned by SPARQL (character-for-character).
+  - In markdown tables, wrap URI values in angle brackets, e.g. <https://example.org/resource/123>.
+  - Do not convert URI text to markdown links with labels; keep raw URI text.
+  - Preserve literal strings exactly, including apostrophes and quotes.
