@@ -1,186 +1,475 @@
-Now I have all the data needed. Let me compile the final report:
+## Step 1 : Discover eligible named graphs
 
----
+I've completed Step 1. Here are the results:
+
+**Pages collected:**
+- Page 0 (OFFSET 0): 4 graphs
+- Page 1 (OFFSET 20): 0 rows (stopped early)
+
+**All unique graph URIs found:**
+1. http://www.openlinksw.com/schemas/virtrdf#
+2. http://www.w3.org/2002/07/owl#
+3. http://localhost:8890/sparql
+4. https://data.gesis.org/gesiskg
+
+**Eligibility filtering applied:**
+- ✓ All URIs start with http:// or https://
+- ✗ Excluded: http://localhost:8890/sparql (contains "localhost")
+
+**Eligible named graphs for next steps:**
+1. http://www.openlinksw.com/schemas/virtrdf#
+2. http://www.w3.org/2002/07/owl#
+3. https://data.gesis.org/gesiskg
+
+## Step 2 : For EACH eligible graph, get entity types
+
+I've completed Step 2. Here are the entity type counts for each eligible graph:
+
+**Graph 1: http://www.openlinksw.com/schemas/virtrdf#**
+- Pages collected: OFFSET 0 (12 types), OFFSET 20 (0 rows - stopped)
+- Total unique types: 12
+- Top types: QuadMapFormat (130), array-of-QuadMapFormat (98), QuadMapValue (8), array-of-QuadMapColumn (8), QuadMapColumn (8)
+
+**Graph 2: http://www.w3.org/2002/07/owl#**
+- Pages collected: OFFSET 0 (6 types), OFFSET 20 (0 rows - stopped)
+- Total unique types: 6
+- Top types: rdf:Property (23), rdfs:Class (15), owl:AnnotationProperty (5), owl:OntologyProperty (4), owl:Class (3)
+
+**Graph 3: https://data.gesis.org/gesiskg**
+- Pages collected: OFFSET 0 (20 types), OFFSET 20 (14 types), OFFSET 40 (0 rows - stopped)
+- Total unique types: 34
+- Top types: lifecycle:Variable (1,407,148), schema:ScholarlyArticle (583,079), schema:Person (466,311), LinkMetadata (405,357), DuplicateMetadata (362,342)
+
+All pages have been collected, merged, and de-duplicated for each graph.
+
+## Step 3 : For EACH eligible graph, get property usage
+
+I've completed Step 3. Here are the property usage counts for each eligible graph:
+
+**Graph 1: http://www.openlinksw.com/schemas/virtrdf#**
+- Pages collected: OFFSET 0 (20), OFFSET 20 (20), OFFSET 40 (20), OFFSET 60 (20), OFFSET 80 (12), OFFSET 100 (0 rows - stopped)
+- Total unique properties: 92
+- Top properties: rdf:type (270), qmfValRange-rvrRestrictions (172), item (135), qmfName (130), inheritFrom (99)
+
+**Graph 2: http://www.w3.org/2002/07/owl#**
+- Pages collected: OFFSET 0 (15), OFFSET 20 (0 rows - stopped)
+- Total unique properties: 15
+- Top properties: rdf:type (51), rdfs:label (40), rdfs:domain (21), rdfs:range (20), rdfs:subClassOf (12)
+
+**Graph 3: https://data.gesis.org/gesiskg**
+- Pages collected: OFFSET 0 (20), OFFSET 20 (20), OFFSET 40 (20), OFFSET 60 (20), OFFSET 80 (20), OFFSET 100 (20)
+- Total unique properties: 120 (reached maximum OFFSET of 100)
+- Top properties: linkContext (16,576,108), spatialCoverage (14,860,306), name (7,983,615), locationsId (7,801,680), studyGroup (4,233,891)
+
+All pages have been collected, merged, and de-duplicated for each graph.
+
+## Step 4 : For EACH eligible graph, describe sample entities
+
+I've completed Step 4, describing sample entities for each eligible graph. Here's a summary of the findings:
+
+**Graph 1: http://www.openlinksw.com/schemas/virtrdf#** (Virtuoso RDF metadata)
+All 10 top types analyzed - all used DESCRIBE successfully:
+- **QuadMapFormat**: Complex mapping format entities with SQL templates, bijection settings, and format inheritance
+- **array-of-QuadMapFormat**: Collections of format mappings using rdf:_1, rdf:_2, etc.
+- **QuadMapValue**: Graph mapping values with table references and column configurations
+- **array-of-QuadMapColumn**: Column arrays for quad mappings
+- **QuadMapColumn**: Individual column definitions with aliases and column names
+- **QuadMapFText**: Full-text mapping configurations
+- **array-of-QuadMap**: Collections of quad mappings
+- **QuadStorage**: Storage configurations with user maps and default maps
+- **QuadMap**: Complete quad mapping definitions with subject, predicate, object, and graph maps
+- **array-of-string**: String arrays for conditions and configurations
+
+**Graph 2: http://www.w3.org/2002/07/owl#** (OWL ontology metadata)
+All 6 available types analyzed - all used DESCRIBE successfully:
+- **rdf:Property**: Standard RDF properties with domain/range definitions
+- **rdfs:Class**: Class definitions with labels and subclass relationships
+- **owl:AnnotationProperty**: Annotation properties for metadata
+- **owl:OntologyProperty**: Properties linking ontologies
+- **owl:Class**: OWL class definitions with union/complement operations
+- **owl:Ontology**: Ontology declarations with imports and version information
+
+**Graph 3: https://data.gesis.org/gesiskg** (Main GESIS research data)
+All 10 top types analyzed:
+- **lifecycle:Variable** (29 triples): Research variables with multilingual labels, study references, temporal/spatial coverage
+- **schema:ScholarlyArticle** (46 triples): Academic publications with authors, DOIs, abstracts, citations, and study group tags
+- **schema:Person** (6 triples): Authors/contributors with names, initials, and mention IDs
+- **LinkMetadata** (1993 triples): Used SELECT fallback - extensive linking metadata with context passages, link scores, and source references
+- **DuplicateMetadata** (7 triples): Duplicate detection records with similarity scores and source mappings
+- **PublicationReference** (3 triples): References to publications with associated metadata
+- **DatasetReference** (2 triples): References to research datasets
+- **schema:DefinedTerm** (2 triples): Controlled vocabulary terms used across multiple publications
+
+All sample entities successfully characterized, showing the graph contains Virtuoso system metadata, OWL ontology definitions, and extensive social science research data with sophisticated linking mechanisms.
+
+## Step 5 : For EACH eligible graph, discover relationship patterns
+
+I've completed Step 5, discovering relationship patterns for each eligible graph. Here's a summary of the findings:
+
+**Graph 1: http://www.openlinksw.com/schemas/virtrdf#** (Virtuoso RDF metadata)
+- Pages collected: OFFSET 0, 30, 60, 90 (120 total patterns)
+- Top relationship patterns:
+  - `inheritFrom → qmfValRange-rvrRestrictions` (225)
+  - `item → qmfValRange-rvrRestrictions` (166)
+  - `item → type` (134)
+  - `type → isGcResistantType` (133)
+  - `item → qmfName` (128)
+- Patterns show extensive inheritance chains and format configuration relationships
+
+**Graph 2: http://www.w3.org/2002/07/owl#** (OWL ontology metadata)
+- Pages collected: OFFSET 0 (25 patterns), OFFSET 30 (0 rows - stopped early)
+- Top relationship patterns:
+  - `domain → label` (20)
+  - `domain → type` (20)
+  - `domain → subClassOf` (13)
+  - `type → type` (13)
+  - `type → label` (13)
+- Patterns show standard ontology structure with domain/range relationships
+
+**Graph 3: https://data.gesis.org/gesiskg** (Main GESIS research data)
+- Full query timed out due to graph size; collected targeted patterns for key properties:
+  - `hasPart → spatialCoverage` (14,860,306)
+  - `hasPart → locationsId` (7,801,680)
+  - `hasPart → name` (6,261,865)
+  - `author → initsFirst` (300,507)
+  - `author → name` (245,650)
+  - `citation → about` (1,985,390)
+  - `citation → spatialCoverage` (1,747,686)
+  - `reference → referenceMetadata` (493,142)
+  - `mainEntity → about` (2,014,741)
+  - `relatedDataset → spatialCoverage` (14,830,181)
+
+The relationship patterns reveal the graph's structure: Virtuoso system metadata with inheritance chains, OWL ontology definitions, and extensive social science research data with complex linking between publications, datasets, variables, and geographic/temporal coverage.
+
+## Step 6 : For EACH eligible graph, discover entity-value patterns
+
+I've completed Step 6, discovering entity-value patterns for each eligible graph. Here's a summary of the findings:
+
+**Graph 1: http://www.openlinksw.com/schemas/virtrdf#** (Virtuoso RDF metadata)
+- Pages collected: OFFSET 0-95 (100 total patterns)
+- All patterns show QuadMapFormat entities with SQL template configurations
+- Value patterns include:
+  - Format names: "default-iid", "default-iid-nullable", "sql-varchar"
+  - SQL templates: " ^{alias-dot}^^{column}^", " __id2in (^{tree}^)"
+  - Function names: "DB.DBA.RDF_IID_CMP", "DB.DBA.RDF_OBJ_CMP"
+  - Boolean flags: 0, 1
+  - Format restrictions: SPART_VARR_IS_REF, SPART_VARR_NOT_NULL
+
+**Graph 2: http://www.w3.org/2002/07/owl#** (OWL ontology metadata)
+- Pages collected: OFFSET 0-95 (100 total patterns)
+- All patterns show OWL ontology elements with standard properties
+- Value patterns include:
+  - Class names: "Thing", "Nothing", "Class", "Ontology"
+  - Property names: "equivalentClass", "inverseOf", "unionOf", "complementOf"
+  - Labels: "equivalentClass", "Thing", "imports", "versionInfo"
+  - Ontology metadata: version strings, import references, documentation
+
+**Graph 3: https://data.gesis.org/gesiskg** (Main GESIS research data)
+- Pages collected: OFFSET 0-95 (100 total patterns)
+- All patterns show Person entities from GESIS bibliography
+- Value patterns include:
+  - Consistent type: https://schema.org/Person
+  - Researcher names: "Allmendinger_Jutta", "Wingens_Matthias", "Heisterhagen_Tilman_et_al"
+  - International authors with various name formats
+  - All entities follow consistent URI pattern: gesis-bib-{number}_{name}
+
+The entity-value patterns demonstrate the graph's layered structure: Virtuoso system configuration metadata, OWL ontology definitions, and extensive social science research data focused on researchers and authors.
+
+## Step 7 : Compile the report
 
 # GESIS Knowledge Graph Exploration Report
 
 ## Overview
-The GESIS KG endpoint uses a **multi-graph architecture** with 6 named graphs discovered.
+This report summarizes the exploration of the GESIS Knowledge Graph endpoint at https://data.gesis.org/gesiskg/sparql. The knowledge graph uses named graphs, with three eligible graphs identified for detailed analysis.
 
 ---
 
-## Graph 1: `http://www.openlinksw.com/schemas/virtrdf#`
-**Purpose:** Virtuoso RDF Quad Map Format schema (database virtualization layer)
+## Graph 1: <http://www.openlinksw.com/schemas/virtrdf#>
 
-### Entity Types (Top 5)
+### Description
+Virtuoso RDF system metadata graph containing quad mapping configurations and format definitions for the Virtuoso triple store.
+
+### Entity Types (12 total)
 | Type | Count |
-|------|-------|
-| QuadMapFormat | 130 |
-| array-of-QuadMapFormat | 98 |
-| QuadMapValue | 8 |
-| array-of-QuadMapColumn | 8 |
-| QuadMapColumn | 8 |
+| --- | --- |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat> | 130 |
+| <http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapFormat> | 98 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMapValue> | 8 |
+| <http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapColumn> | 8 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMapColumn> | 8 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMapFText> | 4 |
+| <http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMap> | 3 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadStorage> | 3 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMap> | 2 |
+| <http://www.openlinksw.com/schemas/virtrdf#QuadMapATable> | 2 |
+| <http://www.openlinksw.com/schemas/virtrdf#array-of-string> | 2 |
+| <http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapATable> | 2 |
 
-### Top Properties
-- `rdf:type` (270)
-- `qmfValRange-rvrRestrictions` (172)
-- `qmfName` (130)
-- `inheritFrom` (99)
-- `qmfSuperFormats` (98)
-
-### Sample Triple
-```
-<http://www.openlinksw.com/virtrdf-data-formats#default-iid> 
-  a <http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat>
-```
-
-### Relationship Patterns
-- `inheritFrom → qmfValRange-rvrRestrictions` (225)
-- `item → qmfValRange-rvrRestrictions` (166)
-- `item → rdf:type` (134)
-
----
-
-## Graph 2: `http://www.w3.org/ns/ldp#`
-**Purpose:** W3C Linked Data Platform vocabulary
-
-### Entity Types
-*None found*
-
-### Properties
-- `rdfs:subClassOf` (3)
-
-### Sample Triple
-```
-<http://www.w2.org/ns/ldp#DirectContainer> 
-  rdfs:subClassOf <http://www.w2.org/ns/ldp#Container>
-```
-
----
-
-## Graph 3: `http://localhost:8890/sparql`
-**Purpose:** SPARQL Service Description (self-describing endpoint)
-
-### Entity Types
-| Type | Count |
-|------|-------|
-| Service | 1 |
-
-### Properties
-- `resultFormat` (8)
-- `feature` (2)
-- `supportedLanguage` (1)
-- `endpoint` (1)
-
-### Sample Triple
-```
-<http://localhost:8890/sparql> 
-  a <http://www.w3.org/ns/sparql-service-description#Service>
-```
-
----
-
-## Graph 4: `http://localhost:8890/DAV/`
-**Purpose:** WebDAV file system metadata
-
-### Entity Types
-*None found (no rdf:type statements)*
-
-### Properties
-- `dc:created` (754)
-- `dc:modified` (754)
-- `DAV#ownerUser` (754)
-- `dc:extent` (741)
-
-### Sample Triple
-```
-<http://localhost:8890/DAV//home/> 
-  dc:created "2026-01-05T11:42:16.470418"
-```
-
----
-
-## Graph 5: `http://www.w3.org/2002/07/owl#`
-**Purpose:** OWL Web Ontology Language schema
-
-### Entity Types
-| Type | Count |
-|------|-------|
-| rdf:Property | 23 |
-| rdfs:Class | 15 |
-| owl:AnnotationProperty | 5 |
-| owl:OntologyProperty | 4 |
-| owl:Class | 3 |
-
-### Properties
-- `rdf:type` (51)
-- `rdfs:label` (40)
-- `rdfs:domain` (21)
-- `rdfs:range` (20)
-- `rdfs:subClassOf` (12)
-
-### Sample Triple
-```
-<http://www.w3.org/2002/07/owl#equivalentClass> 
-  a rdf:Property
-```
-
-### Relationship Patterns
-- `rdfs:domain → rdfs:label` (20)
-- `rdfs:domain → rdf:type` (20)
-- `rdfs:domain → rdfs:subClassOf` (13)
-
----
-
-## Graph 6: `https://data.gesis.org/gesiskg`
-**Purpose:** **Main GESIS research data graph** (largest, contains scholarly data)
-
-### Entity Types (Top 10)
-| Type | Count |
-|------|-------|
-| lifecycle:Variable | 1,407,148 |
-| schema:Person | 466,311 |
-| schema:ScholarlyArticle | 583,079 |
-| LinkMetadata | 405,357 |
-| DuplicateMetadata | 362,342 |
-| PublicationReference | 318,753 |
-| DatasetReference | 74,374 |
-| schema:Place | 28,314 |
-| schema:Organization | 20,534 |
-| schema:Dataset | 7,553 |
-
-### Top Properties
+### Property Usage (92 unique properties)
 | Property | Count |
-|----------|-------|
-| gesiskg:linkContext | 16,576,108 |
-| schema:spatialCoverage | 14,860,306 |
-| schema:name | 7,983,615 |
-| gesiskg:locationsId | 7,801,680 |
-| gesiskg:studyGroup | 4,233,891 |
-| rdf:type | 3,724,623 |
-| gesiskg:citationString | 2,751,392 |
-| schema:hasPart | 1,688,233 |
+| --- | --- |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 270 |
+| <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrRestrictions> | 172 |
+| <http://www.openlinksw.com/schemas/virtrdf#item> | 135 |
+| <http://www.openlinksw.com/schemas/virtrdf#qmfName> | 130 |
+| <http://www.openlinksw.com/schemas/virtrdf#inheritFrom> | 99 |
+| <http://www.openlinksw.com/schemas/virtrdf#qmfSuperFormats> | 98 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> | 66 |
+| <http://www.openlinksw.com/schemas/virtrdf#qmfIidOfShortTmpl> | 57 |
+| <http://www.openlinksw.com/schemas/virtrdf#noInherit> | 56 |
+| <http://www.openlinksw.com/schemas/virtrdf#qmfSqlvalTmpl> | 53 |
 
-### Sample Triple
-```
-<https://data.gesis.org/gesiskg/resource/gesis-bib-59486_Allmendinger_Jutta> 
-  a schema:Person
-```
+### Sample Entity: <http://www.openlinksw.com/virtrdf-data-formats#default-iid>
+**Type:** QuadMapFormat
 
-### Relationship Patterns
-- `schema:contributor → rdf:type` (dominant pattern observed in 50 samples)
+**Key Properties:**
+- qmfName: "default-iid"
+- qmfShortTmpl: " ^{alias-dot}^^{column}^"
+- qmfLongTmpl: " ^{alias-dot}^^{column}^"
+- qmfSqlvalTmpl: " __id2in (^{alias-dot}^^{column}^)"
+- qmfIsBijection: 1
+- qmfIsStable: 0
+- qmfCmpFuncName: "DB.DBA.RDF_IID_CMP"
+- qmfColumnCount: 1
+
+### Relationship Patterns (Top patterns)
+| Property 1 | Property 2 | Count |
+| --- | --- | --- |
+| <http://www.openlinksw.com/schemas/virtrdf#inheritFrom> | <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrRestrictions> | 225 |
+| <http://www.openlinksw.com/schemas/virtrdf#item> | <http://www.openlinksw.com/schemas/virtrdf#qmfValRange-rvrRestrictions> | 166 |
+| <http://www.openlinksw.com/schemas/virtrdf#item> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 134 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://www.openlinksw.com/schemas/virtrdf#isGcResistantType> | 133 |
+| <http://www.openlinksw.com/schemas/virtrdf#item> | <http://www.openlinksw.com/schemas/virtrdf#qmfName> | 128 |
+
+### Entity-Value Patterns
+Entities in this graph primarily contain:
+- SQL template strings with variable placeholders (e.g., " ^{alias-dot}^^{column}^")
+- Virtuoso function names (e.g., "DB.DBA.RDF_IID_CMP")
+- Boolean flags (0, 1)
+- Format restriction constants (SPART_VARR_IS_REF, SPART_VARR_NOT_NULL)
+- Format inheritance relationships
+
+---
+
+## Graph 2: <http://www.w3.org/2002/07/owl#>
+
+### Description
+OWL ontology metadata graph containing standard OWL vocabulary definitions and ontology structure.
+
+### Entity Types (6 total)
+| Type | Count |
+| --- | --- |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> | 23 |
+| <http://www.w3.org/2000/01/rdf-schema#Class> | 15 |
+| <http://www.w3.org/2002/07/owl#AnnotationProperty> | 5 |
+| <http://www.w3.org/2002/07/owl#OntologyProperty> | 4 |
+| <http://www.w3.org/2002/07/owl#Class> | 3 |
+| <http://www.w3.org/2002/07/owl#Ontology> | 1 |
+
+### Property Usage (15 unique properties)
+| Property | Count |
+| --- | --- |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 51 |
+| <http://www.w3.org/2000/01/rdf-schema#label> | 40 |
+| <http://www.w3.org/2000/01/rdf-schema#domain> | 21 |
+| <http://www.w3.org/2000/01/rdf-schema#range> | 20 |
+| <http://www.w3.org/2000/01/rdf-schema#subClassOf> | 12 |
+| <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> | 3 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> | 2 |
+| <http://www.w3.org/2000/01/rdf-schema#subPropertyOf> | 2 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> | 2 |
+| <http://www.w3.org/2002/07/owl#complementOf> | 2 |
+
+### Sample Entity: <http://www.w3.org/2002/07/owl#equivalentClass>
+**Type:** rdf:Property
+
+**Key Properties:**
+- rdfs:subPropertyOf: rdfs:subClassOf
+- rdfs:label: "equivalentClass"
+- rdfs:domain: owl:Class
+- rdfs:range: owl:Class
+
+### Sample Entity: <http://www.w3.org/2002/07/owl>
+**Type:** owl:Ontology
+
+**Key Properties:**
+- owl:imports: rdfs
+- rdfs:isDefinedBy: Multiple W3C specification URLs
+- rdfs:comment: "This file specifies in RDF Schema format the built-in classes and properties that together form the basis of the RDF/XML syntax of OWL Full, OWL DL and OWL Lite."
+- owl:versionInfo: "10 February 2004, revised $Date: 2004/09/24 18:12:02 $"
+- owl:priorVersion: <http://www.daml.org/2001/03/daml+oil>
+
+### Relationship Patterns (Top patterns)
+| Property 1 | Property 2 | Count |
+| --- | --- | --- |
+| <http://www.w3.org/2000/01/rdf-schema#domain> | <http://www.w3.org/2000/01/rdf-schema#label> | 20 |
+| <http://www.w3.org/2000/01/rdf-schema#domain> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 20 |
+| <http://www.w3.org/2000/01/rdf-schema#domain> | <http://www.w3.org/2000/01/rdf-schema#subClassOf> | 13 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 13 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://www.w3.org/2000/01/rdf-schema#label> | 13 |
+
+### Entity-Value Patterns
+Entities in this graph contain:
+- Standard OWL vocabulary terms (Thing, Nothing, Class, Ontology)
+- Property definitions with domain and range specifications
+- Human-readable labels in English
+- Version information and documentation references
+- Import relationships between ontologies
+
+---
+
+## Graph 3: <https://data.gesis.org/gesiskg>
+
+### Description
+Main GESIS research data graph containing social science publications, datasets, variables, researchers, and sophisticated linking metadata.
+
+### Entity Types (34 total)
+| Type | Count |
+| --- | --- |
+| <http://rdf-vocabulary.ddialliance.org/lifecycle#Variable> | 1,407,148 |
+| <https://schema.org/ScholarlyArticle> | 583,079 |
+| <https://schema.org/Person> | 466,311 |
+| <https://data.gesis.org/gesiskg/schema/LinkMetadata> | 405,357 |
+| <https://data.gesis.org/gesiskg/schema/DuplicateMetadata> | 362,342 |
+| <https://data.gesis.org/gesiskg/schema/PublicationReference> | 318,753 |
+| <https://data.gesis.org/gesiskg/schema/DatasetReference> | 74,374 |
+| <https://schema.org/Place> | 28,314 |
+| <https://schema.org/CreativeWorkSeries> | 27,743 |
+| <https://schema.org/DefinedTerm> | 20,867 |
+| <https://schema.org/Organization> | 20,534 |
+| <https://schema.org/Dataset> | 7,553 |
+| <https://data.gesis.org/gesiskg/schema/VariableReference> | 1,319 |
+| <http://rdf-vocabulary.ddialliance.org/lifecycle#Instrument> | 532 |
+| <https://schema.org/DataCatalog> | 120 |
+| <http://www.w3.org/2002/07/owl#DatatypeProperty> | 116 |
+| <https://schema.org/SoftwareApplication> | 45 |
+| <http://www.w3.org/2002/07/owl#ObjectProperty> | 25 |
+| <http://www.w3.org/2002/07/owl#Class> | 24 |
+| <https://schema.org/SoftwareSourceCode> | 22 |
+
+### Property Usage (120+ unique properties)
+| Property | Count |
+| --- | --- |
+| <https://data.gesis.org/gesiskg/schema/linkContext> | 16,576,108 |
+| <https://schema.org/spatialCoverage> | 14,860,306 |
+| <https://schema.org/name> | 7,983,615 |
+| <https://data.gesis.org/gesiskg/schema/locationsId> | 7,801,680 |
+| <https://data.gesis.org/gesiskg/schema/studyGroup> | 4,233,891 |
+| <https://data.gesis.org/gesiskg/schema/groupDescription> | 4,176,850 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 3,724,623 |
+| <https://data.gesis.org/gesiskg/schema/citationString> | 2,751,392 |
+| <https://data.gesis.org/gesiskg/schema/sourceInfo> | 1,925,979 |
+| <https://data.gesis.org/gesiskg/schema/variableLabel> | 1,806,763 |
+| <https://schema.org/hasPart> | 1,688,233 |
+| <https://data.gesis.org/gesiskg/schema/hasFulltext> | 1,633,766 |
+| <https://schema.org/dateModified> | 1,598,252 |
+| <https://schema.org/dateCreated> | 1,411,422 |
+| <http://rdf-vocabulary.ddialliance.org/lifecycle#variableName> | 1,398,890 |
+| <https://data.gesis.org/gesiskg/schema/relatedDataset> | 1,398,890 |
+| <https://data.gesis.org/gesiskg/schema/datasetDatatype> | 1,385,932 |
+| <https://schema.org/startDate> | 1,381,601 |
+| <https://schema.org/endDate> | 1,380,989 |
+| <https://data.gesis.org/gesiskg/schema/dataCollection> | 1,153,201 |
+
+### Sample Entity: <https://data.gesis.org/gesiskg/resource/exploredata-ZA2812_VarV223>
+**Type:** lifecycle:Variable
+
+**Key Properties:**
+- schema:name: "V223 - Household Structure"@en, "Household Structure"@de
+- lifecycle:variableName: "V223"
+- schema:spatialCoverage: <https://data.gesis.org/gesiskg/resource/Rum%C3%A4nien>, <https://data.gesis.org/gesiskg/resource/Romania>
+- schema:startDate: "1993"^^xsd:gyear
+- schema:endDate: "1993"^^xsd:gyear
+- schema:dateCreated: "1996"^^xsd:gyear
+- schema:dateModified: "1993-01-01"^^xsd:date
+- relatedDataset: <https://data.gesis.org/gesiskg/resource/ZA2812>
+- variableLabel: "Household Structure"@de, "Household Structure"@en
+- studyGroup: "Election Studies from Eastern Europe 1989 - 2005"@en
+- sourceInfo: "GESIS-ExploreData"
+- locationsId: "RO"
+
+### Sample Entity: <https://data.gesis.org/gesiskg/resource/bibsonomy-peiropalomino2019geography>
+**Type:** schema:ScholarlyArticle
+
+**Key Properties:**
+- schema:name: "The geography of social capital and innovation in the European Union"
+- schema:datePublished: "2019"^^xsd:gyear
+- schema:author: <https://data.gesis.org/gesiskg/resource/bibsonomy-peiropalomino2019geography_Peir%C3%B3-Palomino_Jes%C3%BAs>
+- schema:abstract: "This paper assesses the role of the associational activity dimension of social capital in regional innovation for 257 EU 28 regions..."
+- schema:inLanguage: "english"
+- schema:publicationType: "article"
+- schema:volumeNumber: "98"
+- schema:issueNumber: "1"
+- schema:issn: "1435-5957"
+- schema:doi: "10.1111/pirs.12337"
+- schema:url: <http://dx.doi.org/10.1111/pirs.12337>
+- schema:citation: <https://data.gesis.org/gesiskg/resource/ZA3811>, <https://data.gesis.org/gesiskg/resource/ZA4800>
+- tags: "EVS", "EVS2008", "SSCIindexed", "SCOPUSindexed", "article", "english"
+- studyGroup: "European Values Study (EVS)"
+- dataSource: "EVS-Bibliography"
+
+### Sample Entity: <https://data.gesis.org/gesiskg/resource/gesis-bib-59486_Allmendinger_Jutta>
+**Type:** schema:Person
+
+**Key Properties:**
+- schema:name: "Allmendinger, Jutta"
+- schema:givenName: "Jutta"
+- schema:familyName: "Allmendinger"
+- initsFirst: "J"
+- mentionID: "gesis-bib-59486_Allmendinger_Jutta"
+
+### Sample Entity: <https://data.gesis.org/gesiskg/resource/reference_gesis-ssoar-92242_cews-2-679634_outcite>
+**Type:** LinkMetadata
+
+**Key Properties:**
+- schema:name: Long citation string with multiple references
+- linkContext: Multiple context passages (50+ shown)
+- linkScore: "64.4205169677734375"^^xsd:float
+- schema:mainEntity: <https://data.gesis.org/gesiskg/resource/gesis-ssoar-87885>
+- toSource: "gesis"
+
+### Relationship Patterns (Targeted patterns due to graph size)
+| Property 1 | Property 2 | Count |
+| --- | --- | --- |
+| <https://schema.org/hasPart> | <https://schema.org/spatialCoverage> | 14,860,306 |
+| <https://schema.org/hasPart> | <https://data.gesis.org/gesiskg/schema/locationsId> | 7,801,680 |
+| <https://schema.org/hasPart> | <https://schema.org/name> | 6,261,865 |
+| <https://schema.org/author> | <https://data.gesis.org/gesiskg/schema/initsFirst> | 300,507 |
+| <https://schema.org/author> | <https://schema.org/name> | 245,650 |
+| <https://schema.org/citation> | <https://schema.org/about> | 1,985,390 |
+| <https://schema.org/citation> | <https://schema.org/spatialCoverage> | 1,747,686 |
+| <https://data.gesis.org/gesiskg/schema/reference> | <https://data.gesis.org/gesiskg/schema/referenceMetadata> | 493,142 |
+| <https://schema.org/mainEntity> | <https://schema.org/about> | 2,014,741 |
+| <https://data.gesis.org/gesiskg/schema/relatedDataset> | <https://schema.org/spatialCoverage> | 14,830,181 |
+
+### Entity-Value Patterns
+Entities in this graph contain:
+- Multilingual labels (German and English)
+- Temporal coverage (gYear dates)
+- Geographic coverage (Place entities and location IDs)
+- Research metadata (study groups, data sources, DOIs)
+- Linking scores and similarity metrics
+- Citation strings and reference metadata
+- Author information with name components
+- Tags and classification terms
 
 ---
 
 ## Summary
 
-| Graph | URI | Purpose | Size |
-|-------|-----|---------|------|
-| 1 | openlinksw.com/virtrdf# | Virtuoso quad storage schema | Small |
-| 2 | w3.org/ns/ldp# | LDP vocabulary | Minimal |
-| 3 | localhost:8890/sparql | SPARQL service description | Minimal |
-| 4 | localhost:8890/DAV/ | WebDAV metadata | Small |
-| 5 | w3.org/2002/07/owl# | OWL ontology | Small |
-| 6 | **data.gesis.org/gesiskg** | **Main research data** | **Very Large** |
+The GESIS Knowledge Graph is a multi-graph system with three distinct components:
 
-The GESIS KG is primarily a **single large research data graph** (`https://data.gesis.org/gesiskg`) containing social science research metadata including variables, publications, persons, and datasets. The other graphs are primarily schema/ontology definitions and infrastructure metadata.
+1. **System Metadata Graph** (<http://www.openlinksw.com/schemas/virtrdf#>): Contains Virtuoso triple store configuration with 92 properties and 12 entity types, primarily focused on SQL-to-RDF mapping formats.
+
+2. **Ontology Graph** (<http://www.w3.org/2002/07/owl#>): Contains standard OWL vocabulary definitions with 15 properties and 6 entity types, providing the semantic foundation.
+
+3. **Research Data Graph** (<https://data.gesis.org/gesiskg>): The main content graph with 120+ properties and 34 entity types, containing over 3.7 million entities including:
+   - 1.4+ million research variables
+   - 583K scholarly articles
+   - 466K researchers/persons
+   - 405K link metadata records
+   - 362K duplicate detection records
+   - Extensive geographic and temporal coverage data
+
+The graph demonstrates sophisticated linking between publications, datasets, variables, and researchers, with multilingual support and comprehensive metadata for social science research data.
+
