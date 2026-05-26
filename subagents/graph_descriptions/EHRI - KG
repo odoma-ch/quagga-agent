@@ -1,132 +1,162 @@
-# EHRI Knowledge Graph Exploration Report
+# EHRI - KG Knowledge Graph Report
 
 ## Overview
+The EHRI (European Holocaust Research Infrastructure) Knowledge Graph is a comprehensive archival knowledge graph focused on Holocaust-related documentation. It uses a single unified graph structure (no named graphs) and is built primarily on the Records in Contexts (RiC) ontology standard.
 
-This report summarizes the exploration of the EHRI (European Holocaust Research Infrastructure) Knowledge Graph available at `https://lod.ehri-project-test.eu/sparql`. The KG operates as a **single unified graph** (no named graphs detected).
+## Graph Statistics
+- **Total Entity Types**: 23 distinct types
+- **Total Properties**: 108 distinct properties
+- **Scale**: Large-scale graph with over 870,000 triples
 
----
+## Entity Types Distribution
 
-## Step 1: Entity Types
+| Type | Count | Description |
+| --- | --- | --- |
+| <https://www.ica.org/standards/RiC/ontology#Identifier> | 363,120 | Archival identifiers |
+| <http://lod.ehri-project-test.eu/ontology#RecordSet> | 353,281 | Archival record collections |
+| <https://www.ica.org/standards/RiC/ontology#Activity> | 98,521 | Historical activities/events |
+| <https://www.ica.org/standards/RiC/ontology#Date> | 12,705 | Temporal references |
+| <http://lod.ehri-project-test.eu/ontology#AlternateAgentName> | 6,704 | Alternative names for agents |
+| <https://www.ica.org/standards/RiC/ontology#Title> | 6,243 | Title entities |
+| <http://www.w3.org/2004/02/skos/core#Concept> | 5,354 | Controlled vocabulary terms |
+| <http://lod.ehri-project-test.eu/ontology#CorporateBody> | 5,088 | Corporate entities |
+| <http://lod.ehri-project-test.eu/ontology#ParallelAgentName> | 4,930 | Parallel names for agents |
+| <http://lod.ehri-project-test.eu/ontology#Person> | 3,342 | Individual persons |
+| <http://lod.ehri-project-test.eu/ontology#InstitutionAddress> | 2,303 | Institution locations |
+| <https://www.ica.org/standards/RiC/ontology#Place> | 2,303 | Geographic places |
+| <http://lod.ehri-project-test.eu/ontology#Institution> | 2,295 | Archival institutions |
+| <https://www.ica.org/standards/RiC/ontology#Coordinates> | 2,271 | Geographic coordinates |
+| <http://lod.ehri-project-test.eu/ontology#City> | 1,358 | Cities |
+| <https://www.ica.org/standards/RiC/ontology#Language> | 581 | Languages |
+| <http://lod.ehri-project-test.eu/ontology#Region> | 464 | Geographic regions |
+| <https://www.ica.org/standards/RiC/ontology#Mandate> | 435 | Mandates |
+| <http://lod.ehri-project-test.eu/ontology#Country> | 66 | Countries |
+| <https://www.ica.org/standards/RiC/ontology#LegalStatus> | 26 | Legal statuses |
+| <http://lod.ehri-project-test.eu/ontology#MaterialScript> | 12 | Material scripts |
+| <http://www.w3.org/2004/02/skos/core#ConceptScheme> | 3 | Concept schemes |
+| <http://lod.ehri-project-test.eu/ontology#Family> | 2 | Family entities |
 
-The following table shows the top 20 entity types by frequency in the knowledge graph:
+## Top Properties by Usage
 
-| Type | Count |
-|------|-------|
-| <https://www.ica.org/standards/RiC/ontology#Identifier> | 363,120 |
-| <http://lod.ehri-project-test.eu/ontology#RecordSet> | 353,281 |
-| <https://www.ica.org/standards/RiC/ontology#Activity> | 98,521 |
-| <https://www.ica.org/standards/RiC/ontology#Date> | 12,705 |
-| <http://lod.ehri-project-test.eu/ontology#AlternateAgentName> | 6,704 |
-| <https://www.ica.org/standards/RiC/ontology#Title> | 6,243 |
-| <http://www.w3.org/2004/02/skos/core#Concept> | 5,354 |
-| <http://lod.ehri-project-test.eu/ontology#CorporateBody> | 5,088 |
-| <http://lod.ehri-project-test.eu/ontology#ParallelAgentName> | 4,930 |
-| <http://lod.ehri-project-test.eu/ontology#Person> | 3,342 |
-| <http://lod.ehri-project-test.eu/ontology#InstitutionAddress> | 2,303 |
-| <https://www.ica.org/standards/RiC/ontology#Place> | 2,303 |
-| <http://lod.ehri-project-test.eu/ontology#Institution> | 2,295 |
-| <https://www.ica.org/standards/RiC/ontology#Coordinates> | 2,271 |
-| <http://lod.ehri-project-test.eu/ontology#City> | 1,358 |
-| <https://www.ica.org/standards/RiC/ontology#Language> | 581 |
-| <http://lod.ehri-project-test.eu/ontology#Region> | 464 |
-| <https://www.ica.org/standards/RiC/ontology#Mandate> | 435 |
-| <http://lod.ehri-project-test.eu/ontology#Country> | 66 |
-| <https://www.ica.org/standards/RiC/ontology#LegalStatus> | 26 |
+| Property | Count | Description |
+| --- | --- | --- |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 871,407 | RDF type declarations |
+| <https://www.ica.org/standards/RiC/ontology#title> | 385,678 | Titles |
+| <https://www.ica.org/standards/RiC/ontology#hasOrHadIdentifier> | 363,120 | Identifier relationships |
+| <https://www.ica.org/standards/RiC/ontology#isOrWasIdentifierOf> | 363,120 | Inverse identifier relationships |
+| <https://www.ica.org/standards/RiC/ontology#textualValue> | 363,120 | Textual values |
+| <https://www.ica.org/standards/RiC/ontology#identifier> | 353,281 | Identifiers |
+| <https://www.ica.org/standards/RiC/ontology#hasOrHadHolder> | 353,247 | Holder relationships |
+| <https://www.ica.org/standards/RiC/ontology#isOrWasHolderOf> | 353,247 | Inverse holder relationships |
+| <https://www.ica.org/standards/RiC/ontology#hasRecordSetType> | 306,616 | Record set types |
+| <https://www.ica.org/standards/RiC/ontology#includesOrIncluded> | 297,776 | Hierarchical inclusion |
+| <https://www.ica.org/standards/RiC/ontology#isOrWasIncludedIn> | 297,776 | Inverse inclusion |
+| <https://www.ica.org/standards/RiC/ontology#recordResourceExtent> | 251,720 | Extent descriptions |
+| <https://www.ica.org/standards/RiC/ontology#scopeAndContent> | 205,972 | Scope and content |
+| <https://www.ica.org/standards/RiC/ontology#hasBeginningDate> | 192,206 | Beginning dates |
+| <https://www.ica.org/standards/RiC/ontology#isBeginningDateOf> | 192,206 | Inverse beginning dates |
+| <https://www.ica.org/standards/RiC/ontology#hasEndDate> | 191,320 | End dates |
+| <https://www.ica.org/standards/RiC/ontology#isEndDateOf> | 191,320 | Inverse end dates |
+| <https://www.ica.org/standards/RiC/ontology#hasOrHadSomeMembersWithLanguage> | 136,177 | Language associations |
+| <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | 134,102 | Subject relationships |
+| <https://www.ica.org/standards/RiC/ontology#date> | 122,546 | Date properties |
 
-**Key Observations:**
-- The KG is heavily based on the **RiC (Records in Contexts)** ontology from the International Council on Archives (ICA)
-- `RecordSet` is the dominant archival entity type (~353K instances)
-- `Identifier` entities are abundant (~363K), reflecting the importance of persistent identifiers
-- Agent-related types include `Person`, `CorporateBody`, and `Institution`
+## Sample Entity Analysis
 
----
+### 1. Identifier Entity
+**Sample**: <http://lod.ehri-project-test.eu/units/nl-002896-mf810876-mf811242/alternateIDs/1>
+- **Properties**: 3 triples
+- **Structure**: Simple identifier with textual value and relationship to record set
+- **Key Properties**: 
+  - <https://www.ica.org/standards/RiC/ontology#textualValue>: "NL-AsdNIOD/270c/400"
+  - <https://www.ica.org/standards/RiC/ontology#isOrWasIdentifierOf>: Links to record set
 
-## Step 2: Property Usage
+### 2. RecordSet Entity
+**Sample**: <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032>
+- **Properties**: 24 triples
+- **Structure**: Rich archival description with multiple subjects, dates, and relationships
+- **Key Properties**:
+  - <https://www.ica.org/standards/RiC/ontology#title>: "Oral history interview with Arie Troitze"
+  - <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject>: Multiple subject links to camps, ghettos, terms, and persons
+  - <https://www.ica.org/standards/RiC/ontology#hasOrHadHolder>: Links to institution
+  - <https://www.ica.org/standards/RiC/ontology#recordResourceExtent>: "7 videocassettes (U-Matic), sound, color ; 3/4 in."
+  - <https://www.ica.org/standards/RiC/ontology#scopeAndContent>: Detailed description
+  - <https://www.ica.org/standards/RiC/ontology#conditionsOfAccess>: "No restrictions on access"
 
-The following table shows the top 20 most frequently used properties:
+### 3. Activity Entity
+**Sample**: <http://lod.ehri-project-test.eu/vocabularies/ehri-cb/005441/functions/1>
+- **Properties**: 4 triples
+- **Structure**: Activity with description and performer
+- **Key Properties**:
+  - <https://www.ica.org/standards/RiC/ontology#generalDescription>: Detailed Italian description of Union of Italian Jewish Communities
+  - <https://www.ica.org/standards/RiC/ontology#isOrWasPerformedBy>: Links to corporate body
 
-| Property | Count |
-|----------|-------|
-| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 871,407 |
-| <https://www.ica.org/standards/RiC/ontology#title> | 385,678 |
-| <https://www.ica.org/standards/RiC/ontology#hasOrHadIdentifier> | 363,120 |
-| <https://www.ica.org/standards/RiC/ontology#isOrWasIdentifierOf> | 363,120 |
-| <https://www.ica.org/standards/RiC/ontology#textualValue> | 363,120 |
-| <https://www.ica.org/standards/RiC/ontology#identifier> | 353,281 |
-| <https://www.ica.org/standards/RiC/ontology#hasOrHadHolder> | 353,247 |
-| <https://www.ica.org/standards/RiC/ontology#isOrWasHolderOf> | 353,247 |
-| <https://www.ica.org/standards/RiC/ontology#hasRecordSetType> | 306,616 |
-| <https://www.ica.org/standards/RiC/ontology#includesOrIncluded> | 297,776 |
-| <https://www.ica.org/standards/RiC/ontology#isOrWasIncludedIn> | 297,776 |
-| <https://www.ica.org/standards/RiC/ontology#recordResourceExtent> | 251,720 |
-| <https://www.ica.org/standards/RiC/ontology#scopeAndContent> | 205,972 |
-| <https://www.ica.org/standards/RiC/ontology#hasBeginningDate> | 192,206 |
-| <https://www.ica.org/standards/RiC/ontology#isBeginningDateOf> | 192,206 |
-| <https://www.ica.org/standards/RiC/ontology#hasEndDate> | 191,320 |
-| <https://www.ica.org/standards/RiC/ontology#isEndDateOf> | 191,320 |
-| <https://www.ica.org/standards/RiC/ontology#hasOrHadSomeMembersWithLanguage> | 136,177 |
-| <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | 134,102 |
-| <https://www.ica.org/standards/RiC/ontology#date> | 122,546 |
+### 4. Date Entity
+**Sample**: <http://lod.ehri-project-test.eu/dates/1945>
+- **Properties**: 1,856 triples (highly connected)
+- **Structure**: Date entity linked to many record sets and corporate bodies
+- **Key Properties**:
+  - <https://www.ica.org/standards/RiC/ontology#isBeginningDateOf>: Links to numerous entities
+  - Acts as a temporal hub connecting many archival resources
 
-**Key Observations:**
-- Heavy use of **RiC ontology properties** for descriptive metadata
-- Symmetric property pairs are common (e.g., `hasOrHadIdentifier` / `isOrWasIdentifierOf`)
-- Properties cover: identification, hierarchical relationships (`includesOrIncluded`), temporal data (`hasBeginningDate`, `hasEndDate`), and subject access
+### 5. SKOS Concept Entity
+**Sample**: <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/3001>
+- **Properties**: 7 triples
+- **Structure**: Controlled vocabulary term with geographic and hierarchical information
+- **Key Properties**:
+  - <http://www.w3.org/2004/02/skos/core#prefLabel>: "Vivikonna OT concentration camp"
+  - <http://www.w3.org/2003/01/geo/wgs84_pos#lat>: 59.338
+  - <http://www.w3.org/2003/01/geo/wgs84_pos#long>: 27.6746
+  - <http://www.w3.org/2004/02/skos/core#broader>: Hierarchical relationship
+  - <http://www.w3.org/2000/01/rdf-schema#seeAlso>: External link to Wikidata
 
----
+### 6. CorporateBody Entity
+**Sample**: <http://lod.ehri-project-test.eu/vocabularies/ehri-cb/007318>
+- **Properties**: 653 triples (highly connected)
+- **Structure**: Corporate body with extensive creator relationships
+- **Key Properties**:
+  - <https://www.ica.org/standards/RiC/ontology#name>: "Народный комиссариат внутренних дел Украинской ССР" (People's Commissariat of Internal Affairs of Ukrainian SSR)
+  - <https://www.ica.org/standards/RiC/ontology#isCreatorOf>: Links to hundreds of archival units
 
-## Step 3: Sample Triples
+### 7. Person Entity
+**Sample**: <http://lod.ehri-project-test.eu/vocabularies/ehri-pers/27069453>
+- **Properties**: 5 triples
+- **Structure**: Person with name, dates, and external links
+- **Key Properties**:
+  - <https://www.ica.org/standards/RiC/ontology#name>: "Coen, Susanna"
+  - <https://www.ica.org/standards/RiC/ontology#hasBirthDate>: Links to date entity
+  - <http://www.w3.org/2002/07/owl#sameAs>: External link to CDEC database
 
-| Subject | Property | Object |
-|---------|----------|--------|
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/3001> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/43> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/857> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-ghettos/1103> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-terms/1218> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-terms/556> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-terms/1211> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-pers/000226> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://lod.ehri-project-test.eu/ontology#RecordSet> |
+## Entity-Value Patterns
 
-**Key Observations:**
-- Sample records are archival units with subjects linking to controlled vocabularies
-- Vocabulary URIs follow patterns like `ehri-camps`, `ehri-ghettos`, `ehri-terms`, `ehri-pers`
-- The KG links to subject authorities for camps, ghettos, terms, and persons
+The entity-value patterns show consistent structures across different entity types:
 
----
+**ParallelAgentName entities** consistently follow this pattern:
+- <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>: <http://lod.ehri-project-test.eu/ontology#ParallelAgentName>
+- <https://www.ica.org/standards/RiC/ontology#isOrWasAgentNameOf>: Links to main agent entity
+- <https://www.ica.org/standards/RiC/ontology#name>: Textual name value
 
-## Step 4: Relationship Patterns
+Examples include multilingual names and historical organizational names in various languages (English, Russian, Serbian, Slovenian, Italian, etc.).
 
-**Note:** The relationship pattern query timed out repeatedly due to the large dataset size. This step could not be completed.
+## Key Observations
 
----
+1. **Ontology Framework**: Built on RiC (Records in Contexts) ontology with EHRI-specific extensions
+2. **Multilingual Support**: Contains content in multiple European languages
+3. **Temporal Coverage**: Focuses on Holocaust period (1930s-1940s) with extensive date entities
+4. **Geographic Scope**: Covers multiple European countries with detailed place information
+5. **Interlinking**: Includes external links to Wikidata and other databases
+6. **Hierarchical Structure**: Record sets organized through inclusion relationships
+7. **Rich Metadata**: Extensive descriptive properties for archival materials
+8. **Agent Relationships**: Complex networks of corporate bodies, persons, and their activities
+9. **Subject Access**: Comprehensive subject indexing using controlled vocabularies
+10. **Institutional Context**: Detailed information about holding institutions
 
-## Step 5: Entity-Value Patterns (RecordSet Samples)
+## Technical Characteristics
 
-| Subject | Property | Object |
-|---------|----------|--------|
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/3001> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/43> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-camps/857> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-ghettos/1103> |
-| <http://lod.ehri-project-test.eu/units/us-005578-irn500067-irn503032> | <https://www.ica.org/standards/RiC/ontology#hasOrHadSubject> | <http://lod.ehri-project-test.eu/vocabularies/ehri-terms/1218> |
+- **Graph Type**: Single unified graph (no named graphs)
+- **Query Performance**: Good performance for simple queries; complex path queries may timeout
+- **Data Quality**: High consistency in property usage and entity structures
+- **Scalability**: Large-scale dataset suitable for comprehensive Holocaust research
+- **Standards Compliance**: Follows international archival standards (RiC) and semantic web best practices
 
-**Key Observations:**
-- RecordSet entities are heavily linked to controlled vocabulary terms via `hasOrHadSubject`
-- The vocabulary system distinguishes between different entity types (camps, ghettos, terms, persons)
-
----
-
-## Summary
-
-| Aspect | Details |
-|--------|---------|
-| **Graph Type** | Single unified graph (no named graphs) |
-| **Primary Ontology** | RiC (Records in Contexts) - ICA standard |
-| **Local Ontology** | `http://lod.ehri-project-test.eu/ontology#` |
-| **Total Entities** | ~1.1M+ (based on type counts) |
-| **Dominant Entity** | RecordSet (~353K) |
-| **Key Properties** | title, identifier, hasOrHadHolder, hasRecordSetType, includesOrIncluded, dates |
-| **Vocabularies** | EHRI-controlled vocabularies for camps, ghettos, terms, persons |
-| **Domain** | Holocaust archival records - historical documents, institutions, and subjects |
+This knowledge graph represents a sophisticated archival information system designed to support Holocaust research through interconnected, semantically rich data about archival materials, their creators, subjects, and historical context.
