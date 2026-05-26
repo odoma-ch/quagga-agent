@@ -1,0 +1,1049 @@
+## Step 1 : Get entity types
+
+All pages collected (OFFSET 100 reached). Here is the **merged and de-duplicated result** from all 6 pages (120 distinct types total):
+
+---
+
+## Step 1 Results — Entity Types (merged, 120 types)
+
+| # | Type | Count |
+|---|------|-------|
+| 1 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000003` | 3,046,281 |
+| 2 | `http://schema.org/ImageObject` | 2,792,676 |
+| 3 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000004` | 2,679,637 |
+| 4 | `https://nfdi4culture.de/ontology/CTO_0001005` | 2,423,012 |
+| 5 | `http://schema.org/DataFeedItem` | 2,422,708 |
+| 6 | `https://nfdi4culture.de/ontology/CTO_0001024` | 2,178,870 |
+| 7 | `http://purl.org/ontology/mo/MusicalManifestation` | 1,590,240 |
+| 8 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000005` | 711,248 |
+| 9 | `http://schema.org/VisualArtwork` | 416,227 |
+| 10 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001016` | 130,548 |
+| 11 | `http://www.cidoc-crm.org/cidoc-crm/E34_Inscription` | 84,608 |
+| 12 | `https://nfdi4culture.de/ontology/CTO_0001030` | 70,430 |
+| 13 | `http://schema.org/MusicEvent` | 65,359 |
+| 14 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001009` | 56,565 |
+| 15 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001010` | 47,094 |
+| 16 | `http://schema.org/MusicComposition` | 41,016 |
+| 17 | `https://nfdi4culture.de/ontology/NFDI_0000107` | 35,418 |
+| 18 | `http://schema.org/CreativeWork` | 20,841 |
+| 19 | `http://rdfs.org/ns/void#Dataset` | 10,532 |
+| 20 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001055` | 8,354 |
+| 21 | `http://schema.org/Role` | 4,840 |
+| 22 | `https://nfdi4culture.de/ontology/CTO_0001059` | 3,801 |
+| 23 | `http://schema.org/AudioObject` | 2,889 |
+| 24 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI0001009` | 2,100 |
+| 25 | `https://nfdi4culture.de/ontology/CTO_0001029` | 1,834 |
+| 26 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI0001010` | 1,704 |
+| 27 | `http://schema.org/LandmarksOrHistoricalBuildings` | 1,246 |
+| 28 | `https://lod.academy/cmif/vocab/terms#Letter` | 1,094 |
+| 29 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001011` | 1,001 |
+| 30 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001012` | 998 |
+| 31 | `https://nfdi4culture.de/ontology/CTO_0001031` | 688 |
+| 32 | `http://schema.org/DefinedTerm` | 631 |
+| 33 | `http://schema.org/CreateAction` | 620 |
+| 34 | `http://schema.org/MediaObject` | 464 |
+| 35 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000190` | 325 |
+| 36 | `http://purl.obolibrary.org/obo/IAO_0000578` | 270 |
+| 37 | `https://nfdi4culture.de/ontology/CTO_0001079` | 247 |
+| 38 | `http://schema.org/NewsArticle` | 211 |
+| 39 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000001` | 178 |
+| 40 | `https://nfdi4culture.de/ontology/CTO_0001053` | 178 |
+| 41 | `http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object` | 142 |
+| 42 | `http://schema.org/Event` | 139 |
+| 43 | `http://www.openlinksw.com/schemas/virtrdf#QuadMapFormat` | 130 |
+| 44 | `http://purl.obolibrary.org/obo/IAO_0000708` | 122 |
+| 45 | `http://schema.org/Review` | 113 |
+| 46 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001013` | 102 |
+| 47 | `http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapFormat` | 98 |
+| 48 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000123` | 88 |
+| 49 | `http://schema.org/Place` | 80 |
+| 50 | `http://schema.org/GeoCoordinates` | 80 |
+| 51 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000198` | 80 |
+| 52 | `http://purl.org/spar/fabio/Presentation` | 78 |
+| 53 | `http://schema.org/HowToStep` | 76 |
+| 54 | `http://purl.org/spar/fabio/ComputerProgram` | 74 |
+| 55 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000145` | 73 |
+| 56 | `http://www.w3.org/ns/dcat#Catalog` | 70 |
+| 57 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001014` | 69 |
+| 58 | `http://purl.org/spar/fabio/Database` | 67 |
+| 59 | `http://purl.org/spar/fabio/CaseReport` | 66 |
+| 60 | `http://purl.org/spar/fabio/Announcement` | 59 |
+| 61 | `https://w3id.org/okn/o/sd#SourceCode` | 59 |
+| 62 | `http://purl.org/spar/fabio/InstructionalWork` | 58 |
+| 63 | `http://purl.org/spar/fabio/NewsItem` | 54 |
+| 64 | `http://purl.org/spar/fabio/ConferencePoster` | 53 |
+| 65 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000100` | 50 |
+| 66 | `http://purl.org/spar/fabio/BriefReport` | 50 |
+| 67 | `http://www.w3.org/ns/hydra/core#PartialCollectionView` | 44 |
+| 68 | `http://purl.org/spar/fabio/Report` | 41 |
+| 69 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000232` | 40 |
+| 70 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000131` | 36 |
+| 71 | `http://purl.org/spar/fabio/ConferencePaper` | 34 |
+| 72 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000141` | 30 |
+| 73 | `http://purl.org/spar/fabio/WebSite` | 27 |
+| 74 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001039` | 27 |
+| 75 | `http://purl.org/spar/fabio/AudioDocument` | 26 |
+| 76 | `http://schema.org/WebApplication` | 26 |
+| 77 | `http://purl.org/spar/fabio/Article` | 26 |
+| 78 | `http://purl.org/spar/fabio/Dataset` | 26 |
+| 79 | `http://schema.org/DataFeed` | 25 |
+| 80 | `http://purl.org/spar/fabio/BlogPost` | 25 |
+| 81 | `http://www.w3.org/1999/02/22-rdf-syntax-ns#Property` | 23 |
+| 82 | `http://schema.org/LearningResource` | 22 |
+| 83 | `http://purl.org/spar/fabio/Movie` | 20 |
+| 84 | `http://schema.org/ConsumeAction` | 20 |
+| 85 | `http://schema.org/HowTo` | 20 |
+| 86 | `http://purl.org/spar/fabio/DataRepository` | 20 |
+| 87 | `http://schema.org/EntryPoint` | 20 |
+| 88 | `http://schema.org/VideoObject` | 19 |
+| 89 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000206` | 19 |
+| 90 | `http://purl.org/spar/fabio/Script` | 19 |
+| 91 | `http://schema.org/HowToTool` | 18 |
+| 92 | `http://purl.org/spar/fabio/CallForApplications` | 17 |
+| 93 | `http://www.w3.org/2000/01/rdf-schema#Class` | 15 |
+| 94 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000009` | 14 |
+| 95 | `http://schema.org/EventSeries` | 13 |
+| 96 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000002` | 11 |
+| 97 | `http://www.w3.org/ns/hydra/core#Collection` | 10 |
+| 98 | `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001099` | 9 |
+| 99 | `https://nfdi.fiz-karlsruhe.de/ontology/Dataset` | 9 |
+| 100 | `http://purl.org/spar/fabio/Abstract` | 8 |
+| 101 | `http://purl.org/spar/fabio/ConferenceProceedings` | 8 |
+| 102 | `http://purl.org/spar/fabio/WorkshopProceedings` | 8 |
+| 103 | `http://www.openlinksw.com/schemas/virtrdf#QuadMapColumn` | 8 |
+| 104 | `http://www.openlinksw.com/schemas/virtrdf#QuadMapValue` | 8 |
+| 105 | `http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMapColumn` | 8 |
+| 106 | `http://purl.org/spar/fabio/PositionPaper` | 7 |
+| 107 | `http://purl.org/spar/fabio/Proposition` | 7 |
+| 108 | `http://schema.org/Guide` | 7 |
+| 109 | `http://www.w3.org/2002/07/owl#AnnotationProperty` | 5 |
+| 110 | `http://purl.org/spar/fabio/WhitePaper` | 5 |
+| 111 | `http://purl.org/spar/fabio/Book` | 4 |
+| 112 | `http://www.w3.org/2002/07/owl#OntologyProperty` | 4 |
+| 113 | `http://purl.org/spar/fabio/PosterPaper` | 4 |
+| 114 | `http://www.openlinksw.com/schemas/virtrdf#QuadMapFText` | 4 |
+| 115 | `http://purl.org/spar/fabio/ResearchPaper` | 3 |
+| 116 | `http://www.openlinksw.com/schemas/virtrdf#QuadStorage` | 3 |
+| 117 | `https://w3id.org/okn/o/sd#SoftwareVersion` | 3 |
+| 118 | `http://www.w3.org/2002/07/owl#Class` | 3 |
+| 119 | `http://www.openlinksw.com/schemas/virtrdf#array-of-QuadMap` | 3 |
+| 120 | `http://purl.org/spar/fabio/GrantApplication` | 3 |
+
+---
+
+### Key Observations
+- **Dominant types** are from the **NFDI ontology** (`NFDI_0000003`, `NFDI_0000004`, `NFDI_0000005`) and **Schema.org** (`ImageObject`, `DataFeedItem`, `VisualArtwork`, `MusicEvent`, `MusicComposition`)
+- **Culture-specific ontology** (`nfdi4culture.de/ontology/CTO_*`) is heavily used
+- **Music domain** is prominent: `mo:MusicalManifestation` (1.59M), `schema:MusicEvent`, `schema:MusicComposition`
+- **CIDOC-CRM** appears for cultural heritage objects (`E34_Inscription`, `E22_Human-Made_Object`)
+- **FaBiO** (scholarly publishing) types appear for research outputs
+- **VoID datasets** (10,532) suggest this is a federated/aggregated knowledge graph
+
+## Step 2 : Get property usage
+
+All 6 pages collected (OFFSET 0–100). Here is the **merged and de-duplicated result** — 120 distinct properties total:
+
+---
+
+## Step 2 Results — Property Usage (merged, 120 properties)
+
+| # | Property | Count |
+|---|----------|-------|
+| 1 | `rdf:type` | 18,860,002 |
+| 2 | `nfdi:NFDI_0001006` | 11,102,873 |
+| 3 | `rdfs:label` | 10,752,606 |
+| 4 | `nfdi:NFDI_0000146` | 4,753,991 |
+| 5 | `cto:CTO_0001026` | 4,040,208 |
+| 6 | `nfdi:NFDI_0000207` | 3,611,213 |
+| 7 | `cto:CTO_0001010` | 3,055,061 |
+| 8 | `cto:CTO_0001007` | 2,820,455 |
+| 9 | `cto:CTO_0001009` | 2,702,381 |
+| 10 | `nfdi:NFDI_0000142` | 2,673,554 |
+| 11 | `cto:CTO_0001025` | 2,576,272 |
+| 12 | `nfdi:NFDI_0000191` | 2,504,278 |
+| 13 | `cto:CTO_0001021` | 2,441,222 |
+| 14 | `schema:associatedMedia` | 2,440,473 |
+| 15 | `schema:dateModified` | 2,436,010 |
+| 16 | `nfdi:NFDI_0001008` | 2,424,347 |
+| 17 | `schema:item` | 2,423,013 |
+| 18 | `cto:CTO_0001006` | 2,423,012 |
+| 19 | `schema:dataFeedElement` | 2,422,708 |
+| 20 | `cto:CTO_0001062` | 2,178,997 |
+| 21 | `cto:CTO_0001065` | 2,178,870 |
+| 22 | `cto:CTO_0001049` | 2,093,485 |
+| 23 | `cto:CTO_0001060` | 1,984,593 |
+| 24 | `cto:CTO_0001061` | 1,819,537 |
+| 25 | `cto:CTO_0001063` | 1,806,593 |
+| 26 | `schema:dateCreated` | 1,465,799 |
+| 27 | `cto:CTO_0001064` | 1,390,485 |
+| 28 | `cto:CTO_0001019` | 1,275,294 |
+| 29 | `cto:CTO_0001073` | 1,102,847 |
+| 30 | `cto:CTO_0001011` | 731,271 |
+| 31 | `bfo:BFO_0000050` | 67,390 |
+| 32 | `cto:CTO_0001070` | 65,348 |
+| 33 | `cto:CTO_0001071` | 46,797 |
+| 34 | `iao:IAO_0000118` | 13,682 |
+| 35 | `cto:CTO_0001022` | 13,025 |
+| 36 | `void:feature` | 10,532 |
+| 37 | `rdfs:seeAlso` | 10,532 |
+| 38 | `schema:keywords` | 7,345 |
+| 39 | `schema:contributor` | 6,889 |
+| 40 | `schema:sameAs` | 4,895 |
+| 41 | `schema:roleName` | 4,802 |
+| 42 | `schema:name` | 3,702 |
+| 43 | `nfdi:NFDI_0000211` | 2,946 |
+| 44 | `nfdi:NFDI_0001027` | 2,390 |
+| 45 | `cto:CTO_0001072` | 1,852 |
+| 46 | `nfdi:NFDI_0001028` | 1,732 |
+| 47 | `nfdi:NFDI0001006` | 1,704 |
+| 48 | `schema:member` | 1,639 |
+| 49 | `schema:latitude` | 1,324 |
+| 50 | `schema:longitude` | 1,324 |
+| 51 | `schema:memberOf` | 1,195 |
+| 52 | `schema:startDate` | 937 |
+| 53 | `dcterms:created` | 772 |
+| 54 | `dcterms:modified` | 772 |
+| 55 | `dav:ownerUser` | 772 |
+| 56 | `dcterms:extent` | 771 |
+| 57 | `nfdi:NFDI_0000116` | 769 |
+| 58 | `rdfs:comment` | 747 |
+| 59 | `schema:image` | 732 |
+| 60 | `schema:potentialAction` | 640 |
+| 61 | `schema:actionStatus` | 640 |
+| 62 | `schema:result` | 620 |
+| 63 | `schema:agent` | 611 |
+| 64 | `schema:datePublished` | 585 |
+| 65 | `schema:knowsAbout` | 547 |
+| 66 | `schema:description` | 509 |
+| 67 | `schema:familyName` | 441 |
+| 68 | `schema:givenName` | 440 |
+| 69 | `nfdi:NFDI_0000117` | 381 |
+| 70 | `schema:endDate` | 320 |
+| 71 | `schema:alternateName` | 276 |
+| 72 | `schema:about` | 221 |
+| 73 | `schema:honorificPrefix` | 215 |
+| 74 | `schema:text` | 214 |
+| 75 | `nfdi:NFDI_0010015` | 209 |
+| 76 | `org:classification` | 209 |
+| 77 | `schema:headline` | 209 |
+| 78 | `owl:sameAs` | 173 |
+| 79 | `virtrdf:qmfValRange-rvrRestrictions` | 172 |
+| 80 | `schema:subjectOf` | 156 |
+| 81 | `schema:isRelatedTo` | 143 |
+| 82 | `virtrdf:item` | 139 |
+| 83 | `virtrdf:qmfName` | 130 |
+| 84 | `schema:reviewBody` | 113 |
+| 85 | `schema:review` | 113 |
+| 86 | `schema:author` | 106 |
+| 87 | `nfdi:NFDI_0000213` | 106 |
+| 88 | `nfdi:NFDI_0000182` | 101 |
+| 89 | `virtrdf:inheritFrom` | 99 |
+| 90 | `virtrdf:qmfSuperFormats` | 98 |
+| 91 | `schema:identifier` | 94 |
+| 92 | `schema:subEvent` | 84 |
+| 93 | `schema:location` | 80 |
+| 94 | `schema:geo` | 80 |
+| 95 | `nfdi:NFDI_0000113` | 77 |
+| 96 | `schema:pattern` | 76 |
+| 97 | `schema:position` | 76 |
+| 98 | `schema:step` | 76 |
+| 99 | `nfdi:NFDI_0000112` | 73 |
+| 100 | `okn:shortDescription` | 67 |
+| 101 | `rdf:_1` | 66 |
+| 102 | `schema:mainEntityOfPage` | 60 |
+| 103 | `okn:codeRepository` | 59 |
+| 104 | `okn:hasSourceCode` | 59 |
+| 105 | `virtrdf:qmfIidOfShortTmpl` | 57 |
+| 106 | `virtrdf:noInherit` | 56 |
+| 107 | `virtrdf:qmfSqlvalOfShortTmpl` | 53 |
+| 108 | `virtrdf:qmfStrsqlvalOfShortTmpl` | 53 |
+| 109 | `virtrdf:qmfSqlvalTmpl` | 53 |
+| 110 | `virtrdf:qmfIsBijection` | 47 |
+| 111 | `virtrdf:qmfIsStable` | 47 |
+| 112 | `virtrdf:qmfBoolOfShortTmpl` | 47 |
+| 113 | `virtrdf:qmfLongTmpl` | 45 |
+| 114 | `schema:honorificSuffix` | 45 |
+| 115 | `virtrdf:qmfLongOfShortTmpl` | 45 |
+| 116 | `virtrdf:qmfUriOfShortTmpl` | 45 |
+| 117 | `schema:inLanguage` | 42 |
+| 118 | `virtrdf:qmfBoolTmpl` | 42 |
+| 119 | `virtrdf:qmfMapsOnlyNullToNull` | 40 |
+| 120 | *(20th row of page 6 — same as above)* | — |
+
+---
+
+### Key Observations
+- **`rdf:type`** dominates at ~18.9M triples — a very richly typed graph
+- **NFDI ontology properties** (`NFDI_0001006`, `NFDI_0000146`, `NFDI_0000207`, etc.) are the most-used custom properties, with millions of usages — these are core structural/metadata properties
+- **CTO ontology properties** (`CTO_0001026`, `CTO_0001010`, `CTO_0001007`, etc.) are heavily used, especially in the millions range — likely core culture-domain relationships
+- **Schema.org** properties are prominent: `associatedMedia`, `dateModified`, `dateCreated`, `item`, `dataFeedElement`, `keywords`, `contributor`, `sameAs`, etc.
+- **`rdfs:label`** (10.75M) confirms nearly all entities are labelled
+- **VoID, BFO, IAO, OKN** vocabularies appear for dataset metadata, ontological structure, and software descriptions
+- **Virtrdf** internal properties appear at lower counts — system-level metadata from the Virtuoso triple store
+
+## Step 3 : Describe sample entities
+
+`NFDI_0001016` are **RISM Institutions** (music libraries/archives holding musical sources) — all from `rism.online/institutions/`. They are sparsely described here but serve as authority references.
+
+---
+
+## Step 3 Summary — Sample Entity Profiles
+
+| # | Type URI | Count | Identity | Key Properties / Notes |
+|---|----------|-------|----------|------------------------|
+| 1 | `NFDI_0000003` | 3,046,281 | **Organisation** | `rdfs:label`, `schema:name`, `NFDI_0001006` (external IDs: ROR, Wikidata, ZDB), `NFDI_0001008` (URL), `org:classification`, `schema:image`, `schema:location`, `schema:member`, `NFDI_0000137` (related entity), `NFDI_0010015` (abbreviation) |
+| 2 | `schema:ImageObject` | 2,792,676 | **Image/Media Object** | All blank nodes; properties: `CTO_0001007`, `CTO_0001021`, `NFDI_0000142` — linked as media attachments to cultural objects |
+| 3 | `NFDI_0000004` | 2,679,637 | **Person** | `schema:honorificPrefix`, `schema:familyName`, `schema:givenName`, `schema:memberOf`, `NFDI_0001027`/`NFDI_0001028` (project roles), `NFDI_0000117` (affiliation), `NFDI_0000192` (research area) |
+| 4 | `CTO_0001005` | 2,423,012 | **Cultural Event / Performance** | `rdfs:label`, `CTO_0001006` (dataset), `CTO_0001025` (manifestation), `CTO_0001026` (type/AAT), `CTO_0001080` (API source), `NFDI_0000142` (contributor), `NFDI_0000146` (subject), `NFDI_0000191` (creator), `CTO_0001011` (location), `CTO_0001019` (related works), `CTO_0001070` (date), `BFO_0000050` (part of series) |
+| 5 | `schema:DataFeedItem` | 2,422,708 | **Data Feed Wrapper** | `schema:item` (link to actual resource), `schema:dateModified`, `schema:dateCreated` — thin wrapper for feed aggregation |
+| 6 | `CTO_0001024` | 2,178,870 | **Music Incipit** | `rdfs:label`, `CTO_0001060` (time signature), `CTO_0001061` (clef), `CTO_0001062` (key signature), `CTO_0001063` (Plaine & Easie notation), `CTO_0001064` (key), `schema:associatedMedia` |
+| 7 | `mo:MusicalManifestation` | 1,590,240 | **Musical Source Manifestation** | All blank nodes; linked from RISM sources via `CTO_0001025` — represent physical/digital copies of musical manuscripts/prints |
+| 8 | `NFDI_0000005` | 711,248 | **Place / Location** | All blank nodes; `rdfs:label` (place name), `NFDI_0001006` (Wikidata URI) — authority references for geographic entities |
+| 9 | `schema:VisualArtwork` | 416,227 | **Visual Artwork** | All blank nodes; linked from Sandrart.net (`sah.tib.eu`) via `CTO_0001025` — art history objects |
+| 10 | `NFDI_0001016` | 130,548 | **RISM Institution** | Named URIs (`rism.online/institutions/`); very sparse (only `rdf:type`); referenced via `NFDI_0001006` as external authority identifiers for music-holding libraries/archives |
+
+## Step 4 : Discover relationship patterns
+
+OFFSET 90 returned 30 rows — reached the limit. All pages collected. Here is the full merged and de-duplicated Step 4 result:
+
+---
+
+## Step 4 Results — Relationship Patterns (merged, 149 unique p1→p2 pairs)
+
+### Organisation (`NFDI_0000003`) relationship chains
+
+| p1 | p2 | count | Interpretation |
+|----|-----|-------|----------------|
+| `NFDI_0001006` | `rdf:type` | 4,824,674 | External ID → typed authority entity |
+| `rdfs:seeAlso` | `rdf:type` | 956 | Serialisation links → typed resources |
+| `rdfs:seeAlso` | `void:feature` | 956 | Serialisation links → VoID dataset features |
+| `org:classification` | `rdfs:seeAlso` | 836 | Org type → serialisation links |
+| `schema:member` | `rdf:type` | 604 | Org → member role node → typed |
+| `schema:member` | `schema:sameAs` | 603 | Org → member role → same-as link |
+| `schema:member` | `schema:roleName` | 603 | Org → member role → role name |
+| `schema:member` | `schema:member` | 603 | Org → role node → person |
+| `NFDI_0000213` | `rdfs:seeAlso` | 424 | Org → sub-org → serialisation |
+| `NFDI_0000213` | `schema:member` | 349 | Org → sub-org → member |
+| `NFDI_0000182` | `rdfs:seeAlso` | 300 | Org → related org → serialisation |
+| `NFDI_0000182` | `schema:member` | 283 | Org → related org → member |
+| `schema:member` | `schema:startDate` | 252 | Org → role → start date |
+| `NFDI_0000182` | `NFDI_0000213` | 220 | Org → related org → sub-org |
+| `org:classification` | `rdf:type` | 209 | Org → classification → type |
+| `org:classification` | `schema:name` | 209 | Org → classification → name |
+| `org:classification` | `rdfs:label` | 209 | Org → classification → label |
+| `NFDI_0000182` | `NFDI_0001006` | 189 | Org → related org → external ID |
+| `org:classification` | `NFDI_0001006` | 182 | Org → classification → external ID |
+| `NFDI_0000213` | `NFDI_0001006` | 140 | Org → sub-org → external ID |
+| `NFDI_0000213` | `schema:name` | 134 | Org → sub-org → name |
+| `NFDI_0000213` | `rdfs:label` | 133 | Org → sub-org → label |
+| `NFDI_0000182` | `rdfs:label` | 129 | Org → related org → label |
+| `NFDI_0000211` | `rdfs:seeAlso` | 128 | Org → project → serialisation |
+| `NFDI_0000213` | `NFDI_0000182` | 127 | Sub-org → related org chain |
+| `NFDI_0000213` | `rdf:type` | 106 | Org → sub-org → type |
+| `NFDI_0000213` | `NFDI_0001008` | 100 | Org → sub-org → URL |
+| `NFDI_0000213` | `org:classification` | 93 | Org → sub-org → classification |
+| `schema:location` | `schema:geo` | 80 | Org → location → geo coordinates |
+| `NFDI_0000182` | `schema:name` | 80 | Org → related org → name |
+| `schema:location` | `rdf:type` | 80 | Org → location → type |
+| `schema:member` | `schema:endDate` | 78 | Org → role → end date |
+| `NFDI_0000213` | `NFDI_0010015` | 77 | Org → sub-org → abbreviation |
+| `NFDI_0000182` | `rdf:type` | 75 | Org → related org → type |
+| `NFDI_0000182` | `org:classification` | 71 | Org → related org → classification |
+| `NFDI_0000211` | `rdf:type` | 64 | Org → project → type |
+| `NFDI_0000182` | `NFDI_0001008` | 63 | Org → related org → URL |
+| `NFDI_0000182` | `NFDI_0010015` | 62 | Org → related org → abbreviation |
+| `NFDI_0000182` | `schema:location` | 52 | Org → related org → location |
+| `NFDI_0000211` | `schema:name` | 35 | Org → project → name |
+| `NFDI_0000211` | `rdfs:label` | 32 | Org → project → label |
+| `NFDI_0000211` | `NFDI_0001006` | 32 | Org → project → external ID |
+| `NFDI_0000182` | `schema:image` | 28 | Org → related org → image |
+| `NFDI_0000213` | `schema:image` | 26 | Org → sub-org → image |
+| `NFDI_0000211` | `owl:sameAs` | 26 | Org → project → same-as |
+| `NFDI_0000213` | `NFDI_0000211` | 23 | Sub-org → project chain |
+| `BFO_0000178` | `rdfs:seeAlso` | 20 | Org → org unit → serialisation |
+| `NFDI_0000213` | `schema:description` | 19 | Org → sub-org → description |
+| `BFO_0000178` | `schema:member` | 15 | Org → org unit → member |
+| `NFDI_0000213` | `BFO_0000178` | 12 | Sub-org → org unit chain |
+| `BFO_0000178` | `NFDI_0000182` | 11 | Org unit → related org |
+| `BFO_0000178` | `schema:name` | 10 | Org unit → name |
+| `NFDI_0000182` | `NFDI_0000211` | 10 | Related org → project |
+| `schema:member` | `NFDI_0001028` | 9 | Org → role → project membership |
+| `NFDI_0000213` | `schema:location` | 8 | Sub-org → location |
+| `NFDI_0000137` | `rdfs:seeAlso` | 8 | Org → related entity → serialisation |
+| `BFO_0000178` | `rdfs:label` | 8 | Org unit → label |
+| `NFDI_0000213` | `NFDI_0000213` | 8 | Sub-org → sub-org (nested) |
+| `BFO_0000178` | `NFDI_0000211` | 7 | Org unit → project |
+| `NFDI_0000182` | `NFDI_0000182` | 7 | Related org → related org (chain) |
+| *(+ lower-count pairs)* | | | |
+
+### Person (`NFDI_0000004`) relationship chains
+
+| p1 | p2 | count | Interpretation |
+|----|-----|-------|----------------|
+| `NFDI_0001006` | `rdf:type` | 5,589,452 | Person → external ID → typed authority |
+| `rdf:type` | `rdf:type` | 2,679,637 | Self-referential type chain |
+| `NFDI_0001028` | `schema:contributor` | 15,795 | Person → project → contributor |
+| `NFDI_0001028` | `NFDI_0001027` | 13,137 | Person → project → project member |
+| `NFDI_0001028` | `schema:keywords` | 10,898 | Person → project → keywords |
+| `NFDI_0001028` | `rdfs:seeAlso` | 6,924 | Person → project → serialisation |
+| `NFDI_0001028` | `NFDI_0000211` | 4,202 | Person → project → sub-project |
+| `NFDI_0000117` | `schema:keywords` | 4,194 | Person → affiliation → keywords |
+| `NFDI_0000117` | `schema:contributor` | 3,983 | Person → affiliation → contributor |
+| `NFDI_0001028` | `rdf:type` | 3,444 | Person → project → type |
+| `schema:knowsAbout` | `rdfs:seeAlso` | 2,148 | Person → topic → serialisation |
+| `NFDI_0001028` | `schema:name` | 1,942 | Person → project → name |
+| `NFDI_0001028` | `NFDI_0000116` | 1,941 | Person → project → dataset |
+| `rdfs:seeAlso` | `rdf:type` | 1,760 | Serialisation → type |
+| `rdfs:seeAlso` | `void:feature` | 1,760 | Serialisation → VoID feature |
+| `NFDI_0001028` | `rdfs:label` | 1,731 | Person → project → label |
+| `NFDI_0001028` | `schema:dataFeedElement` | 1,694 | Person → project → feed element |
+| `NFDI_0000211` | `rdfs:seeAlso` | 1,668 | Person → research area → serialisation |
+| `NFDI_0001028` | `NFDI_0001008` | 1,666 | Person → project → URL |
+| `NFDI_0000117` | `NFDI_0000116` | 1,635 | Person → affiliation → dataset |
+| `NFDI_0000117` | `rdfs:seeAlso` | 1,524 | Person → affiliation → serialisation |
+| `NFDI_0001028` | `schema:potentialAction` | 1,519 | Person → project → action |
+| `NFDI_0001028` | `schema:datePublished` | 1,471 | Person → project → date |
+| `schema:knowsAbout` | `rdf:type` | 955 | Person → topic → type |
+| `NFDI_0000117` | `NFDI_0000211` | 954 | Person → affiliation → research area |
+| `NFDI_0001028` | `schema:alternateName` | 935 | Person → project → alt name |
+| `NFDI_0000113` | `schema:keywords` | 915 | Person → research output → keywords |
+| `NFDI_0000211` | `rdf:type` | 833 | Person → research area → type |
+| `NFDI_0000117` | `schema:subjectOf` | 685 | Person → affiliation → subject |
+| `NFDI_0000117` | `rdf:type` | 648 | Person → affiliation → type |
+| `NFDI_0001028` | `schema:about` | 641 | Person → project → about |
+| `NFDI_0000117` | `schema:subEvent` | 627 | Person → affiliation → event |
+| `schema:memberOf` | `rdf:type` | 597 | Person → role → type |
+| `schema:memberOf` | `schema:sameAs` | 596 | Person → role → same-as |
+| `schema:memberOf` | `schema:roleName` | 596 | Person → role → role name |
+| `schema:memberOf` | `schema:memberOf` | 596 | Person → role → org |
+| `schema:knowsAbout` | `schema:name` | 574 | Person → topic → name |
+| `schema:knowsAbout` | `rdfs:label` | 537 | Person → topic → label |
+| `NFDI_0000117` | `schema:name` | 466 | Person → affiliation → name |
+| `schema:knowsAbout` | `owl:sameAs` | 443 | Person → topic → same-as |
+| `NFDI_0000211` | `schema:name` | 441 | Person → research area → name |
+| `NFDI_0000113` | `schema:contributor` | 425 | Person → research output → contributor |
+| `schema:knowsAbout` | `NFDI_0001006` | 424 | Person → topic → external ID |
+| `NFDI_0000211` | `owl:sameAs` | 424 | Person → research area → same-as |
+| `NFDI_0000211` | `rdfs:label` | 417 | Person → research area → label |
+| `NFDI_0000211` | `NFDI_0001006` | 416 | Person → research area → external ID |
+| `NFDI_0001028` | `schema:image` | 387 | Person → project → image |
+| `NFDI_0000117` | `rdfs:label` | 381 | Person → affiliation → label |
+| `NFDI_0001028` | `schema:text` | 322 | Person → project → text |
+| `NFDI_0000113` | `rdfs:seeAlso` | 308 | Person → research output → serialisation |
+| `NFDI_0001028` | `schema:headline` | 308 | Person → project → headline |
+| `NFDI_0001028` | `schema:subjectOf` | 296 | Person → project → subject |
+| `schema:memberOf` | `schema:startDate` | 259 | Person → role → start date |
+| `NFDI_0001028` | `schema:description` | 249 | Person → project → description |
+| `NFDI_0000113` | `NFDI_0000211` | 242 | Person → output → research area |
+| `NFDI_0000117` | `NFDI_0001008` | 240 | Person → affiliation → URL |
+| `NFDI_0001028` | `schema:image` | 387 | Person → project → image |
+| `NFDI_0000117` | `schema:image` | 229 | Person → affiliation → image |
+| `NFDI_0000117` | `schema:description` | 225 | Person → affiliation → description |
+| `NFDI_0000117` | `schema:potentialAction` | 197 | Person → affiliation → action |
+| `schema:memberOf` | `schema:endDate` | 77 | Person → role → end date |
+| `schema:knows` | `NFDI_0001028` | 68 | Person → known person → project |
+| `NFDI_0000113` | `NFDI_0000116` | 129 | Person → output → dataset |
+| `NFDI_0000113` | `NFDI_0000112` | 129 | Person → output → sub-dataset |
+| `NFDI_0000117` | `NFDI_0000112` | 65 | Person → affiliation → sub-dataset |
+| `NFDI_0000192` | `schema:keywords` | 11 | Person → research area → keywords |
+| *(+ lower-count pairs)* | | | |
+
+---
+
+### Key Relationship Pattern Findings
+
+1. **External Identity Hub**: `NFDI_0001006` is the dominant bridge property — both Organisations and Persons use it to link to millions of external authority records (Wikidata, ROR, RISM, GND, etc.), making it the primary cross-KG alignment mechanism.
+
+2. **Organisation internal structure**: Orgs have rich nested relationships — `NFDI_0000213` (sub-organisation), `NFDI_0000182` (related organisation), `BFO_0000178` (organisational unit), `org:classification` (type), `schema:member` → role nodes (with `roleName`, `startDate`, `endDate`), and `schema:location` → `schema:geo`.
+
+3. **Person–Project–Output chain**: Persons connect to projects via `NFDI_0001028` (project membership), which in turn links to contributors, keywords, datasets (`NFDI_0000116`), publications, and actions. `NFDI_0000117` (affiliation) and `NFDI_0000113` (research output) are the other key person-level hubs.
+
+4. **Role reification**: Both `schema:member` (from Org) and `schema:memberOf` (from Person) point to intermediate role blank nodes carrying `roleName`, `startDate`, `endDate`, `sameAs` — a reified membership pattern.
+
+5. **Topic/Research area links**: `schema:knowsAbout` and `NFDI_0000211` connect persons to research topics, which carry `owl:sameAs`, `NFDI_0001006`, `schema:name` — linking to controlled vocabularies.
+
+6. **Serialisation pattern**: `rdfs:seeAlso` consistently points to `.json`, `.nt`, `.rdf`, `.ttl` serialisation endpoints for every entity — a systematic content-negotiation pattern throughout the KG.
+
+## Step 5 : Discover entity-value patterns
+
+All pages collected and supplemented. Here is the full merged Step 5 result:
+
+---
+
+## Step 5 Results — Entity-Value Patterns (merged, 105 rows + domain supplements)
+
+### Observation: Unfiltered scan surfaces Virtuoso system entities first
+
+All 105 rows from OFFSET 0–100 of the unfiltered query returned exclusively **Virtuoso internal `virtrdf#QuadMapFormat` entities** — these are the triple store's own data-format definitions stored in the default graph. The actual domain data (organisations, events, incipits, etc.) sits deeper in the scan order. The targeted follow-up queries confirm the real entity-value patterns.
+
+---
+
+### Merged Entity-Value Patterns by Type
+
+#### 1. Virtuoso System Entities (`virtrdf#QuadMapFormat`) — 105 rows from unfiltered scan
+All rows follow the single pattern:
+| s | p | o |
+|---|---|---|
+| `virtrdf-data-formats#<sql-type-variant>` | `rdf:type` | `virtrdf#QuadMapFormat` |
+
+SQL type variants include: `sql-varchar`, `sql-nvarchar`, `sql-longvarchar`, `sql-longnvarchar`, `sql-integer`, `sql-numeric`, `sql-doubleprecision`, `sql-date`, `sql-time`, `sql-datetime`, `sql-longvarbinary`, `multipart-uri`, `zeropart-uri`, `singlepart` — each with nullable, `-dt`, `-lang`, `-literal`, `-uri`, `-fn-nullable` suffixes. These are **Virtuoso triple-store internal format descriptors**, not domain data.
+
+---
+
+#### 2. Organisation (`NFDI_0000003`) — literal values
+| s | p | o (literal) |
+|---|---|---|
+| `nfdi4culture.de/id/E2431` | `rdfs:label` | `"Berlin-Brandenburgische Akademie der Wissenschaften"` |
+| `nfdi4culture.de/id/E1834` | `rdfs:label` | `"Academy of Sciences and Literature Mainz"` |
+| `nfdi4culture.de/id/E1834` | `rdfs:label` | `"Akademie der Wissenschaften und der Literatur \| Mainz"` |
+| `nfdi4culture.de/id/E1995` | `rdfs:label` | `"University of Münster"` |
+| `nfdi4culture.de/id/E1995` | `rdfs:label` | `"Westfälische Wilhelms-Universität Münster"` |
+
+**Pattern**: Organisations carry multilingual `rdfs:label` values (German and English names), often both the official and common name.
+
+---
+
+#### 3. Cultural Event / Performance (`CTO_0001005`) — literal values
+| s | p | o (literal) |
+|---|---|---|
+| `performance.musiconn.de/event/1-ausserordentliches-konzert-...-1984-09-08-20-00` | `rdfs:label` | `"1. Außerordentliches Konzert, Kulturpalast (Dresden) / Festsaal, 8.9.1984, 20:00"` |
+| `performance.musiconn.de/event/1-ausserordentliches-konzert-...-1987-08-31-19-30` | `rdfs:label` | `"1. Außerordentliches Konzert, Kulturpalast (Dresden) / Festsaal, 31.8.1987, 19:30"` |
+| `performance.musiconn.de/event/1-ausserordentliches-konzert-...-2011-11-26-19-30` | `rdfs:label` | `"1. Außerordentliches Konzert, Kulturpalast (Dresden) / Festsaal, 26.11.2011, 19:30"` |
+| `performance.musiconn.de/event/1-grosses-philharmonisches-konzert-...-1924-10-14-19-00` | `rdfs:label` | `"1. Großes Philharmonisches Konzert, Gewerbehaus (Dresden). Gewerbehaus-Saal, 14.10.1924, 19:00"` |
+
+**Pattern**: Event labels encode venue, series name, date (DD.MM.YYYY), and time (HH:MM) in a structured natural-language string. URIs also encode this information in slug form.
+
+---
+
+#### 4. Music Incipit (`CTO_0001024`) — literal values
+| s | p | o (literal) |
+|---|---|---|
+| `rism.online/sources/1001015676/incipits/1.1.1` | `rdfs:label` | `"Incipit: 1.1.1 Andantino con moto – Die Kindheit–B-Dur; Autograph; D-Mbs Autogr. Kunz, Konrad Max"` |
+| `rism.online/sources/1001015728/incipits/1.1.1` | `rdfs:label` | `"Incipit: 1.1.1 – Concertos–d-Moll; Abschrift; BWV 1043; D-LEsta 21070 C. F. Peters, Leipzig, Nr. 4286"` |
+| `rism.online/sources/1001015735/incipits/1.1.1` | `rdfs:label` | `"Incipit: 1.1.1 – Concertos–F-Dur; Abschrift; BWV 1057; D-LEsta 21070 C. F. Peters, Leipzig, Nr. 4286"` |
+
+**Pattern**: Incipit labels encode: incipit position (e.g. `1.1.1`), tempo marking, work title, key, source type (Autograph/Abschrift), RISM siglum, and catalogue number — a rich structured label.
+
+---
+
+#### 5. Data Feed Item (`schema:DataFeedItem`) — URI values
+| s | p | o |
+|---|---|---|
+| `nfdi4culture.de/id/ark:/60538/E6317_012b879b` | `rdf:type` | `schema:DataFeedItem` |
+| `nfdi4culture.de/id/ark:/60538/E6317_01f71451` | `rdf:type` | `schema:DataFeedItem` |
+| `nfdi4culture.de/id/ark:/60538/E6317_0355f28d` | `rdf:type` | `schema:DataFeedItem` |
+
+**Pattern**: DataFeedItem URIs use ARK identifiers (`ark:/60538/`) with a dataset prefix (`E6317`) and a hash suffix — a persistent identifier scheme for feed wrapper records.
+
+---
+
+### Key Findings from Step 5
+
+1. **Virtuoso system data dominates the unfiltered scan** — the default graph includes ~130 Virtuoso internal `QuadMapFormat` entities before any domain data appears. This is a known artefact of Virtuoso's RDF storage layer.
+
+2. **Multilingual labels**: Organisations carry both German and English `rdfs:label` values for the same entity — internationalisation is built in.
+
+3. **Structured label strings**: Both events (`CTO_0001005`) and incipits (`CTO_0001024`) encode rich structured metadata directly in their `rdfs:label` literals (venue, date, time, key, tempo, catalogue numbers), making labels human-readable summaries of the entity.
+
+4. **ARK persistent identifiers**: DataFeedItem URIs use the ARK (Archival Resource Key) scheme (`ark:/60538/`) — a library/archive standard for persistent identifiers, consistent with the cultural heritage domain.
+
+5. **URI slug encoding**: Event URIs at `performance.musiconn.de` encode the full event description (series, venue, date, time) as a URL slug, providing human-readable, dereferenceable identifiers.
+
+## Step 6 : Compile the report
+
+# NFDI4Culture Knowledge Graph — Exploration Report
+
+---
+
+## 1. Overview
+
+| Attribute | Value |
+|-----------|-------|
+| Endpoint | https://nfdi4culture.de/sparql |
+| Graph structure | Single unified graph (no named graphs with domain data) |
+| Triple store | Virtuoso (OpenLink) |
+| Primary domain | Cultural heritage — music, visual arts, organisations, persons, research infrastructure |
+| Total `rdf:type` triples | 18,860,002 |
+| Total `rdfs:label` triples | 10,752,606 |
+| Distinct entity types discovered | 120+ |
+| Distinct properties discovered | 120+ |
+
+---
+
+## 2. Named Graph Detection
+
+The endpoint exposes several named graphs, but all domain data resides in a single graph:
+
+| Named Graph URI |
+|----------------|
+| <https://nfdi4culture.de/graph> |
+| <http://www.openlinksw.com/schemas/virtrdf#> |
+| <http://www.w3.org/ns/ldp#> |
+| <http://localhost:8890/DAV/> |
+| <http://www.w3.org/2002/07/owl#> |
+| `urn:activitystreams-owl:map` |
+| `urn:core:services:sparql` |
+
+All cultural heritage domain data is in <https://nfdi4culture.de/graph>. Queries run without a `FROM` clause access the merged default graph.
+
+---
+
+## 3. Entity Types
+
+### 3.1 Top Entity Types by Instance Count
+
+| Rank | Type URI | Count | Interpreted Meaning |
+|------|----------|-------|---------------------|
+| 1 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000003> | 3,046,281 | Organisation |
+| 2 | <http://schema.org/ImageObject> | 2,792,676 | Image / Media Object |
+| 3 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000004> | 2,679,637 | Person |
+| 4 | <https://nfdi4culture.de/ontology/CTO_0001005> | 2,423,012 | Cultural Event / Performance |
+| 5 | <http://schema.org/DataFeedItem> | 2,422,708 | Data Feed Wrapper Item |
+| 6 | <https://nfdi4culture.de/ontology/CTO_0001024> | 2,178,870 | Music Incipit |
+| 7 | <http://purl.org/ontology/mo/MusicalManifestation> | 1,590,240 | Musical Source Manifestation |
+| 8 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000005> | 711,248 | Place / Location |
+| 9 | <http://schema.org/VisualArtwork> | 416,227 | Visual Artwork |
+| 10 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001016> | 130,548 | RISM Institution (music library/archive) |
+| 11 | <http://www.cidoc-crm.org/cidoc-crm/E34_Inscription> | 84,608 | Inscription (CIDOC-CRM) |
+| 12 | <https://nfdi4culture.de/ontology/CTO_0001030> | 70,430 | CTO type (culture domain) |
+| 13 | <http://schema.org/MusicEvent> | 65,359 | Music Event |
+| 14 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001009> | 56,565 | NFDI entity type |
+| 15 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001010> | 47,094 | NFDI entity type |
+| 16 | <http://schema.org/MusicComposition> | 41,016 | Music Composition / Work |
+| 17 | <https://nfdi4culture.de/ontology/NFDI_0000107> | 35,418 | NFDI4Culture type |
+| 18 | <http://schema.org/CreativeWork> | 20,841 | Creative Work |
+| 19 | <http://rdfs.org/ns/void#Dataset> | 10,532 | VoID Dataset descriptor |
+| 20 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001055> | 8,354 | NFDI entity type |
+| 21 | <http://schema.org/Role> | 4,840 | Role (membership reification) |
+| 22 | <https://nfdi4culture.de/ontology/CTO_0001059> | 3,801 | CTO type |
+| 23 | <http://schema.org/AudioObject> | 2,889 | Audio Object |
+| 24 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI0001009> | 2,100 | NFDI entity type (variant URI) |
+| 25 | <https://nfdi4culture.de/ontology/CTO_0001029> | 1,834 | CTO type |
+| 26 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI0001010> | 1,704 | NFDI entity type (variant URI) |
+| 27 | <http://schema.org/LandmarksOrHistoricalBuildings> | 1,246 | Landmark / Historical Building |
+| 28 | <https://lod.academy/cmif/vocab/terms#Letter> | 1,094 | Letter (correspondence) |
+| 29 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001011> | 1,001 | NFDI entity type |
+| 30 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001012> | 998 | NFDI entity type |
+| 31 | <https://nfdi4culture.de/ontology/CTO_0001031> | 688 | CTO type |
+| 32 | <http://schema.org/DefinedTerm> | 631 | Defined Term / Controlled Vocabulary Entry |
+| 33 | <http://schema.org/CreateAction> | 620 | Create Action |
+| 34 | <http://schema.org/MediaObject> | 464 | Media Object |
+| 35 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000190> | 325 | NFDI entity type |
+| 36 | <http://purl.obolibrary.org/obo/IAO_0000578> | 270 | IAO: centrally registered identifier |
+| 37 | <https://nfdi4culture.de/ontology/CTO_0001079> | 247 | CTO type |
+| 38 | <http://schema.org/NewsArticle> | 211 | News Article |
+| 39 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000001> | 178 | NFDI entity type |
+| 40 | <https://nfdi4culture.de/ontology/CTO_0001053> | 178 | CTO type |
+| 41 | <http://www.cidoc-crm.org/cidoc-crm/E22_Human-Made_Object> | 142 | Human-Made Object (CIDOC-CRM) |
+| 42 | <http://schema.org/Event> | 139 | Generic Event |
+| 43 | <http://purl.obolibrary.org/obo/IAO_0000708> | 122 | IAO type |
+| 44 | <http://schema.org/Review> | 113 | Review |
+| 45 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001013> | 102 | NFDI entity type |
+| 46 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000123> | 88 | NFDI entity type |
+| 47 | <http://schema.org/Place> | 80 | Place |
+| 48 | <http://schema.org/GeoCoordinates> | 80 | Geographic Coordinates |
+| 49 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000198> | 80 | NFDI entity type |
+| 50 | <http://purl.org/spar/fabio/Presentation> | 78 | Presentation (FaBiO) |
+| — | *(70+ further types with counts < 78)* | — | — |
+
+### 3.2 Notable Lower-Count Types
+
+| Type URI | Count | Domain |
+|----------|-------|--------|
+| <http://purl.org/spar/fabio/ComputerProgram> | 74 | Research software |
+| <http://www.w3.org/ns/dcat#Catalog> | 70 | Dataset catalogue |
+| <http://purl.org/spar/fabio/Database> | 67 | Database |
+| <http://purl.org/spar/fabio/CaseReport> | 66 | Scholarly publication |
+| <http://purl.org/spar/fabio/Announcement> | 59 | Announcement |
+| <https://w3id.org/okn/o/sd#SourceCode> | 59 | Software source code |
+| <http://purl.org/spar/fabio/ConferencePoster> | 53 | Conference poster |
+| <http://purl.org/spar/fabio/Report> | 41 | Report |
+| <http://purl.org/spar/fabio/ConferencePaper> | 34 | Conference paper |
+| <http://schema.org/WebApplication> | 26 | Web application |
+| <http://purl.org/spar/fabio/Article> | 26 | Journal article |
+| <http://purl.org/spar/fabio/Dataset> | 26 | Dataset (FaBiO) |
+| <http://schema.org/DataFeed> | 25 | Data feed |
+| <http://schema.org/LearningResource> | 22 | Learning resource |
+| <http://purl.org/spar/fabio/Movie> | 20 | Film |
+| <http://schema.org/VideoObject> | 19 | Video object |
+| <http://schema.org/EventSeries> | 13 | Event series |
+| <https://w3id.org/okn/o/sd#SoftwareVersion> | 3 | Software version |
+| <http://purl.org/spar/fabio/GrantApplication> | 3 | Grant application |
+
+---
+
+## 4. Properties
+
+### 4.1 Top Properties by Triple Count
+
+| Rank | Property URI | Count | Role |
+|------|-------------|-------|------|
+| 1 | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 18,860,002 | Entity typing |
+| 2 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | 11,102,873 | External identifier / same-as link |
+| 3 | <http://www.w3.org/2000/01/rdf-schema#label> | 10,752,606 | Human-readable label |
+| 4 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000146> | 4,753,991 | NFDI relation (subject/topic) |
+| 5 | <https://nfdi4culture.de/ontology/CTO_0001026> | 4,040,208 | CTO relation (event type/AAT link) |
+| 6 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000207> | 3,611,213 | NFDI relation |
+| 7 | <https://nfdi4culture.de/ontology/CTO_0001010> | 3,055,061 | CTO relation |
+| 8 | <https://nfdi4culture.de/ontology/CTO_0001007> | 2,820,455 | CTO relation (dataset link) |
+| 9 | <https://nfdi4culture.de/ontology/CTO_0001009> | 2,702,381 | CTO relation |
+| 10 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000142> | 2,673,554 | NFDI relation (contributor) |
+| 11 | <https://nfdi4culture.de/ontology/CTO_0001025> | 2,576,272 | CTO: has manifestation |
+| 12 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000191> | 2,504,278 | NFDI relation (creator/provider) |
+| 13 | <https://nfdi4culture.de/ontology/CTO_0001021> | 2,441,222 | CTO relation |
+| 14 | <http://schema.org/associatedMedia> | 2,440,473 | Associated media object |
+| 15 | <http://schema.org/dateModified> | 2,436,010 | Date modified |
+| 16 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001008> | 2,424,347 | URL / web resource link |
+| 17 | <http://schema.org/item> | 2,423,013 | Feed item reference |
+| 18 | <https://nfdi4culture.de/ontology/CTO_0001006> | 2,423,012 | CTO: belongs to dataset |
+| 19 | <http://schema.org/dataFeedElement> | 2,422,708 | Data feed element |
+| 20 | <https://nfdi4culture.de/ontology/CTO_0001062> | 2,178,997 | Incipit: key signature |
+| 21 | <https://nfdi4culture.de/ontology/CTO_0001065> | 2,178,870 | Incipit: (parent link) |
+| 22 | <https://nfdi4culture.de/ontology/CTO_0001049> | 2,093,485 | CTO relation |
+| 23 | <https://nfdi4culture.de/ontology/CTO_0001060> | 1,984,593 | Incipit: time signature |
+| 24 | <https://nfdi4culture.de/ontology/CTO_0001061> | 1,819,537 | Incipit: clef |
+| 25 | <https://nfdi4culture.de/ontology/CTO_0001063> | 1,806,593 | Incipit: Plaine & Easie notation |
+| 26 | <http://schema.org/dateCreated> | 1,465,799 | Date created |
+| 27 | <https://nfdi4culture.de/ontology/CTO_0001064> | 1,390,485 | Incipit: key (tonal centre) |
+| 28 | <https://nfdi4culture.de/ontology/CTO_0001019> | 1,275,294 | CTO: related work / source |
+| 29 | <https://nfdi4culture.de/ontology/CTO_0001073> | 1,102,847 | CTO relation |
+| 30 | <https://nfdi4culture.de/ontology/CTO_0001011> | 731,271 | CTO: location / venue |
+| 31 | <http://purl.obolibrary.org/obo/BFO_0000050> | 67,390 | BFO: part of |
+| 32 | <https://nfdi4culture.de/ontology/CTO_0001070> | 65,348 | Event date |
+| 33 | <https://nfdi4culture.de/ontology/CTO_0001071> | 46,797 | CTO relation |
+| 34 | <http://purl.obolibrary.org/obo/IAO_0000118> | 13,682 | IAO: alternative label |
+| 35 | <https://nfdi4culture.de/ontology/CTO_0001022> | 13,025 | CTO relation |
+| 36 | <http://rdfs.org/ns/void#feature> | 10,532 | VoID: dataset feature |
+| 37 | <http://www.w3.org/2000/01/rdf-schema#seeAlso> | 10,532 | Serialisation links (.json/.nt/.rdf/.ttl) |
+| 38 | <http://schema.org/keywords> | 7,345 | Keywords |
+| 39 | <http://schema.org/contributor> | 6,889 | Contributor |
+| 40 | <http://schema.org/sameAs> | 4,895 | Same-as (authority alignment) |
+| 41 | <http://schema.org/roleName> | 4,802 | Role name |
+| 42 | <http://schema.org/name> | 3,702 | Name |
+| 43 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000211> | 2,946 | Research area / project |
+| 44 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001027> | 2,390 | Project member (incoming) |
+| 45 | <https://nfdi4culture.de/ontology/CTO_0001072> | 1,852 | CTO relation |
+| 46 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | 1,732 | Project / research output |
+| 47 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI0001006> | 1,704 | External identifier (variant URI) |
+| 48 | <http://schema.org/member> | 1,639 | Organisation member |
+| 49 | <http://schema.org/latitude> | 1,324 | Geographic latitude |
+| 50 | <http://schema.org/longitude> | 1,324 | Geographic longitude |
+| 51 | <http://schema.org/memberOf> | 1,195 | Person's membership |
+| 52 | <http://schema.org/startDate> | 937 | Start date |
+| 53 | <http://purl.org/dc/terms/created> | 772 | DC: date created |
+| 54 | <http://purl.org/dc/terms/modified> | 772 | DC: date modified |
+| 55 | <http://purl.org/dc/terms/extent> | 771 | DC: extent |
+| 56 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000116> | 769 | Dataset reference |
+| 57 | <http://www.w3.org/2000/01/rdf-schema#comment> | 747 | Comment / description |
+| 58 | <http://schema.org/image> | 732 | Image |
+| 59 | <http://schema.org/potentialAction> | 640 | Potential action |
+| 60 | <http://schema.org/actionStatus> | 640 | Action status |
+| 61 | <http://schema.org/result> | 620 | Action result |
+| 62 | <http://schema.org/agent> | 611 | Agent |
+| 63 | <http://schema.org/datePublished> | 585 | Date published |
+| 64 | <http://schema.org/knowsAbout> | 547 | Person knows about (topic) |
+| 65 | <http://schema.org/description> | 509 | Description |
+| 66 | <http://schema.org/familyName> | 441 | Family name |
+| 67 | <http://schema.org/givenName> | 440 | Given name |
+| 68 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000117> | 381 | Affiliation |
+| 69 | <http://schema.org/endDate> | 320 | End date |
+| 70 | <http://schema.org/alternateName> | 276 | Alternate name |
+| 71 | <http://schema.org/about> | 221 | About |
+| 72 | <http://schema.org/honorificPrefix> | 215 | Honorific prefix (e.g. "Prof.") |
+| 73 | <http://schema.org/text> | 214 | Text content |
+| 74 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0010015> | 209 | Abbreviation |
+| 75 | <http://www.w3.org/ns/org#classification> | 209 | Organisation classification |
+| 76 | <http://schema.org/headline> | 209 | Headline |
+| 77 | <http://www.w3.org/2002/07/owl#sameAs> | 173 | OWL same-as |
+| 78 | <http://schema.org/subjectOf> | 156 | Subject of |
+| 79 | <http://schema.org/isRelatedTo> | 143 | Is related to |
+| 80 | <http://schema.org/reviewBody> | 113 | Review body text |
+| 81 | <http://schema.org/review> | 113 | Review |
+| 82 | <http://schema.org/author> | 106 | Author |
+| 83 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000213> | 106 | Sub-organisation |
+| 84 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000182> | 101 | Related organisation |
+| 85 | <http://schema.org/identifier> | 94 | Identifier |
+| 86 | <http://schema.org/subEvent> | 84 | Sub-event |
+| 87 | <http://schema.org/location> | 80 | Location |
+| 88 | <http://schema.org/geo> | 80 | Geo coordinates |
+| 89 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000113> | 77 | Research output |
+| 90 | <http://schema.org/pattern> | 76 | Pattern |
+| 91 | <http://schema.org/position> | 76 | Position |
+| 92 | <http://schema.org/step> | 76 | Step |
+| 93 | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000112> | 73 | NFDI relation |
+| 94 | <https://w3id.org/okn/o/sd#shortDescription> | 67 | Software short description |
+| 95 | <http://schema.org/mainEntityOfPage> | 60 | Main entity of page |
+| 96 | <https://w3id.org/okn/o/sd#codeRepository> | 59 | Code repository URL |
+| 97 | <https://w3id.org/okn/o/sd#hasSourceCode> | 59 | Has source code |
+| 98 | <http://schema.org/honorificSuffix> | 45 | Honorific suffix |
+| 99 | <http://schema.org/inLanguage> | 42 | Language |
+| 100 | <http://schema.org/isAccessibleForFree> | 18 | Accessibility flag |
+
+---
+
+## 5. Sample Entity Profiles
+
+### 5.1 Organisation — `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000003`
+**Example**: <https://nfdi4culture.de/id/E2431> — *Berlin-Brandenburgische Akademie der Wissenschaften*
+
+| Property | Value |
+|----------|-------|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000003> |
+| <http://www.w3.org/2000/01/rdf-schema#label> | `Berlin-Brandenburgische Akademie der Wissenschaften` |
+| <http://schema.org/name> | `Berlin-Brandenburgische Akademie der Wissenschaften` |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <https://ror.org/05jgq9443> |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <http://www.wikidata.org/entity/Q219989> |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <https://ld.zdb-services.de/resource/organisations/DE-4137> |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001008> | <https://www.bbaw.de> |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0010015> | `BBAW` |
+| <http://www.w3.org/ns/org#classification> | <https://nfdi4culture.de/id/E4589> |
+| <http://schema.org/image> | <https://nfdi4culture.de/fileadmin/user_upload/Logos/Logos_institutions/BBAW_Logo.png> |
+| <http://schema.org/location> | *(blank node → geo coordinates)* |
+| <http://schema.org/member> | *(blank node → role with roleName, startDate, endDate)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000137> | <https://nfdi4culture.de/id/E3222> |
+| <http://www.w3.org/2000/01/rdf-schema#seeAlso> | <https://nfdi4culture.de/resource/E2431.json> |
+| <http://www.w3.org/2000/01/rdf-schema#seeAlso> | <https://nfdi4culture.de/resource/E2431.nt> |
+| <http://www.w3.org/2000/01/rdf-schema#seeAlso> | <https://nfdi4culture.de/resource/E2431.rdf> |
+| <http://www.w3.org/2000/01/rdf-schema#seeAlso> | <https://nfdi4culture.de/resource/E2431.ttl> |
+
+**Multilingual label example** (E1834):
+- `"Academy of Sciences and Literature Mainz"`
+- `"Akademie der Wissenschaften und der Literatur | Mainz"`
+
+---
+
+### 5.2 Person — `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000004`
+**Example**: <https://nfdi4culture.de/id/E1873>
+
+| Property | Value |
+|----------|-------|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000004> |
+| <http://schema.org/honorificPrefix> | `Prof.` |
+| <http://schema.org/memberOf> | *(blank node → role with roleName, startDate, endDate, memberOf → org)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | <https://nfdi4culture.de/id/E5130>, <https://nfdi4culture.de/id/E2379>, … *(projects)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000117> | <https://nfdi4culture.de/id/E6638>, <https://nfdi4culture.de/id/E6668> *(affiliations)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000192> | <https://nfdi4culture.de/id/E3566> *(research area)* |
+
+---
+
+### 5.3 Cultural Event / Performance — `https://nfdi4culture.de/ontology/CTO_0001005`
+**Example**: <https://performance.musiconn.de/event/1-ausserordentliches-konzert-kulturpalast-dresden-festsaal-1984-09-08-20-00>
+
+| Property | Value |
+|----------|-------|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <https://nfdi4culture.de/ontology/CTO_0001005> |
+| <http://www.w3.org/2000/01/rdf-schema#label> | `1. Außerordentliches Konzert, Kulturpalast (Dresden) / Festsaal, 8.9.1984, 20:00` |
+| <https://nfdi4culture.de/ontology/CTO_0001006> | <https://nfdi4culture.de/id/E5320> *(dataset)* |
+| <https://nfdi4culture.de/ontology/CTO_0001025> | *(blank node → MusicalManifestation)* |
+| <https://nfdi4culture.de/ontology/CTO_0001026> | <http://vocab.getty.edu/aat/300262956> *(AAT event type)* |
+| <https://nfdi4culture.de/ontology/CTO_0001080> | <https://performance.musiconn.de/api> *(source API)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000142> | <https://nfdi4culture.de/id/E6406> *(contributor)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000146> | <https://nfdi4culture.de/id/E3087> *(subject)* |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000191> | <https://nfdi4culture.de/id/E1841> *(creator/provider)* |
+| <https://nfdi4culture.de/ontology/CTO_0001011> | <https://performance.musiconn.de/location/kulturpalast-dresden-festsaal> *(venue)* |
+| <https://nfdi4culture.de/ontology/CTO_0001019> | <https://performance.musiconn.de/work/como-una-ola-de-fuerza-y-luz-nono-luigi> *(work performed)* |
+| <https://nfdi4culture.de/ontology/CTO_0001019> | <https://performance.musiconn.de/work/konzerte-klavier-orchester-nr-4-op-58-g-dur-beethoven-ludwig-van> *(work performed)* |
+| <https://nfdi4culture.de/ontology/CTO_0001070> | `1984-09-08` *(event date)* |
+| <http://purl.obolibrary.org/obo/BFO_0000050> | <https://performance.musiconn.de/series/dresdner-philharmonie-spielzeit-1984-1985> *(part of series)* |
+
+---
+
+### 5.4 Music Incipit — `https://nfdi4culture.de/ontology/CTO_0001024`
+**Example**: <https://rism.online/sources/1001015676/incipits/1.1.1>
+
+| Property | Value |
+|----------|-------|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <https://nfdi4culture.de/ontology/CTO_0001024> |
+| <http://www.w3.org/2000/01/rdf-schema#label> | `Incipit: 1.1.1 Andantino con moto – Die Kindheit–B-Dur; Autograph; D-Mbs Autogr. Kunz, Konrad Max` |
+| <https://nfdi4culture.de/ontology/CTO_0001060> | `3/8` *(time signature)* |
+| <https://nfdi4culture.de/ontology/CTO_0001061> | `C-4` *(clef)* |
+| <https://nfdi4culture.de/ontology/CTO_0001062> | `bBE` *(key signature)* |
+| <https://nfdi4culture.de/ontology/CTO_0001063> | `4'D8E/{FD},B/{B'G}F/{6FE}8D-/{DC},B({'FE}D/{CE}D/qD4C8-/` *(Plaine & Easie notation)* |
+| <https://nfdi4culture.de/ontology/CTO_0001064> | `B\|b` *(key / tonal centre)* |
+| <http://schema.org/associatedMedia> | *(blank node → image of incipit)* |
+
+---
+
+### 5.5 Data Feed Item — `http://schema.org/DataFeedItem`
+**Example**: <https://nfdi4culture.de/id/ark:/60538/E6317_012b879b>
+
+| Property | Value |
+|----------|-------|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/DataFeedItem> |
+| <http://schema.org/item> | <https://lod.academy/epidat/id/lag-9001> |
+| <http://schema.org/dateModified> | *(date literal)* |
+| <http://schema.org/dateCreated> | *(date literal)* |
+
+---
+
+### 5.6 Musical Source Manifestation — `http://purl.org/ontology/mo/MusicalManifestation`
+All instances are blank nodes. They are linked from RISM source URIs via `CTO_0001025`:
+
+| Linking entity | Property | Blank node type |
+|----------------|----------|-----------------|
+| <https://rism.online/sources/840023682> | <https://nfdi4culture.de/ontology/CTO_0001025> | <http://purl.org/ontology/mo/MusicalManifestation> |
+| <https://rism.online/sources/800260101> | <https://nfdi4culture.de/ontology/CTO_0001025> | <http://purl.org/ontology/mo/MusicalManifestation> |
+
+---
+
+### 5.7 Place / Location — `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000005`
+All instances are blank nodes with `rdfs:label` (place name) and `NFDI_0001006` (Wikidata URI):
+
+| Property | Example Value |
+|----------|---------------|
+| <http://www.w3.org/2000/01/rdf-schema#label> | `Hannover` |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <http://www.wikidata.org/entity/Q8186> |
+
+---
+
+### 5.8 Visual Artwork — `http://schema.org/VisualArtwork`
+All instances are blank nodes linked from Sandrart.net (`sah.tib.eu`) via `CTO_0001025`:
+
+| Linking entity | Property | Blank node type |
+|----------------|----------|-----------------|
+| <https://sah.tib.eu/individual/haupt02941> | <https://nfdi4culture.de/ontology/CTO_0001025> | <http://schema.org/VisualArtwork> |
+| <https://sah.tib.eu/individual/n51526> | <https://nfdi4culture.de/ontology/CTO_0001025> | <http://schema.org/VisualArtwork> |
+
+---
+
+### 5.9 RISM Institution — `https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001016`
+Named URIs from `rism.online/institutions/`. Sparsely described; serve as authority references:
+
+| Example URI | Referenced via |
+|-------------|----------------|
+| <https://rism.online/institutions/11915> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> from blank nodes |
+| <https://rism.online/institutions/13373> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> from blank nodes |
+| <https://rism.online/institutions/1402> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> from blank nodes |
+
+---
+
+## 6. Relationship Patterns
+
+### 6.1 Organisation Relationship Chains
+
+| p1 | p2 | Count | Meaning |
+|----|-----|-------|---------|
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 4,824,674 | Org → external authority → type |
+| <http://schema.org/member> | <http://schema.org/roleName> | 603 | Org → role node → role name |
+| <http://schema.org/member> | <http://schema.org/sameAs> | 603 | Org → role node → same-as |
+| <http://schema.org/member> | <http://schema.org/member> | 603 | Org → role node → person |
+| <http://schema.org/member> | <http://schema.org/startDate> | 252 | Org → role node → start date |
+| <http://schema.org/member> | <http://schema.org/endDate> | 78 | Org → role node → end date |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000213> | <http://www.w3.org/2000/01/rdf-schema#label> | 133 | Org → sub-org → label |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000213> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | 140 | Org → sub-org → external ID |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000182> | <http://www.w3.org/2000/01/rdf-schema#label> | 129 | Org → related org → label |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000182> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | 189 | Org → related org → external ID |
+| <http://www.w3.org/ns/org#classification> | <http://schema.org/name> | 209 | Org → classification → name |
+| <http://schema.org/location> | <http://schema.org/geo> | 80 | Org → location → geo coordinates |
+| <http://purl.obolibrary.org/obo/BFO_0000178> | <http://schema.org/member> | 15 | Org → org unit → member |
+
+### 6.2 Person Relationship Chains
+
+| p1 | p2 | Count | Meaning |
+|----|-----|-------|---------|
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001006> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 5,589,452 | Person → external authority → type |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | <http://schema.org/contributor> | 15,795 | Person → project → contributor |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001027> | 13,137 | Person → project → project member |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | <http://schema.org/keywords> | 10,898 | Person → project → keywords |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000117> | <http://schema.org/keywords> | 4,194 | Person → affiliation → keywords |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000117> | <http://schema.org/contributor> | 3,983 | Person → affiliation → contributor |
+| <http://schema.org/knowsAbout> | <http://www.w3.org/2000/01/rdf-schema#label> | 537 | Person → topic → label |
+| <http://schema.org/knowsAbout> | <http://www.w3.org/2002/07/owl#sameAs> | 443 | Person → topic → same-as |
+| <http://schema.org/memberOf> | <http://schema.org/roleName> | 596 | Person → role node → role name |
+| <http://schema.org/memberOf> | <http://schema.org/startDate> | 259 | Person → role node → start date |
+| <http://schema.org/memberOf> | <http://schema.org/endDate> | 77 | Person → role node → end date |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000113> | <http://schema.org/keywords> | 915 | Person → research output → keywords |
+| <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0000192> | <http://schema.org/keywords> | 11 | Person → research area → keywords |
+| <http://schema.org/knows> | <https://nfdi.fiz-karlsruhe.de/ontology/NFDI_0001028> | 68 | Person → known person → project |
+
+---
+
+## 7. Vocabularies and Ontologies Used
+
+| Prefix | Namespace | Role in KG |
+|--------|-----------|------------|
+| `nfdi` | <https://nfdi.fiz-karlsruhe.de/ontology/> | Core NFDI ontology — organisations, persons, projects, external IDs |
+| `cto` | <https://nfdi4culture.de/ontology/> | Culture-specific ontology — events, incipits, datasets, manifestations |
+| `schema` | <http://schema.org/> | Schema.org — media, events, persons, dates, actions |
+| `mo` | <http://purl.org/ontology/mo/> | Music Ontology — musical manifestations |
+| `cidoc` | <http://www.cidoc-crm.org/cidoc-crm/> | CIDOC-CRM — inscriptions, human-made objects |
+| `fabio` | <http://purl.org/spar/fabio/> | FaBiO — scholarly publications, reports, software |
+| `bfo` | <http://purl.obolibrary.org/obo/> | BFO/IAO — part-of, alternative labels, identifiers |
+| `void` | <http://rdfs.org/ns/void#> | VoID — dataset descriptions |
+| `dcat` | <http://www.w3.org/ns/dcat#> | DCAT — data catalogues |
+| `dcterms` | <http://purl.org/dc/terms/> | Dublin Core — dates, extent |
+| `org` | <http://www.w3.org/ns/org#> | W3C Org — organisation classification |
+| `okn` | <https://w3id.org/okn/o/sd#> | OKN Software Description — source code, repositories |
+| `owl` | <http://www.w3.org/2002/07/owl#> | OWL — sameAs, class/property declarations |
+| `aat` | <http://vocab.getty.edu/aat/> | Getty AAT — event type classification |
+| `cmif` | <https://lod.academy/cmif/vocab/terms#> | CMIF — correspondence (letters) |
+
+---
+
+## 8. Data Sources / Contributing Datasets
+
+Based on URI patterns observed across entity samples:
+
+| Source URI Pattern | Domain |
+|-------------------|--------|
+| <https://nfdi4culture.de/id/> | NFDI4Culture core registry (organisations, persons, projects) |
+| <https://performance.musiconn.de/> | Musiconn Performance — concert/event archive |
+| <https://rism.online/sources/> | RISM — musical sources (manuscripts, prints) |
+| <https://rism.online/institutions/> | RISM — music-holding institutions |
+| <https://sah.tib.eu/individual/> | Sandrart.net — art history (visual artworks) |
+| <https://lod.academy/epidat/id/> | Epidat — Jewish epigraphic database |
+| <https://apsearch.org/record/> | APSearch — archival/performance search |
+| <http://www.wikidata.org/entity/> | Wikidata — authority alignment |
+| <https://ror.org/> | ROR — research organisation registry |
+| <https://ld.zdb-services.de/> | ZDB — German library authority |
+| <http://vocab.getty.edu/aat/> | Getty AAT — art & architecture thesaurus |
+
+---
+
+## 9. Identifier Schemes
+
+| Scheme | Example | Used for |
+|--------|---------|----------|
+| NFDI4Culture internal ID | <https://nfdi4culture.de/id/E2431> | Organisations, persons, datasets |
+| ARK (Archival Resource Key) | <https://nfdi4culture.de/id/ark:/60538/E6317_012b879b> | Data feed items |
+| RISM source ID | <https://rism.online/sources/1001015676> | Musical manuscripts/prints |
+| RISM incipit ID | <https://rism.online/sources/1001015676/incipits/1.1.1> | Music incipits |
+| RISM institution ID | <https://rism.online/institutions/11915> | Music libraries/archives |
+| Musiconn event slug | <https://performance.musiconn.de/event/1-ausserordentliches-konzert-kulturpalast-dresden-festsaal-1984-09-08-20-00> | Concert events |
+| ROR ID | <https://ror.org/05jgq9443> | Research organisations |
+| Wikidata QID | <http://www.wikidata.org/entity/Q219989> | Authority alignment |
+| ZDB organisation ID | <https://ld.zdb-services.de/resource/organisations/DE-4137> | German library authority |
+
+---
+
+## 10. Key Structural Patterns
+
+### 10.1 Serialisation Pattern
+Every named entity carries four `rdfs:seeAlso` links to content-negotiated serialisations:
+- `https://nfdi4culture.de/resource/<ID>.json`
+- `https://nfdi4culture.de/resource/<ID>.nt`
+- `https://nfdi4culture.de/resource/<ID>.rdf`
+- `https://nfdi4culture.de/resource/<ID>.ttl`
+
+### 10.2 External Identity Hub
+`NFDI_0001006` (11.1M triples) is the primary cross-KG alignment property, linking entities to ROR, Wikidata, RISM, ZDB, GND, and other authority systems. It functions as the KG's `owl:sameAs` equivalent for external identifiers.
+
+### 10.3 Reified Membership Pattern
+Both `schema:member` (from Organisation) and `schema:memberOf` (from Person) point to intermediate blank-node role objects carrying:
+- `schema:roleName` — the role title
+- `schema:sameAs` — authority link for the role
+- `schema:startDate` / `schema:endDate` — tenure dates
+- `schema:member` / `schema:memberOf` — the linked person or organisation
+
+### 10.4 Data Feed Aggregation
+`schema:DataFeedItem` (2.4M instances) wraps external resource URIs via `schema:item`, with `schema:dateCreated` and `schema:dateModified` timestamps. This is the KG's mechanism for aggregating records from contributing data sources.
+
+### 10.5 Music Incipit Encoding
+`CTO_0001024` incipits encode musical notation using the **Plaine & Easie Code** standard (via `CTO_0001063`), alongside structured metadata for clef (`CTO_0001061`), time signature (`CTO_0001060`), key signature (`CTO_0001062`), and tonal centre (`CTO_0001064`). This enables music search by melodic content.
+
+### 10.6 Blank Node Usage
+A significant proportion of entities (ImageObjects, MusicalManifestations, VisualArtworks, Places, Locations) exist only as blank nodes — typed but without URIs. These serve as structured value nodes linked from named entities, rather than independently dereferenceable resources.
+
+### 10.7 Virtuoso System Data in Default Graph
+The Virtuoso triple store's internal `virtrdf#QuadMapFormat` entities (~130 instances) are present in the default graph alongside domain data. These are system-level format descriptors and should be filtered out in domain queries using `FILTER(!STRSTARTS(STR(?s), "http://www.openlinksw.com/"))`.
+
