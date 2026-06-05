@@ -27,3 +27,4 @@ langgraph-checkpoint-postgres==3.0.5
 psycopg==3.3.3
 psycopg-binary==3.3.3
 psycopg-pool==3.3.0
+mcp>=1.0.0

@@ -16,6 +16,7 @@ from langgraph.prebuilt import InjectedState
 
 # from langchain.tools.base import BaseTool
 from langchain_core.tools import BaseTool
+from langchain_core.runnables import RunnableConfig
 from langgraph.runtime import get_runtime
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers.ensemble import EnsembleRetriever
@@ -38,6 +39,7 @@ from agent_utils.agent_constants import (
     GRAPH_METADATA_URL,
     GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA,
 )
+from agent_utils.agent_helpers import extract_question_answer_pairs
 from models import (
     ContextSchema,
     ShexRetrieverInput,
@@ -476,19 +478,24 @@ def describe_knowledge_graphs_tool():
 
 
 @tool
-def run_sparql_subagent_tool(question: str) -> str:
+def run_sparql_subagent_tool(
+    question: str,
+    state: Annotated[State, InjectedState],
+    config: RunnableConfig,
+) -> str:
     """Run the SPARQL exploration subagent for the currently selected knowledge graph.
     Returns a JSON string with 'query' (the final SPARQL query, or null if none was produced)
     and 'summary' (the prose answer)."""
-    # Lazy import to avoid circular dependency (run_sparql_subagent imports RunSPARQLTool from tools)
     from subagents.run_sparql_subagent import run_pipeline as _run_pipeline
+
+    qa_pairs = extract_question_answer_pairs(state)
 
     _, selected_kg, endpoint, _ = _resolve_session_values()
 
     if not endpoint or not selected_kg:
         return "No knowledge graph selected. Call scope_checker_tool first."
 
-    return _run_pipeline(endpoint, selected_kg, question)
+    return _run_pipeline(endpoint, selected_kg, question, qa_pairs)
 
 
 class RunSPARQLToolInput(BaseModel):
@@ -641,11 +648,43 @@ def validate_sparql_tool(
             )
 
         if not extracted_query:
-            return f"The SPARQL has been executed:\n{extracted_description}"
+            sparql_match = re.search(r"```sparql\s*\n(.*?)\n```", summary, re.DOTALL | re.IGNORECASE)
+            if sparql_match:
+                extracted_query = sparql_match.group(1).strip()
+            else:
+                prefix_match = re.search(r"(PREFIX\s+\w+:\s+<[^>]+>\s*)+", summary, re.IGNORECASE)
+                if prefix_match:
+                    extracted_query = prefix_match.group(0)
+                else:
+                    select_match = re.search(r"(SELECT\s+.*?WHERE\s*\{.*?\})", summary, re.IGNORECASE | re.DOTALL)
+                    if select_match:
+                        extracted_query = select_match.group(1)
+
+        if isinstance(extracted_query, str):
+            normalized_query = extracted_query.strip()
+            fenced_match = re.fullmatch(r"```(?:sparql)?\s*(.*?)\s*```", normalized_query, re.DOTALL | re.IGNORECASE)
+            if fenced_match:
+                normalized_query = fenced_match.group(1).strip()
+            if normalized_query.lower() in {"", "null", "none"}:
+                extracted_query = None
+            else:
+                extracted_query = normalized_query
 
         _, _, endpoint, _ = _resolve_session_values()
         if not endpoint or not _is_sparql_endpoint_up(endpoint):
+            if extracted_query:
+                pretty_query = _pretty_sparql(extracted_query)
+                return (
+                    f"{extracted_description}\n\n"
+                    "The SPARQL has been executed:\n"
+                    "```sparql\n"
+                    f"{pretty_query}\n"
+                    "```\n"
+                )
             return f"The SPARQL has been executed:\n{extracted_description}"
+
+        if not extracted_query:
+            return extracted_description
 
         pretty_query = _pretty_sparql(extracted_query)
         return (

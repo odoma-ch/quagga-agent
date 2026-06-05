@@ -32,7 +32,7 @@ class SPARQLValidationInput(BaseModel):
 
 
 class SPARQLExtractionResult(BaseModel):
-    query: Optional[str] = Field(None, description="The SPARQL query exactly as written, preserving all whitespace, prefixes, and formatting. Null if not present.")
+    query: str = Field(description="The SPARQL query exactly as written, preserving all whitespace, prefixes, and formatting. Null if not present.")
     description: str = Field(description="The human-readable description exactly as written, excluding the SPARQL query block. Null if not present.")
 
 
