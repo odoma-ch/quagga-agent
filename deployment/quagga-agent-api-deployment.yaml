@@ -115,6 +115,8 @@ spec:
           value: /tmp/.cache/huggingface
         - name: TRANSFORMERS_CACHE
           value: /tmp/.cache/huggingface
+        - name: MCP_SERVER_URL
+          value: https://gotriple.mcp.netseven.work/mcp
         resources:
           limits:
             memory: "8Gi"
