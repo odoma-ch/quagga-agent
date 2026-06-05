@@ -15,11 +15,14 @@ from helpers.tool_helpers import (
 )
 from models import State, ContextSchema
 from langchain_core.runnables import RunnableConfig
+from langchain_core.messages import HumanMessage, ToolMessage
 from langgraph.errors import GraphRecursionError
 
 
 from dotenv import load_dotenv
 load_dotenv()
+
+from agent_utils.mcp_client import set_current_thread_id, initialize_mcp_session
 
 
 PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts")
@@ -29,6 +32,30 @@ def _load_prompt(filename: str) -> str:
     filepath = os.path.join(PROMPTS_DIR, filename)
     with open(filepath, "r") as f:
         return f.read().strip()
+
+
+def extract_question_answer_pairs(state, keep_last_n=5):
+    """Extract question-answer pairs from the state."""
+    messages = state["messages"]
+    
+    pairs = []
+    current_question = None
+    
+    for msg in messages:
+        if isinstance(msg, HumanMessage) and msg.content.strip():
+            current_question = msg.content
+        elif isinstance(msg, ToolMessage) and msg.name == "validate_sparql_tool":
+            if current_question is not None:
+                artifact = getattr(msg, "artifact", None)
+                pairs.append({
+                    "question": current_question,
+                    "answer": msg.content,
+                    "sparql_query": artifact.get("query") if artifact else None,
+                    "results": artifact.get("rows") if artifact else None
+                })
+            current_question = None
+    
+    return pairs[-keep_last_n:]
 
 
 def _build_agent_context(thread_id: str):
@@ -49,6 +76,9 @@ def _build_agent_context(thread_id: str):
 
 async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
     """Invoke the LangGraph agent and collect the full response including thinking."""
+    set_current_thread_id(thread_id)
+    await initialize_mcp_session()
+    
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
     context = _build_agent_context(thread_id)
 
@@ -88,6 +118,9 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
 
 async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     """Yield SSE chunks as tool steps + tokenized assistant output."""
+    set_current_thread_id(thread_id)
+    await initialize_mcp_session()
+    
     config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
     context = _build_agent_context(thread_id)
 

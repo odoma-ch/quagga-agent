@@ -48,6 +48,26 @@ def _load_prompt(name: str, **kwargs) -> str:
     return Template((PROMPTS_DIR / name).read_text()).substitute(**kwargs)
 
 
+def _format_parent_context(parent_context) -> str:
+    if not parent_context:
+        return ""
+
+    formatted = []
+    for i, item in enumerate(parent_context, 1):
+        entry = f"### Previous Exchange {i}\n"
+        entry += f"**Question:** {item.get('question', 'N/A')}\n\n"
+        entry += f"**Answer:** {item.get('answer', 'N/A')}\n"
+        if item.get("sparql_query"):
+            entry += (
+                f"\n**SPARQL Query Used:**\n```sparql\n{item['sparql_query']}\n```\n"
+            )
+        if item.get("results"):
+            entry += f"\n**Results:** {len(item['results'])} rows returned\n"
+        formatted.append(entry)
+
+    return "\n\n".join(formatted)
+
+
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
 
@@ -55,6 +75,7 @@ class AgentState(TypedDict):
 class PipelineState(TypedDict):
     kg_name: str
     question: str
+    parent_context: str
     final_summary: str
 
 
@@ -289,7 +310,7 @@ def _build_step_prompts(exploration_prompt: str) -> list[tuple[str, str]]:
     return step_prompts
 
 
-def run_pipeline(endpoint: str, kg_name: str, question: str) -> str:
+def run_pipeline(endpoint: str, kg_name: str, question: str, parent_context=None) -> str:
     """Run the two-node pipeline: explore KG (with caching) then answer the user question."""
     from langgraph.errors import GraphRecursionError as _GRE
     start_time = datetime.now()
@@ -368,7 +389,8 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
         MAX_QUERIES = 80
         from datetime import date
         current_date = date.today().strftime("%a %b %d %Y")
-        prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"], current_date=current_date)
+        parent_context = _format_parent_context(state.get("parent_context", ""))
+        prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"], current_date=current_date, parent_context=parent_context)
         if desc_path.exists():
             cached = desc_path.read_text()
             prompt = (
@@ -446,6 +468,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
         result = pipeline.compile().invoke({
             "kg_name": kg_name,
             "question": question,
+            "parent_context": parent_context or "",
             "final_summary": "",
         })
     except _GRE as e:

@@ -16,6 +16,8 @@ class SessionRuntimeState:
         self.shex_prefixes: str = ""
         self.chunk_titles: list[str] = []
         self.sparql_endpoint: str = ""
+        self.mcp_session_id: str | None = None
+        self.mcp_initialized: bool = False
 
 
 class AgentRuntimeState:
@@ -52,6 +54,8 @@ class AgentRuntimeState:
         self.session_state_by_thread: dict[str, SessionRuntimeState] = {}
         self.chroma_client = None
         self.embedding_model = None
+        # current thread ID for MCP session lookup (set at start of request)
+        self.current_thread_id: str = ""
 
     def get_or_create_session(self, thread_id: str | None) -> SessionRuntimeState:
         """Return the mutable runtime state for the given thread."""

@@ -46,6 +46,7 @@ from helpers.message_format_helpers import (
 from helpers.tool_helpers import _TOOL_DISPLAY_NAMES
 from agent_utils.agent_helpers import _run_agent, _stream_agent, _load_prompt
 from helpers.tool_helpers import _after_tool
+from agent_utils.mcp_client import initialize_mcp_tools, get_mcp_server_url, shutdown_mcp_client, initialize_mcp_session, set_current_thread_id, get_mcp_tools
 
 load_dotenv()
 
@@ -175,6 +176,14 @@ async def lifespan(app: FastAPI):
     llm_tools = [run_sparql_subagent_tool, describe_knowledge_graphs_tool, scope_checker_tool]
     all_tools = [run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
 
+    mcp_server_url = get_mcp_server_url()
+    if mcp_server_url:
+        mcp_tools = await initialize_mcp_tools(mcp_server_url)
+        if mcp_tools:
+            llm_tools = llm_tools + mcp_tools
+            all_tools = all_tools + mcp_tools
+            logger.info(f"Added {len(mcp_tools)} MCP tools to agent")
+
     startup_llm, is_healthy, reason = await build_llm_from_health(
         base_url=base_url,
         api_key=api_key,
@@ -266,6 +275,7 @@ async def lifespan(app: FastAPI):
             await health_check_task
         with contextlib.suppress(asyncio.CancelledError):
             await tool_health_check_task
+        await shutdown_mcp_client()
         logger.info("Shutted down Quagga SPARQL Agent API")
 
 
