@@ -480,26 +480,36 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
 
 
 if __name__ == "__main__":
-    opencitation_questions = [
-        "What is the title and publication date of publication with DOI 10.1162/qss_a_00023?",
-        "How many publications are in the OpenCitations dataset?",
-        "What is the most cited article in OpenCitations?", # should fail
-        "How many journal articles contained in Open Citations Meta were published in 2024?",
-        "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
-        "Who is the most prolific Humanities author in terms of number of publications?", # should fail
-        "What are the latest 10 articles published in the journal with ISSN 2641-3337 (Quantitative Science Studies)?",
-        "What are the publications by the author with ORCID 0000-0003-0530-4305 published in 2024?",
-        "Which publications contain the words 'open science' in the title and were published in 2024?",
-        "Which book chapters with 'digital humanities' in their title were published in 2023?",
-        "Which articles about 'COVID-19' published in 2023 have more than 5 authors?",
+    linkedmusic_questions = [
+        "Find all compositions in DIAMM that are composed by Guillaume de Machaut"
     ]
-    question = opencitation_questions[6]
+    question = linkedmusic_questions[0]
     print(f"Running pipeline for question: {question}")
     run_pipeline(
-        endpoint="https://sparql.opencitations.net/meta",
-        kg_name="OpenCitations Meta",
+        endpoint="https://virtuoso.simssa.ca/sparql",
+        kg_name="LinkedMusic",
         question=question,
     )
+    # opencitation_questions = [
+    #     "What is the title and publication date of publication with DOI 10.1162/qss_a_00023?",
+    #     "How many publications are in the OpenCitations dataset?",
+    #     "What is the most cited article in OpenCitations?", # should fail
+    #     "How many journal articles contained in Open Citations Meta were published in 2024?",
+    #     "I want to query OpenCitations. How many publications are indexed in there? break them down by publication typology",
+    #     "Who is the most prolific Humanities author in terms of number of publications?", # should fail
+    #     "What are the latest 10 articles published in the journal with ISSN 2641-3337 (Quantitative Science Studies)?",
+    #     "What are the publications by the author with ORCID 0000-0003-0530-4305 published in 2024?",
+    #     "Which publications contain the words 'open science' in the title and were published in 2024?",
+    #     "Which book chapters with 'digital humanities' in their title were published in 2023?",
+    #     "Which articles about 'COVID-19' published in 2023 have more than 5 authors?",
+    # ]
+    # question = opencitation_questions[6]
+    # print(f"Running pipeline for question: {question}")
+    # run_pipeline(
+    #     endpoint="https://sparql.opencitations.net/meta",
+    #     kg_name="OpenCitations Meta",
+    #     question=question,
+    # )
 
     # ehri_questions = [
     #     "Which archival institutions in the EHRI Knowledge Graph are located in Argentina, and what are their names?",

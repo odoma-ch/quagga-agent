@@ -1,0 +1,656 @@
+## Step 1 : Discover eligible named graphs
+
+I've discovered 14 graph URIs from the first page. The second page (OFFSET 20) returned no results, so I have all eligible graphs.
+
+**Collected Graph URIs:**
+1. `http://www.openlinksw.com/schemas/virtrdf#` (internal Virtuoso schema)
+2. `http://www.w3.org/2002/07/owl#` (OWL namespace)
+3. `https://linkedmusic.ca/graphs/musicbrainz/`
+4. `https://linkedmusic.ca/graphs/diamm/`
+5. `urn:core:services:sparql` (URN - excluded)
+6. `https://linkedmusic.ca/graphs/cantusdb/`
+7. `https://linkedmusic.ca/graphs/cantusindex/`
+8. `https://linkedmusic.ca/graphs/rism/`
+9. `https://linkedmusic.ca/graphs/thesession/`
+10. `https://linkedmusic.ca/graphs/utsi/`
+11. `https://linkedmusic.ca/graphs/dig-that-lick/`
+12. `https://linkedmusic.ca/graphs/theglobaljukebox/`
+13. `https://linkedmusic.ca/graphs/wjazzd/`
+14. `https://linkedmusic.ca/graphs/simssadb/`
+
+**Eligibility Filtering Applied:**
+- Excluded: `urn:core:services:sparql` (URN, not http/https)
+- Kept only graphs starting with http:// or https://
+
+**Eligible Named Graphs for Next Steps:**
+1. `https://linkedmusic.ca/graphs/musicbrainz/`
+2. `https://linkedmusic.ca/graphs/diamm/`
+3. `https://linkedmusic.ca/graphs/cantusdb/`
+4. `https://linkedmusic.ca/graphs/cantusindex/`
+5. `https://linkedmusic.ca/graphs/rism/`
+6. `https://linkedmusic.ca/graphs/thesession/`
+7. `https://linkedmusic.ca/graphs/utsi/`
+8. `https://linkedmusic.ca/graphs/dig-that-lick/`
+9. `https://linkedmusic.ca/graphs/theglobaljukebox/`
+10. `https://linkedmusic.ca/graphs/wjazzd/`
+11. `https://linkedmusic.ca/graphs/simssadb/`
+
+(Note: The `virtrdf#` and `owl#` graphs are internal/namespace graphs and will be ignored as per the strategy.)
+
+## Step 2 : For EACH eligible graph, get entity types
+
+**Step 2 Complete: Entity Types for Each Eligible Graph**
+
+| Graph | Entity Types (with counts) |
+|-------|----------------------------|
+| **musicbrainz** | Artist (2,649,740), Recording (2,198,791), Release (1,101,712), Label (310,248), Area (119,677), Event (101,420), Place (73,636), Genre (2,051), Instrument (1,050) |
+| **diamm** | Composition (60,210), Source (4,603), Person (4,151), Organization (709), Archive (681), City (608), Set (472), Region (77), Country (34) |
+| **cantusdb** | Chant (444,171), Source (236) |
+| **cantusindex** | Chant (60,426) |
+| **rism** | Incipit (2,391,497), Source (1,526,463), Exemplar (934,538), Person (148,172), Institution (25,708), Place (16,119), Subject (646), ExemplarsSection (240) |
+| **thesession** | Tuneset (88,020), TuneSetting (51,350), Tune (22,276), Member (9,476), Events (7,947), Recording (7,644), Session (2,035) |
+| **utsi** | Song (56,895), Anthology (2,622) |
+| **dig-that-lick** | Solo (1,685), Track (616) |
+| **theglobaljukebox** | Song (6,040), Instrument (1,780), Culture (1,302), Ensemble (774), Minutage (687), Phonotactics (338), Parlametrics (188), Source (138) |
+| **wjazzd** | Solo (456), Track (344), Composition (302), Record (184) |
+| **simssadb** | File (2,241), Section (125), Work (98), Source (78), Person (29), GenreAsInType (8) |
+
+All graphs returned fewer than 20 distinct entity types, so no pagination was needed.
+
+## Step 3 : For EACH eligible graph, get property usage
+
+**Step 3 Complete: Property Usage for Each Eligible Graph**
+
+| Graph | Property Count | Top Properties (by usage) |
+|-------|----------------|---------------------------|
+| **musicbrainz** | 117 | P658 (9,889,173), P2888 (8,219,846), rdfs:label (6,559,030), rdf:type (6,558,325), P175 (4,616,796), P31 (3,503,487)... |
+| **diamm** | 36 | P361 (163,594), rdfs:label (75,676), P136 (74,799), rdf:type (71,545), P86 (61,898), P31 (6,614)... |
+| **cantusdb** | 10 | rdf:type (444,407), rdfs:label (444,404), P361 (444,171), P837 (443,943), P136 (441,635), P2888 (439,659)... |
+| **cantusindex** | 9 | P6439 (60,439), P136 (60,427), rdf:type (60,426), P837 (43,182), P217 (26,626), relatedChant (10,976)... |
+| **rism** | 39 | rdf:type (5,043,383), rdfs:label (4,148,661), P3440 (2,181,091), P2701 (1,974,594), P276 (1,526,645), P86 (1,504,708)... |
+| **thesession** | 19 | P527 (221,033), rdf:type (188,748), P658 (132,203), P571 (88,020), P170 (88,020), P747 (51,350)... |
+| **utsi** | 14 | P361 (80,815), P1922 (71,568), P407 (66,126), P86 (64,536), P676 (61,770), P136 (60,925)... |
+| **dig-that-lick** | 8 | P175 (5,601), rdf:type (2,301), P361 (2,297), P870 (1,685), rdfs:label (616), P10135 (616)... |
+| **theglobaljukebox** | 24 | P175 (15,719), P870 (13,271), P11518, rdf:type (11,247), rdfs:label (9,224), P136 (8,167)... |
+| **wjazzd** | 17 | rdf:type (1,286), rdfs:label (1,285), P175 (984), P870 (800), P361 (800), P2550 (800)... |
+| **simssadb** | 12 | rdf:type (2,579), rdfs:label (2,576), P6243 (2,241), P144 (2,241), P527 (125), P2888 (124)... |
+
+All graphs have been processed. No graph required OFFSET beyond 100. The results show the LinkedMusic knowledge graph uses a rich set of Wikidata properties across all graphs, with rdf:type, rdfs:label, and various Wikidata property IDs (P-prefixed) being most common.
+
+## Step 4 : For EACH eligible graph, describe sample entities
+
+**Step 4 Complete: Sample Entity Descriptions for Each Eligible Graph**
+
+I've collected sample entities and their descriptions for the top types across all eligible graphs. Here's the summary:
+
+| Graph | Entity Type | Sample URI | Triples | Key Properties |
+|-------|-------------|------------|---------|-----------------|
+| **musicbrainz** | Artist | `...artist/00b9bbe6-...` | 7 | label, P2888 (URLs), rdf:type, P27 (country), P31 |
+| | Recording | `...recording/009f04c3-...` | 9 | P915 (place), P1071, label, P175 (artist), P2047 (duration) |
+| | Release | `...release/055d81a9-...` | 10 | P577 (date), P658 (recordings), P175, P495 (country), P264 (label) |
+| | Label | `...label/01258062-...` | 22 | Many P264 (releases), P2888 (URLs), P571, P136, skos:altLabel |
+| | Area | `...area/00bf87e6-...` | 6 | Artist relations, P2888 (GeoNames), P131, label |
+| | Event | `...event/84a231a4-...` | 12 | P710 (artists), P276 (place), P580/P582/P585 (dates), label |
+| | Place | `...place/048d7ec8-...` | 15 | P69 (worked at), P108 (performed at), P625 (coordinates), P6375 (address) |
+| | Genre | `...genre/0be99ba1-...` | 3 | P136 (artist/release relations), label |
+| | Instrument | `...instrument/007d6c88-...` | 49 | P279 (subclass), P870 (recorded with), multilingual altLabels |
+| **diamm** | Composition | `...compositions/100139` | 4 | P136 (genre), label, P86 (composer) |
+| | Source | `...sources/1035` | 7 | P127 (composer), P361, P31, P276 (archive), label |
+| | Person | `...people/4496` | 3 | rdf:type, P86 (compositions), label |
+| | Organization | `...organizations/1` | 8 | Sources, label, P131 (city), P31 |
+| | Archive | `...archives/358` | 5 | P131, P5504, label, P11550 |
+| | City | `...cities/116` | 4 | rdf:type, label, P2888 (Wikidata), P17 (country) |
+| | Set | `...sets/1` | 11 | P361 (sources), P217, P31 |
+| **cantusdb** | Chant | `...chant/186313` | 9 | P366 (office), P826, P361 (source), P837, P18, P136, label, P2888 |
+| | Source | `...source/123594` | 3 (direct) | Many incoming P361 from chants |
+| **cantusindex** | Chant | `...id/006583` | 4 (direct) | Many incoming P2888 from cantusdb chants |
+| **rism** | Incipit | `...incipits/1.2.1` | 4 | P2701 (notation), label, P3440 (time sig), rdf:type |
+| | Source | `...sources/1001039509` | 12 | P527, P361, P276, P136, P127, P569/P570 (dates), label |
+| | Person | `...people/100556` | 6 | P676 (sources), P2888 (Wikidata), label |
+| | Institution | `...institutions/30000019` | 2 (direct) | Many incoming P276 from sources |
+| | Place | `...places/50017869` | 2 | label, rdf:type |
+| **thesession** | Tuneset | `...sets/1` | 6 | P571 (date), P527 (tunes), P170 (member), rdf:type |
+| **utsi** | Song | `...songdb.php?title=INCARNATION` | 9 | rdf:type, label, P676, P361, P136, P86, P1071, P407, P1922 |
+| **dig-that-lick** | Solo | `...details?melid=AQAMA...` | 4 | P870 (instrument), P175, P361 (track) |
+| **theglobaljukebox** | Song | `...song/3275` | 9 | P10893, P870, P585, P175, P2596, P2341, P495, label |
+| **wjazzd** | Solo | `...solos/solo/1` | 10 | P176, label, P870, P3440, P361, P2550, P1725, P826, P175 |
+| **simssadb** | File | `...files/135` | 4 | P144 (source), label, P6243 (work), rdf:type |
+
+**Key Findings:**
+- Most entities have fewer than 200 outgoing triples, allowing full DESCRIBE
+- Heavy use of Wikidata properties (P-prefixed) for cross-linking
+- Strong use of rdf:type, rdfs:label, and skos:altLabel
+- Music-specific properties: P175 (performer), P86 (composer), P136 (genre), P658 (recording), P870 (instrument)
+- Geographic properties: P17 (country), P131 (located in), P276 (location)
+- Temporal properties: P569 (birth date), P570 (death date), P571 (date), P577 (publication date)
+
+## Step 5 : For EACH eligible graph, discover relationship patterns
+
+**Step 5 Complete: Relationship Patterns for Each Eligible Graph**
+
+I've collected relationship patterns (2-hop property paths) for most graphs. Some large graphs (musicbrainz, rism) timed out on this expensive query. Here's a summary:
+
+| Graph | Top Relationship Patterns (p1 → p2) | Count |
+|-------|-------------------------------------|-------|
+| **diamm** | P361 → rdfs:label | 322,396 |
+| | P361 → P276 (location) | 226,337 |
+| | P361 → rdf:type | 163,594 |
+| | P361 → P11603 | 163,548 |
+| | P86 (composer) → skos:altLabel | 60,788 |
+| | P86 → rdfs:label | 35,298 |
+| | P86 → rdf:type | 35,298 |
+| | P86 → P2888 | 31,100 |
+| **cantusdb** | P361 → rdf:type | 444,171 |
+| | P361 → P276 | 442,811 |
+| | P361 → rdfs:label | 442,811 |
+| **cantusindex** | relatedChant → P136 | 10,811 |
+| | relatedChant → rdf:type | 10,811 |
+| | P144 → P136 | 4,024 |
+| **thesession** | P527 → P747 | 2,541,302 |
+| | P527 → skos:altLabel | 1,497,064 |
+| | P658 → P747 | 1,066,029 |
+| | P527 → rdf:type | 221,033 |
+| | P527 → rdfs:label | 221,033 |
+| **utsi** | P361 → P217 | 92,580 |
+| | P361 → rdf:type | 80,815 |
+| | P361 → rdfs:label | 80,815 |
+| **dig-that-lick** | P361 → P175 | 11,890 |
+| | P361 → P10135 | 1,665 |
+| | P361 → rdf:type | 1,665 |
+| **theglobaljukebox** | P2596 → skos:altLabel | 15,991 |
+| | P2596 → P4970 | 14,660 |
+| | P2596 → P2341 | 12,949 |
+| | P2596 → P361 | 11,800 |
+| | P2341 → skos:altLabel | 3,111 |
+| **wjazzd** | P361 → rdf:type | 800 |
+| | P361 → P175 | 800 |
+| | P2550 → rdf:type | 800 |
+| | P2550 → rdfs:label | 800 |
+| **simssadb** | P144 → rdf:type | 2,241 |
+| | P144 → rdfs:label | 2,241 |
+| | P6243 → rdf:type | 367 |
+| | P6243 → rdfs:label | 367 |
+
+**Key Findings:**
+- **P361 (part of)** is the most common intermediate property, linking compositions/sources to their parts
+- **P86 (composer)** and **P175 (performer)** frequently connect to labels and types
+- **rdf:type** and **rdfs:label** are common terminal properties (objects being labeled/typed)
+- **P276 (location)** frequently follows P361 for geographic hierarchies
+- Graphs like musicbrainz and rism timed out due to their size (millions of triples)
+
+## Step 6 : For EACH eligible graph, discover entity-value patterns
+
+**Step 6 Complete: Entity-Value Patterns for Each Eligible Graph**
+
+I've collected sample entity-value patterns for each eligible graph. The original query returned mostly rdf:type triples, so I filtered those out to get more meaningful property-value pairs:
+
+| Graph | Sample Property (p) | Sample Value (o) | Meaning |
+|-------|---------------------|------------------|---------|
+| **diamm** | P131 (located in) | City/Region URIs | Geographic hierarchy |
+| | P11550 | Library siglum (e.g., D-ABG, E-Mb) | Archive identifiers |
+| | P88 | Person URIs | Instrumentist relations |
+| **cantusdb** | P826 | Wikidata mode entities | Chant mode (Q960729, Q57976142, etc.) |
+| **cantusindex** | P136 | Genre codes (R, I) | Chant genre classification |
+| **thesession** | P826 | Wikidata mode entities | Tune mode (Q283880, Q5728362, etc.) |
+| **utsi** | P407 | Language URIs (Q1860, Q397, Q150) | Song language |
+| **theglobaljukebox** | P136 | Genre labels (Gamelan, Healing Song, Women's Song) | Song genre |
+| **wjazzd** | P826 | Wikidata mode entities | Jazz mode (Q795134, Q719309, etc.) |
+| **simssadb** | P144 | Source URIs | File → Source relationship |
+| **dig-that-lick** | P361 | Track URIs | Part-of relationships |
+| | P2888 | Wikidata entities | See-also links |
+
+**Key Findings:**
+- **P826 (mode)** is heavily used in cantusdb, thesession, and wjazzd for musical mode classification
+- **P136 (genre)** appears in cantusindex, theglobaljukebox for genre classification
+- **P407 (language)** used in utsi for song languages
+- **P131 (located in)** used in diamm for geographic hierarchies
+- **P11550** unique to diamm for library siglums (archival identifiers)
+- **P361 (part of)** used in dig-that-lick for track relationships
+- **P144 (based on)** used in simssadb for file-source relationships
+
+## Step 7 : Compile the report
+
+# LinkedMusic Knowledge Graph Exploration Report
+
+## Overview
+
+The LinkedMusic endpoint (https://virtuoso.simssa.ca/sparql) is a Virtuoso-based knowledge graph containing music-related data from multiple sources. It uses named graphs to separate different data collections, with 11 eligible named graphs identified for exploration.
+
+---
+
+## Graph 1: musicbrainz
+
+**URI:** <https://linkedmusic.ca/graphs/musicbrainz/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Artist | 2,649,740 |
+| Recording | 2,198,791 |
+| Release | 1,101,712 |
+| Label | 310,248 |
+| Area | 119,677 |
+| Event | 101,420 |
+| Place | 73,636 |
+| Genre | 2,051 |
+| Instrument | 1,050 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P658 (tracklist) | 9,889,173 |
+| P2888 (see also) | 8,219,846 |
+| rdfs:label | 6,559,030 |
+| rdf:type | 6,558,325 |
+| P175 (performer) | 4,616,796 |
+| P31 (instance of) | 3,503,487 |
+| P2047 (duration) | 1,968,947 |
+| P495 (country of origin) | 1,905,383 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Artist | <https://musicbrainz.org/artist/00b9bbe6-b837-410c-b9fe-39cae3683923> |
+| Recording | <https://musicbrainz.org/recording/009f04c3-da6e-4e3f-a6e9-c992434c2b30> |
+| Release | <https://musicbrainz.org/release/055d81a9-53e5-4dff-a8bc-f91edc18b159> |
+| Label | <https://musicbrainz.org/label/01258062-3a8e-4fc6-912e-8bb9ef4877e7> |
+| Area | <https://musicbrainz.org/area/00bf87e6-877e-4ee3-b435-984d3abb0aee> |
+| Event | <https://musicbrainz.org/event/84a231a4-b029-4151-b15c-9b93d24a420b> |
+| Place | <https://musicbrainz.org/place/048d7ec8-f588-4f83-a424-13c5cbe4970a> |
+| Genre | <https://musicbrainz.org/genre/0be99ba1-2377-4e5a-a1ed-ca0f3c9c84fa> |
+| Instrument | <https://musicbrainz.org/instrument/007d6c88-c6fd-4fe7-9af7-8a0cac0d2526> |
+
+### Entity Description Examples
+- **Artist**: Has label, P2888 (external URLs), rdf:type, P27 (country), P31 (instance of)
+- **Recording**: Has P915 (place), P1071, label, P175 (artist), P2047 (duration), P2888 (URLs)
+- **Label**: Has many P264 (releases), P2888 (URLs), P571 (date), P136 (genre), skos:altLabel
+- **Instrument**: Has P279 (subclass), P870 (recorded with), multilingual altLabels
+
+---
+
+## Graph 2: diamm
+
+**URI:** <https://linkedmusic.ca/graphs/diamm/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Composition | 60,210 |
+| Source | 4,603 |
+| Person | 4,151 |
+| Organization | 709 |
+| Archive | 681 |
+| City | 608 |
+| Set | 472 |
+| Region | 77 |
+| Country | 34 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P361 (part of) | 163,594 |
+| rdfs:label | 75,676 |
+| P136 (genre) | 74,799 |
+| rdf:type | 71,545 |
+| P86 (composer) | 61,898 |
+| P31 (instance of) | 6,614 |
+| P276 (location) | 5,966 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Composition | <https://www.diamm.ac.uk/compositions/100139> |
+| Source | <https://www.diamm.ac.uk/sources/1035> |
+| Person | <https://www.diamm.ac.uk/people/4496> |
+| Organization | <https://www.diamm.ac.uk/organizations/1> |
+| Archive | <https://www.diamm.ac.uk/archives/358> |
+| City | <https://www.diamm.ac.uk/cities/116> |
+| Set | <https://www.diamm.ac.uk/sets/1> |
+
+### Entity-Value Patterns
+- **P131 (located in)**: Links archives/cities to regions
+- **P11550**: Library siglums (e.g., D-ABG, E-Mb, PL-LEr)
+- **P88**: Person relations (instrumentists)
+- **P127**: Composer relations
+
+---
+
+## Graph 3: cantusdb
+
+**URI:** <https://linkedmusic.ca/graphs/cantusdb/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Chant | 444,171 |
+| Source | 236 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| rdf:type | 444,407 |
+| rdfs:label | 444,404 |
+| P361 (part of) | 444,171 |
+| P837 | 443,943 |
+| P136 (genre) | 441,635 |
+| P2888 | 439,659 |
+| P366 | 435,694 |
+| P826 | 266,054 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Chant | <https://cantusdatabase.org/chant/186313> |
+| Source | <https://cantusdatabase.org/source/123594> |
+
+### Entity-Value Patterns
+- **P826**: Mode entities from Wikidata (Q960729, Q57976142, etc.)
+- **P361**: Links chants to sources
+
+---
+
+## Graph 4: cantusindex
+
+**URI:** <https://linkedmusic.ca/graphs/cantusindex/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Chant | 60,426 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P6439 | 60,439 |
+| P136 | 60,427 |
+| rdf:type | 60,426 |
+| P837 | 43,182 |
+| P217 | 26,626 |
+| relatedChant | 10,976 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Chant | <https://cantusindex.org/id/006583> |
+
+### Entity-Value Patterns
+- **P136**: Genre codes (R, I)
+- **relatedChant**: Custom property linking related chants
+
+---
+
+## Graph 5: rism
+
+**URI:** <https://linkedmusic.ca/graphs/rism/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Incipit | 2,391,497 |
+| Source | 1,526,463 |
+| Exemplar | 934,538 |
+| Person | 148,172 |
+| Institution | 25,708 |
+| Place | 16,119 |
+| Subject | 646 |
+| ExemplarsSection | 240 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| rdf:type | 5,043,383 |
+| rdfs:label | 4,148,661 |
+| P3440 | 2,181,091 |
+| P2701 | 1,974,594 |
+| P276 (location) | 1,526,645 |
+| P86 (composer) | 1,504,708 |
+| P136 (genre) | 1,433,244 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Incipit | <https://rism.online/sources/1001051233/incipits/1.2.1> |
+| Source | <https://rism.online/sources/1001039509> |
+| Person | <https://rism.online/people/100556> |
+| Institution | <https://rism.online/institutions/30000019> |
+| Place | <https://rism.online/places/50017869> |
+
+---
+
+## Graph 6: thesession
+
+**URI:** <https://linkedmusic.ca/graphs/thesession/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Tuneset | 88,020 |
+| TuneSetting | 51,350 |
+| Tune | 22,276 |
+| Member | 9,476 |
+| Events | 7,947 |
+| Recording | 7,644 |
+| Session | 2,035 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P527 (has part) | 221,033 |
+| rdf:type | 188,748 |
+| P658 (tracklist) | 132,203 |
+| P571 (date) | 88,020 |
+| P170 | 88,020 |
+| P747 | 51,350 |
+
+### Relationship Patterns
+| Pattern | Count |
+|---------|-------|
+| P527 → P747 | 2,541,302 |
+| P527 → skos:altLabel | 1,497,064 |
+| P658 → P747 | 1,066,029 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Tuneset | <https://thesession.org/members/1/sets/1> |
+
+### Entity-Value Patterns
+- **P826**: Mode entities from Wikidata (Q283880, Q5728362, etc.)
+
+---
+
+## Graph 7: utsi
+
+**URI:** <https://linkedmusic.ca/graphs/utsi/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Song | 56,895 |
+| Anthology | 2,622 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P361 (part of) | 80,815 |
+| P1922 | 71,568 |
+| P407 (language) | 66,126 |
+| P86 (composer) | 64,536 |
+| P676 | 61,770 |
+| P136 (genre) | 60,925 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Song | <https://databases.lib.utk.edu/songdb/songdb.php?word=0&title=INCARNATION> |
+
+### Entity-Value Patterns
+- **P407**: Language URIs (Q1860 = English, Q397 = Latin, Q150 = French)
+
+---
+
+## Graph 8: dig-that-lick
+
+**URI:** <https://linkedmusic.ca/graphs/dig-that-lick/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Solo | 1,685 |
+| Track | 616 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P175 (performer) | 5,601 |
+| rdf:type | 2,301 |
+| P361 (part of) | 2,297 |
+| P870 (instrument) | 1,685 |
+| P10135 | 616 |
+
+### Entity-Value Patterns
+- **P361**: Track → Solo relationships
+- **P2888**: Wikidata see-also links
+
+---
+
+## Graph 9: theglobaljukebox
+
+**URI:** <https://linkedmusic.ca/graphs/theglobaljukebox/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Song | 6,040 |
+| Instrument | 1,780 |
+| Culture | 1,302 |
+| Ensemble | 774 |
+| Minutage | 687 |
+| Phonotactics | 338 |
+| Parlametrics | 188 |
+| Source | 138 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| P175 (performer) | 15,719 |
+| P870 (instrument) | 13,271 |
+| P2341 | 11,518 |
+| rdf:type | 11,247 |
+| rdfs:label | 9,224 |
+| P136 (genre) | 8,167 |
+
+### Relationship Patterns
+| Pattern | Count |
+|---------|-------|
+| P2596 → skos:altLabel | 15,991 |
+| P2596 → P4970 | 14,660 |
+| P2596 → P2341 | 12,949 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Song | <https://theglobaljukebox.org/song/3275> |
+
+### Entity-Value Patterns
+- **P136**: Genre labels (Gamelan, Healing Song, Women's Song)
+- **P2596**: Culture relationships
+
+---
+
+## Graph 10: wjazzd
+
+**URI:** <https://linkedmusic.ca/graphs/wjazzd/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| Solo | 456 |
+| Track | 344 |
+| Composition | 302 |
+| Record | 184 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| rdf:type | 1,286 |
+| rdfs:label | 1,285 |
+| P175 (performer) | 984 |
+| P870 (instrument) | 800 |
+| P361 (part of) | 800 |
+| P2550 | 800 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| Solo | <http://mir.audiolabs.uni-erlangen.de/jazztube/solos/solo/1> |
+
+### Entity-Value Patterns
+- **P826**: Mode entities from Wikidata (Q795134, Q719309, etc.)
+
+---
+
+## Graph 11: simssadb
+
+**URI:** <https://linkedmusic.ca/graphs/simssadb/>
+
+### Entity Types
+| Type | Count |
+|------|-------|
+| File | 2,241 |
+| Section | 125 |
+| Work | 98 |
+| Source | 78 |
+| Person | 29 |
+| GenreAsInType | 8 |
+
+### Top Properties (by usage)
+| Property | Count |
+|----------|-------|
+| rdf:type | 2,579 |
+| rdfs:label | 2,576 |
+| P6243 | 2,241 |
+| P144 (based on) | 2,241 |
+| P527 | 125 |
+| P2888 | 124 |
+
+### Sample Entities
+| Type | Sample URI |
+|------|------------|
+| File | <https://db.simssa.ca/files/135> |
+
+### Entity-Value Patterns
+- **P144**: Links files to sources
+
+---
+
+## Summary of Key Findings
+
+### Common Wikidata Properties Used
+- **P86**: Composer
+- **P175**: Performer
+- **P136**: Genre
+- **P361**: Part of
+- **P276**: Location
+- **P2888**: See also (URLs)
+- **P826**: Mode
+- **P407**: Language
+- **P31**: Instance of
+- **P569/P570**: Birth/Death dates
+
+### Custom Properties
+- **relatedChant** (cantusindex): Links related chants
+- **chorusFirstLine** (utsi): Song lyrics
+
+### Data Sources Integrated
+1. **MusicBrainz**: Large-scale music metadata (artists, recordings, releases)
+2. **DIAMM**: Digital Image Archive of Medieval Music
+3. **CantusDB/CantusIndex**: Gregorian chant database
+4. **RISM**: Répertoire International des Sources Musicales
+5. **The Session**: Irish traditional music
+6. **UTSI**: University of Tennessee song database
+7. **Dig That Lick**: Musical similarity search
+8. **The Global Jukebox**: World music archive
+9. **WJazzD**: Jazz discourse analysis
+10. **SIMSSADB**: Cantata analysis
+
