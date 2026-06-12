@@ -14,7 +14,7 @@ class GraphRelevanceBatchResponse(BaseModel):
 
 
 MODEL_ID = "Graphia SPARQL Agent"
-GRAPHS_INVOLVED = ["Culture Knowledge Graph", "GESIS KG", "EHRI - KG", "PHAROS", "LinkedMusic"]
+GRAPHS_INVOLVED = ["Culture Knowledge Graph", "GESIS KG", "EHRI - KG", "PHAROS", "LinkedMusic", "DNB KB"]
 GRAPH_METADATA_URL = "https://exygen.graphia-ssh.eu/get_kg_metadata"
 GRAPH_KG_DESCRIPTIONS_URL = "https://quagga.graphia-ssh.eu/get_kg_info"
 GRAPH_RELEVANCE_BATCH_RESPONSE_SCHEMA = GraphRelevanceBatchResponse.model_json_schema()
