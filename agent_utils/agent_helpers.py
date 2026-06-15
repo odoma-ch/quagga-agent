@@ -1,12 +1,14 @@
 import os
 import uuid
 import asyncio
+import threading
 
 from agent_utils.agent_runtime_state import runtime_state
 from agent_utils.agent_config import MAX_AGENT_STEPS, SPARQL_ENDPOINT
 from helpers.message_format_helpers import (
     _message_content_to_text,
     _make_chat_completion_chunk,
+    _make_progress_chunk,
 )
 from helpers.tool_helpers import (
     _extract_terminal_tool_answer,
@@ -26,6 +28,23 @@ from agent_utils.mcp_client import set_current_thread_id, initialize_mcp_session
 
 
 PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts")
+
+_progress_queue: asyncio.Queue | None = None
+_progress_loop: asyncio.AbstractEventLoop | None = None
+_progress_stream_id: str | None = None
+_progress_lock = threading.Lock()
+
+
+def emit_progress(message: str):
+    global _progress_queue, _progress_loop, _progress_stream_id
+    with _progress_lock:
+        queue = _progress_queue
+        loop = _progress_loop
+        stream_id = _progress_stream_id
+    if queue is None or loop is None or stream_id is None:
+        return
+    chunk = _make_progress_chunk(message, chunk_id=stream_id)
+    loop.call_soon_threadsafe(queue.put_nowait, chunk)
 
 
 def _load_prompt(filename: str) -> str:
@@ -118,6 +137,7 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
 
 async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     """Yield SSE chunks as tool steps + tokenized assistant output."""
+    global _progress_queue, _progress_loop, _progress_stream_id
     set_current_thread_id(thread_id)
     await initialize_mcp_session()
     
@@ -130,6 +150,11 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     queue: asyncio.Queue = asyncio.Queue()
     loop = asyncio.get_running_loop()
     sentinel = object()
+
+    with _progress_lock:
+        _progress_queue = queue
+        _progress_loop = loop
+        _progress_stream_id = stream_id
 
     # Emit initial role delta for OpenAI-compatible clients.
     role_chunk = _make_chat_completion_chunk(
@@ -222,11 +247,17 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
 
     asyncio.get_running_loop().run_in_executor(None, _producer)
 
-    while True:
-        item = await queue.get()
-        if item is sentinel:
-            break
-        yield item
+    try:
+        while True:
+            item = await queue.get()
+            if item is sentinel:
+                break
+            yield item
+    finally:
+        with _progress_lock:
+            _progress_queue = None
+            _progress_loop = None
+            _progress_stream_id = None
 
     final_chunk = _make_chat_completion_chunk(
         "", finish_reason="stop", chunk_id=stream_id, chunk_type="final"

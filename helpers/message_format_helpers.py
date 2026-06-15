@@ -61,6 +61,42 @@ def _make_chat_completion_chunk(
     return f"data: {json.dumps(chunk)}\n\n"
 
 
+def _make_progress_chunk(
+    message: str,
+    chunk_id: str | None = None,
+) -> str:
+    """Build a progress SSE chunk using reasoning_content for native OpenWebUI rendering.
+
+    OpenWebUI natively handles reasoning_content (or reasoning/thinking fields) by
+    rendering them inside a collapsible "Thinking..." block with shimmer animation.
+    This means progress messages appear as a live-updating "Thinking..." section
+    without any custom Pipe or Filter — zero-config out of the box.
+
+    The first progress chunk opens the reasoning block; subsequent chunks append
+    to it. When the next non-progress chunk (e.g. tool_result or llm_text) arrives,
+    OpenWebUI automatically closes the reasoning block and renders it as a
+    collapsible "Thought for N seconds" section, keeping the main chat clean.
+    """
+    chunk = {
+        "id": chunk_id or f"chatcmpl-{uuid.uuid4().hex[:12]}",
+        "object": "chat.completion.chunk",
+        "created": int(time.time()),
+        "model": MODEL_ID,
+        "choices": [
+            {
+                "index": 0,
+                "delta": {
+                    "reasoning_content": message + "\n",
+                },
+                "finish_reason": None,
+            }
+        ],
+        "x_chunk_type": "progress",
+        "x_progress": message,
+    }
+    return f"data: {json.dumps(chunk)}\n\n"
+
+
 def _message_content_to_text(content) -> str:
     """Normalize LangChain message/chunk content into plain text."""
     if isinstance(content, str):

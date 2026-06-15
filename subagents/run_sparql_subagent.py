@@ -313,8 +313,10 @@ def _build_step_prompts(exploration_prompt: str) -> list[tuple[str, str]]:
 def run_pipeline(endpoint: str, kg_name: str, question: str, parent_context=None) -> str:
     """Run the two-node pipeline: explore KG (with caching) then answer the user question."""
     from langgraph.errors import GraphRecursionError as _GRE
+    from agent_utils.agent_helpers import emit_progress
     start_time = datetime.now()
     print(f"[DEBUG] run_pipeline called at {start_time}: kg={kg_name!r}, question={question!r}", flush=True)
+    emit_progress("Initializing SPARQL subagent...")
     subagent = build_subagent(endpoint)
     thread_id = f"{kg_name}_{uuid.uuid4().hex}"
     print(f"[DEBUG] Thread ID: {thread_id}")
@@ -324,8 +326,10 @@ def run_pipeline(endpoint: str, kg_name: str, question: str, parent_context=None
         """Node 1: load cached KG description or run full SPARQL exploration."""
         if desc_path.exists():
             print(f"[Explorer] Cached description found for \'{kg_name}\'. Skipping exploration run...")
+            emit_progress(f"Loading cached description for {kg_name}...")
         else:
             print(f"[Explorer] No cache found for \'{kg_name}\', detecting graph structure...")
+            emit_progress("Detecting graph structure...")
             graphs_question = f"""For the {kg_name} endpoint: {endpoint}
 Run this ONE query to detect if this knowledge graph uses named graphs:
 SELECT DISTINCT ?g WHERE {{ GRAPH ?g {{ ?s ?p ?o }} }}
@@ -363,24 +367,29 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
             
             prompt_file = "exploration.txt" if graph_type == "MULTI" else "exploration_single_graph.txt"
             print(f"[Explorer] Using {prompt_file} strategy for full exploration...")
+            emit_progress(f"Detected {graph_type.lower()} graph, exploring {kg_name}...")
             exploration_prompt = _load_prompt(prompt_file, kg_name=kg_name, endpoint=endpoint)
             step_prompts = _build_step_prompts(exploration_prompt)
 
             if not step_prompts:
+                emit_progress("Exploring knowledge graph...")
                 report = _stream_subagent(exploration_prompt, subagent, thread_id)
                 desc_path.write_text(report)
             else:
                 desc_path.write_text("", encoding="utf-8")
                 total_steps = len(step_prompts)
                 for idx, (step_label, step_prompt) in enumerate(step_prompts, start=1):
+                    emit_progress(f"Exploring — step {idx}/{total_steps}: {step_label}")
                     print(f"[Explorer] Running {step_label} ({idx}/{total_steps})...")
                     step_result = _stream_subagent(step_prompt, subagent, thread_id)
                     step_result = re.sub(
-                        r"<think>.*?</think>", "", step_result, flags=re.IGNORECASE | re.DOTALL).strip()
+                        r"<think>.*?</think>", "", step_result, flags=re.IGNORECASE | re.DOTALL
+                    ).strip()
                     with desc_path.open("a", encoding="utf-8") as f:
                         f.write(f"## {step_label}\n\n{step_result}\n\n")
 
             print(f"[Explorer] Saved exploration report to {desc_path}")
+            emit_progress("Exploration complete, preparing to answer...")
 
         return state
 
@@ -390,6 +399,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
         from datetime import date
         current_date = date.today().strftime("%a %b %d %Y")
         parent_context = _format_parent_context(state.get("parent_context", ""))
+        emit_progress("Generating SPARQL queries...")
         prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"], current_date=current_date, parent_context=parent_context)
         if desc_path.exists():
             cached = desc_path.read_text()
@@ -424,6 +434,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                                 query_text = _extract_query_from_tool_call(tool_call)
                                 print(f"[Tool Query]\n{query_text}\n")
                                 queries_made.append(query_text)
+                                emit_progress(f"Executing SPARQL query {len(queries_made)}...")
                         elif isinstance(msg, ToolMessage):
                             print(f"[Tool Response]\n{msg.content}\n")
                         elif isinstance(msg, AIMessage) and msg.content:
@@ -438,6 +449,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                     break
         except _SubagentRecursionError:
             print(f"[Limit] Subagent hit recursion limit after {len(queries_made)} queries. Using accumulated summary.\n")
+            emit_progress(f"Query limit reached after {len(queries_made)} queries, summarizing...")
             limit_hit = True
 
 
@@ -453,6 +465,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                 endpoint=endpoint,
                 queries_summary=queries_summary,
             )
+            emit_progress(f"Consolidating results from {len(queries_made)} queries...")
             final_summary = _stream_subagent(summary_prompt, subagent, thread_id)
 
         return {**state, "final_summary": final_summary}
