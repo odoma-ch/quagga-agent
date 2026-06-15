@@ -72,11 +72,19 @@ def _json_schema_to_pydantic(schema: dict, model_name: str) -> Type[BaseModel]:
     return create_model(model_name, **field_definitions)
 
 
+_MCP_MAX_PAGE_SIZE = 25
+_MCP_TIMEOUT_SECONDS = 30.0
+_MCP_MAX_RESPONSE_CHARS = 15000
+
+
 def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
     session_state = _get_session_state()
     
     if not session_state.mcp_session_id:
         return f"MCP session not initialized for this thread. Please restart the conversation."
+    
+    if isinstance(arguments.get("size"), int) and arguments["size"] > _MCP_MAX_PAGE_SIZE:
+        arguments["size"] = _MCP_MAX_PAGE_SIZE
     
     headers = {
         "Accept": "application/json, text/event-stream",
@@ -94,7 +102,7 @@ def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
         }
     }
     
-    with httpx.Client(timeout=30.0) as client:
+    with httpx.Client(timeout=_MCP_TIMEOUT_SECONDS) as client:
         response = client.post(_mcp_server_url, json=request, headers=headers)
         response.raise_for_status()
         
@@ -111,8 +119,12 @@ def _call_mcp_tool(tool_name: str, arguments: dict) -> str:
             if "result" in result and isinstance(result["result"], dict):
                 content_result = result["result"].get("content", [])
                 if isinstance(content_result, list):
-                    return "\n".join(str(item) for item in content_result)
-                return str(content_result)
+                    text = "\n".join(str(item) for item in content_result)
+                else:
+                    text = str(content_result)
+                if len(text) > _MCP_MAX_RESPONSE_CHARS:
+                    text = text[:_MCP_MAX_RESPONSE_CHARS] + "\n\n[Response truncated to prevent overload. Use smaller page sizes or more specific queries.]"
+                return text
             return str(result)
         except json.JSONDecodeError:
             return message_data

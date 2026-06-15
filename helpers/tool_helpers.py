@@ -99,6 +99,23 @@ def _extract_terminal_tool_answer(message) -> str | None:
     return content
 
 
+_MCP_TOOL_NAMES = {
+    "search_documents", "get_document", "search_authors", "get_author",
+    "search_projects", "get_project",
+}
+_MCP_MAX_SEQUENTIAL_CALLS = 5
+
+
+def _count_recent_mcp_calls(messages: list) -> int:
+    count = 0
+    for msg in reversed(messages):
+        if getattr(msg, "type", None) == "tool" and getattr(msg, "name", "") in _MCP_TOOL_NAMES:
+            count += 1
+        else:
+            break
+    return count
+
+
 def _after_tool(state: State):
     """Route after tool execution with enforced SPARQL validation flow."""
     last_message = state["messages"][-1]
@@ -112,11 +129,15 @@ def _after_tool(state: State):
         and getattr(last_message, "name", "") == "run_sparql_subagent_tool"
     ):
         content = last_message.content if isinstance(last_message.content, str) else str(last_message.content)
-        # run_sparql_subagent_tool can return a precondition error instead of subagent output;
-        # only force validation when there is an actual subagent result to validate.
         if content.strip() == _NO_KG_SELECTED_MESSAGE:
             return "sparql_chat_agent"
         return "force_validate"
+    if (
+        getattr(last_message, "type", None) == "tool"
+        and getattr(last_message, "name", "") in _MCP_TOOL_NAMES
+    ):
+        if _count_recent_mcp_calls(state["messages"]) >= _MCP_MAX_SEQUENTIAL_CALLS:
+            return END
     return "sparql_chat_agent"
 
 
