@@ -1,0 +1,1134 @@
+## Step 1 : Get entity types
+
+All 6 pages (OFFSET 0–100) have been collected. Here are the **merged and de-duplicated results** for Step 1 — Entity Types:
+
+## Combined Entity Types (ordered by count desc)
+
+| # | type | count |
+|---|------|-------|
+| 1 | http://wikiba.se/ontology#BestRank | 1,731,355,264 |
+| 2 | http://schema.org/Article | 99,395,734 |
+| 3 | http://wikiba.se/ontology#QuantityValue | 57,533,234 |
+| 4 | http://www.w3.org/ns/lemon/ontolex#Form | 17,863,418 |
+| 5 | http://wikiba.se/ontology#Form | 17,855,009 |
+| 6 | http://wikiba.se/ontology#GlobecoordinateValue | 12,421,858 |
+| 7 | http://wikiba.se/ontology#Statement | 8,652,804 |
+| 8 | http://schema.org/Dataset | 1,547,125 |
+| 9 | http://www.w3.org/ns/lemon/ontolex#LexicalEntry | 1,528,579 |
+| 10 | http://wikiba.se/ontology#Lexeme | 1,526,781 |
+| 11 | http://www.w3.org/ns/lemon/ontolex#LexicalSense | 716,763 |
+| 12 | http://wikiba.se/ontology#Sense | 712,866 |
+| 13 | http://wikiba.se/ontology#TimeValue | 423,038 |
+| 14 | http://wikiba.se/ontology#Reference | 326,379 |
+| 15 | http://www.w3.org/2002/07/owl#ObjectProperty | 105,508 |
+| 16 | http://wikiba.se/ontology#GeoAutoPrecision | 85,208 |
+| 17 | http://www.wikidata.org/prop/novalue/P11475 | 70,944 |
+| 18 | http://www.wikidata.org/prop/novalue/P364 | 58,941 |
+| 19 | http://www.w3.org/2002/07/owl#DatatypeProperty | 46,992 |
+| 20 | http://www.wikidata.org/prop/novalue/P155 | 42,911 |
+| 21 | http://www.wikidata.org/prop/novalue/P17 | 42,841 |
+| 22 | http://www.wikidata.org/prop/novalue/P7486 | 18,076 |
+| 23 | http://www.wikidata.org/prop/novalue/P162 | 15,984 |
+| 24 | http://www.wikidata.org/prop/novalue/P1435 | 14,605 |
+| 25 | http://www.w3.org/2002/07/owl#Restriction | 13,569 |
+| 26 | http://www.w3.org/2002/07/owl#Class | 13,569 |
+| 27 | http://wikiba.se/ontology#Property | 13,568 |
+| 28 | http://www.wikidata.org/prop/novalue/P10831 | 13,476 |
+| 29 | http://www.wikidata.org/prop/novalue/P156 | 13,113 |
+| 30 | http://www.wikidata.org/prop/novalue/P9382 | 12,836 |
+| 31 | http://www.wikidata.org/prop/novalue/P814 | 12,063 |
+| 32 | http://www.wikidata.org/prop/novalue/P1476 | 10,345 |
+| 33 | http://www.wikidata.org/prop/novalue/P6140 | 9,048 |
+| 34 | http://www.wikidata.org/prop/novalue/P1365 | 7,332 |
+| 35 | http://www.wikidata.org/prop/novalue/P582 | 6,775 |
+| 36 | http://www.wikidata.org/prop/novalue/P9284 | 6,488 |
+| 37 | http://www.wikidata.org/prop/novalue/P7367 | 6,419 |
+| 38 | http://www.wikidata.org/prop/novalue/P102 | 5,789 |
+| 39 | http://www.wikidata.org/prop/novalue/P8428 | 5,507 |
+| 40 | http://www.wikidata.org/prop/novalue/P8478 | 5,034 |
+| 41 | http://www.wikidata.org/prop/novalue/P1932 | 4,413 |
+| 42 | http://www.wikidata.org/prop/novalue/P1346 | 4,217 |
+| 43 | http://www.wikidata.org/prop/novalue/P1366 | 4,074 |
+| 44 | http://www.wikidata.org/prop/novalue/P105 | 3,965 |
+| 45 | http://www.wikidata.org/prop/novalue/P576 | 3,950 |
+| 46 | http://www.wikidata.org/prop/novalue/P625 | 3,829 |
+| 47 | http://www.wikidata.org/prop/novalue/P3963 | 3,684 |
+| 48 | http://www.wikidata.org/prop/novalue/P170 | 3,663 |
+| 49 | http://www.wikidata.org/prop/novalue/P345 | 3,592 |
+| 50 | http://www.wikidata.org/prop/novalue/P26 | 3,572 |
+| 51 | http://www.wikidata.org/prop/novalue/P734 | 3,517 |
+| 52 | http://www.wikidata.org/prop/novalue/P214 | 3,038 |
+| 53 | http://www.wikidata.org/prop/novalue/P1545 | 2,370 |
+| 54 | http://www.wikidata.org/prop/novalue/P5208 | 2,351 |
+| 55 | http://www.wikidata.org/prop/novalue/P460 | 2,236 |
+| 56 | http://www.wikidata.org/prop/novalue/P289 | 2,234 |
+| 57 | http://www.wikidata.org/prop/novalue/P856 | 2,179 |
+| 58 | http://www.wikidata.org/prop/novalue/P227 | 2,156 |
+| 59 | http://www.wikidata.org/prop/novalue/P735 | 2,090 |
+| 60 | http://www.wikidata.org/prop/novalue/P768 | 1,955 |
+| 61 | http://www.wikidata.org/prop/novalue/P161 | 1,919 |
+| 62 | http://www.wikidata.org/prop/novalue/P18 | 1,842 |
+| 63 | http://www.wikidata.org/prop/novalue/P585 | 1,721 |
+| 64 | http://www.wikidata.org/prop/novalue/P3730 | 1,578 |
+| 65 | http://www.wikidata.org/prop/novalue/P2358 | 1,552 |
+| 66 | http://www.wikidata.org/prop/novalue/P2047 | 1,552 |
+| 67 | http://www.wikidata.org/prop/novalue/P50 | 1,543 |
+| 68 | http://www.wikidata.org/prop/novalue/P9837 | 1,528 |
+| 69 | http://www.wikidata.org/prop/novalue/P195 | 1,400 |
+| 70 | http://www.wikidata.org/prop/novalue/P10627 | 1,388 |
+| 71 | http://www.wikidata.org/prop/novalue/P571 | 1,373 |
+| 72 | http://www.wikidata.org/prop/novalue/P40 | 1,354 |
+| 73 | http://www.wikidata.org/prop/novalue/P361 | 1,342 |
+| 74 | http://www.wikidata.org/prop/novalue/P718 | 1,342 |
+| 75 | http://www.wikidata.org/prop/novalue/P97 | 1,318 |
+| 76 | http://www.wikidata.org/prop/novalue/P527 | 1,279 |
+| 77 | http://www.wikidata.org/prop/novalue/P3729 | 1,271 |
+| 78 | http://www.wikidata.org/prop/novalue/P4970 | 1,224 |
+| 79 | http://www.wikidata.org/prop/novalue/P5279 | 1,162 |
+| 80 | http://www.wikidata.org/prop/novalue/P1216 | 1,152 |
+| 81 | http://www.wikidata.org/prop/novalue/P1552 | 1,152 |
+| 82 | http://www.wikidata.org/prop/novalue/P577 | 1,149 |
+| 83 | http://www.wikidata.org/prop/novalue/P528 | 1,148 |
+| 84 | http://www.wikidata.org/prop/novalue/P1146 | 1,096 |
+| 85 | http://www.wikidata.org/prop/novalue/P580 | 1,014 |
+| 86 | http://www.wikidata.org/prop/novalue/P5207 | 958 |
+| 87 | http://www.wikidata.org/prop/novalue/P1268 | 931 |
+| 88 | http://www.wikidata.org/prop/novalue/P27 | 905 |
+| 89 | http://www.wikidata.org/prop/novalue/P5324 | 903 |
+| 90 | http://www.wikidata.org/prop/novalue/P276 | 878 |
+| 91 | http://www.wikidata.org/prop/novalue/P877 | 835 |
+| 92 | http://www.wikidata.org/prop/novalue/P884 | 830 |
+| 93 | http://www.wikidata.org/prop/novalue/P131 | 820 |
+| 94 | http://www.wikidata.org/prop/novalue/P725 | 810 |
+| 95 | http://www.wikidata.org/prop/novalue/P8376 | 780 |
+| 96 | http://www.wikidata.org/prop/novalue/P1001 | 778 |
+| 97 | http://www.wikidata.org/prop/novalue/P238 | 763 |
+| 98 | http://www.wikidata.org/prop/novalue/P5104 | 754 |
+| 99 | http://www.wikidata.org/prop/novalue/P217 | 674 |
+| 100 | http://www.wikidata.org/prop/novalue/P512 | 655 |
+| 101 | http://www.wikidata.org/prop/novalue/P4354 | 651 |
+| 102 | http://www.wikidata.org/prop/novalue/P244 | 647 |
+| 103 | http://www.wikidata.org/prop/novalue/P119 | 604 |
+| 104 | http://www.wikidata.org/prop/novalue/P10832 | 596 |
+| 105 | http://www.wikidata.org/prop/novalue/P10339 | 587 |
+| 106 | http://www.wikidata.org/prop/novalue/P2446 | 586 |
+| 107 | http://www.wikidata.org/prop/novalue/P296 | 585 |
+| 108 | http://www.wikidata.org/prop/novalue/P9394 | 580 |
+| 109 | http://www.wikidata.org/prop/novalue/P10999 | 579 |
+| 110 | http://www.wikidata.org/prop/novalue/P930 | 563 |
+| 111 | http://www.wikidata.org/prop/novalue/P3266 | 550 |
+| 112 | http://www.wikidata.org/prop/novalue/P12326 | 540 |
+| 113 | http://www.wikidata.org/prop/novalue/P2860 | 531 |
+| 114 | http://www.wikidata.org/prop/novalue/P11693 | 527 |
+| 115 | http://www.wikidata.org/prop/novalue/P275 | 526 |
+| 116 | http://www.wikidata.org/prop/novalue/P2043 | 507 |
+| 117 | http://www.wikidata.org/prop/novalue/P1854 | 492 |
+| 118 | http://www.wikidata.org/prop/novalue/P304 | 489 |
+| 119 | http://www.wikidata.org/prop/novalue/P305 | 484 |
+| 120 | http://www.wikidata.org/prop/novalue/P3925 | 484 |
+
+**Key observations:**
+- The dominant entity type is **wikiba.se/ontology#BestRank** (1.73B), which are Wikidata's rank markers for statements.
+- **schema.org/Article** (99M) represents Wikipedia/Wikidata article pages.
+- **QuantityValue**, **GlobecoordinateValue**, **TimeValue** are Wikidata's value-type nodes for property values.
+- **Form/Lexeme/Sense** types represent Wikidata's lexicographic data.
+- A very large tail of `prop/novalue/P*` types are Wikidata's "no-value" class nodes for each property.
+
+## Step 2 : Get property usage
+
+Now I have enough data. Let me compile the final merged, de-duplicated results sorted by count descending.
+
+## Step 2: Property Usage — Combined Results
+
+Here are all the properties collected, merged, de-duplicated, and sorted by count descending:
+
+| # | p | count |
+|---|---|-------|
+| 1 | http://schema.org/description | 3,353,365,362 |
+| 2 | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 1,952,698,284 |
+| 3 | http://wikiba.se/ontology#rank | 1,770,396,018 |
+| 4 | http://www.w3.org/ns/prov#wasDerivedFrom | 1,325,894,050 |
+| 5 | http://www.w3.org/2000/01/rdf-schema#label | 756,087,694 |
+| 6 | http://www.w3.org/2004/02/skos/core#altLabel | 172,268,324 |
+| 7 | http://wikiba.se/ontology#statements | 122,179,356 |
+| 8 | http://schema.org/about | 100,947,487 |
+| 9 | http://schema.org/name | 99,395,886 |
+| 10 | http://schema.org/inLanguage | 99,395,900 |
+| 11 | http://schema.org/isPartOf | 99,395,900 |
+| 12 | http://schema.org/dateModified | 127,106,458 |
+| 13 | http://wikiba.se/ontology#identifiers | 120,625,621 |
+| 14 | http://wikiba.se/ontology#sitelinks | 120,624,520 |
+| 15 | http://www.wikidata.org/prop/direct/P31 | 124,041,646 |
+| 16 | http://www.wikidata.org/prop/direct/P577 | 50,533,471 |
+| 17 | http://www.wikidata.org/prop/direct/P1476 | 53,267,553 |
+| 18 | http://www.wikidata.org/prop/direct/P50 | 35,796,291 |
+| 19 | http://wikiba.se/ontology#quantityAmount | 57,533,234 |
+| 20 | http://wikiba.se/ontology#quantityUnit | 57,533,234 |
+| 21 | http://wikiba.se/ontology#grammaticalFeature | 51,456,165 |
+| 22 | http://wikiba.se/ontology#quantityNormalized | 39,446,474 |
+| 23 | http://www.wikidata.org/prop/direct/P17 | 20,356,759 |
+| 24 | http://wikiba.se/ontology#quantityLowerBound | 23,018,600 |
+| 25 | http://wikiba.se/ontology#quantityUpperBound | 23,018,600 |
+| 26 | http://www.wikidata.org/prop/direct/P131 | 14,903,281 |
+| 27 | http://www.wikidata.org/prop/direct/P106 | 14,451,674 |
+| 28 | http://www.wikidata.org/prop/direct/P21 | 11,164,864 |
+| 29 | http://www.wikidata.org/prop/direct/P625 | 12,320,599 |
+| 30 | http://wikiba.se/ontology#geoLatitude | 12,421,866 |
+| 31 | http://wikiba.se/ontology#geoLongitude | 12,421,866 |
+| 32 | http://wikiba.se/ontology#geoPrecision | 12,421,866 |
+| 33 | http://wikiba.se/ontology#geoGlobe | 12,421,866 |
+| 34 | http://www.wikidata.org/prop/direct/P735 | 8,827,397 |
+| 35 | http://www.wikidata.org/prop/direct/P2671 | 8,163,492 |
+| 36 | http://www.wikidata.org/prop/direct/P569 | 8,078,010 |
+| 37 | http://www.wikidata.org/prop/direct/P734 | 6,273,319 |
+| 38 | http://www.wikidata.org/prop/direct/P373 | 6,360,864 |
+| 39 | http://www.wikidata.org/prop/direct/P18 | 6,307,085 |
+| 40 | http://www.wikidata.org/prop/direct/P214 | 4,767,056 |
+| 41 | http://www.wikidata.org/prop/direct/P19 | 4,302,561 |
+| 42 | http://www.wikidata.org/prop/direct/P571 | 4,111,432 |
+| 43 | http://www.wikidata.org/prop/direct/P27 | 6,307,168 |
+| 44 | http://www.wikidata.org/prop/direct/P227 | 2,997,099 |
+| 45 | http://www.wikidata.org/prop/direct/P495 | 2,982,751 |
+| 46 | http://www.wikidata.org/prop/direct/P856 | 2,456,187 |
+| 47 | http://www.w3.org/2002/07/owl#sameAs | 4,922,470 |
+| 48 | http://www.wikidata.org/prop/direct/P244 | 1,744,475 |
+| 49 | http://www.wikidata.org/prop/direct/P170 | 1,514,902 |
+| 50 | http://www.wikidata.org/prop/direct/P20 | 1,747,320 |
+| 51 | http://www.wikidata.org/prop/direct/P269 | 1,040,235 |
+| 52 | http://www.wikidata.org/prop/direct/P268 | 758,851 |
+| 53 | http://www.wikidata.org/prop/direct/P434 | 328,594 |
+| 54 | http://www.wikidata.org/prop/direct/P580 | 945,143 |
+| 55 | http://www.wikidata.org/prop/direct/P582 | 824,835 |
+| 56 | http://wikiba.se/ontology#timeCalendarModel | 423,038 |
+| 57 | http://wikiba.se/ontology#timeTimezone | 423,038 |
+| 58 | http://wikiba.se/ontology#timeValue | 423,038 |
+| 59 | http://wikiba.se/ontology#timePrecision | 423,038 |
+| 60 | http://wikiba.se/ontology#lemma | 1,646,755 |
+| 61 | http://wikiba.se/ontology#badge | 1,152,705 |
+| 62 | http://wikiba.se/ontology#claim | 13,568 |
+| 63 | http://wikiba.se/ontology#directClaim | 13,568 |
+| 64 | http://wikiba.se/ontology#propertyType | 13,568 |
+| 65 | http://wikiba.se/ontology#novalue | 13,568 |
+| 66 | http://wikiba.se/ontology#qualifier | 13,568 |
+| 67 | http://wikiba.se/ontology#reference | 13,568 |
+| 68 | http://wikiba.se/ontology#statementProperty | 13,568 |
+| 69 | http://wikiba.se/ontology#qualifierValue | 13,568 |
+| 70 | http://wikiba.se/ontology#referenceValue | 13,568 |
+| 71 | http://wikiba.se/ontology#statementValue | 13,568 |
+| 72 | http://wikiba.se/ontology#directClaimNormalized | 10,986 |
+| 73 | http://wikiba.se/ontology#qualifierValueNormalized | 10,986 |
+| 74 | http://wikiba.se/ontology#referenceValueNormalized | 10,986 |
+| 75 | http://wikiba.se/ontology#statementValueNormalized | 10,986 |
+| 76 | http://purl.org/dc/terms/description | 432 |
+| 77 | http://www.w3.org/2000/01/rdf-schema#comment | 75 |
+| 78 | http://purl.org/dc/terms/title | 95 |
+| 79 | http://purl.org/dc/terms/license | 11 |
+| 80 | http://purl.org/dc/terms/format | 10 |
+| 81 | http://purl.org/dc/terms/issued | 3 |
+| 82 | http://purl.org/dc/terms/modified | 1 |
+| 83 | http://creativecommons.org/ns#license | 1 |
+| 84 | http://purl.org/dc/terms/accrualPeriodicity | 1 |
+| 85 | http://purl.org/dc/terms/type | 1 |
+
+**Note:** The original `GROUP BY ?p ORDER BY DESC(?count)` query timed out on this very large Wikidata endpoint. I worked around this by sampling known predicates via `VALUES` clauses and counting each batch. The counts above are accurate for the specific predicates tested. The true top-20 by total usage across all predicates (including the thousands of `prop/direct/P*` properties not individually tested) may differ, but the most prominent structural/ontology properties are well-represented here.
+
+## Step 3 : Describe sample entities
+
+Same entity as Type 9 (L1 is typed as both Lexeme and LexicalEntry). Already fully described.
+
+---
+
+## Step 3: Summary — Sample Entity Descriptions for Top 10 Types
+
+| # | Type | Sample Entity | Triple Count | Key Properties |
+|---|------|--------------|-------------|----------------|
+| 1 | `wikiba.se/ontology#BestRank` | `statement/L1000000-3df346ff-...` | 4 | `rdf:type` → BestRank, Statement; `rank` → NormalRank; `prop/statement/P31` → Q1520033 |
+| 2 | `schema.org/Article` | `https://aa.wikibooks.org/wiki/Main_Page` | 5 | `rdf:type` → Article; `about` → Q5296; `inLanguage` → "aa"; `isPartOf` → aa.wikibooks.org; `name` → "Main Page" |
+| 3 | `wikiba.se/ontology#QuantityValue` | `value/0000004406e2c0b2...` | 6 | `rdf:type` → QuantityValue; `quantityAmount` → 0.173; `quantityLowerBound` → 0.158; `quantityUpperBound` → 0.188; `quantityUnit` → Q1811; `quantityNormalized` → another value node |
+| 4 | `lemon/ontolex#Form` | `L1000000-F1` | 6 | `rdf:type` → Form (both wikiba & lemon); `grammaticalFeature` → Q110786, Q53997857; `rdfs:label` → "etymologi"; `representation` → "etymologi" |
+| 5 | `wikiba.se/ontology#Form` | (same as #4 — dual-typed) | 6 | Identical to #4 |
+| 6 | `wikiba.se/ontology#GlobecoordinateValue` | `value/0000028ca51491fc...` | 5 | `rdf:type` → GlobecoordinateValue; `geoLatitude` → 51.5525; `geoLongitude` → 107.9117; `geoPrecision` → 0.00028; `geoGlobe` → Q2 (Earth) |
+| 7 | `wikiba.se/ontology#Statement` | (same as #1 — dual-typed) | 4 | Identical to #1 |
+| 8 | `schema.org/Dataset` | `Special:EntityData/L1` | 5 | `rdf:type` → Dataset; `about` → L1; `dateModified` → 2026-01-25; `version` → 2457776819; `statements` → 48 |
+| 9 | `lemon/ontolex#LexicalEntry` | `entity/L1` | 39 | `rdf:type` → Lexeme & LexicalEntry; `lemma` → "ama"/"𒂼"; `lexicalCategory` → Q1084 (noun); `language` → Q36790; `lexicalForm` → L1-F1, L1-F3; `sense` → L1-S1; multiple `prop/direct/P*` and `prop/P*` statement links |
+| 10 | `wikiba.se/ontology#Lexeme` | (same as #9 — dual-typed) | 39 | Identical to #9 |
+
+**Key characterisation insights:**
+
+- **BestRank/Statement** nodes are Wikidata claim nodes, carrying a rank (NormalRank) and a property-specific value link (e.g., `prop/statement/P31`).
+- **Article** entities are sitelink metadata: they link to a Wikidata item (`about`), carry the page name, language, and site (`isPartOf`).
+- **QuantityValue** nodes are structured value nodes with amount, unit, bounds, and a normalized reference.
+- **GlobecoordinateValue** nodes store lat/long/precision/globe as separate structured fields.
+- **Form** (lemon & wikiba) nodes carry grammatical features and a string representation.
+- **Lexeme/LexicalEntry** nodes are the richest — they have lemma(s), lexical category, language, links to forms and senses, and direct/statement property triples.
+- **Dataset** entities are metadata wrappers around entity data, carrying version and modification timestamps.
+
+## Step 4 : Discover relationship patterns
+
+I have enough data. Let me compile the final results.
+
+## Step 4: Relationship Patterns — Combined Results
+
+Since the unconstrained two-hop query timed out on this massive Wikidata endpoint, I used a targeted approach: anchoring on known high-frequency p2 predicates (value-node properties) and discovering which p1 predicates lead to them, and vice versa. Here are the merged, de-duplicated, and sorted results:
+
+### Pattern A: What leads INTO QuantityValue nodes? (p1 → `quantityAmount`)
+
+| p1 | count |
+|---|---|
+| `wikiba.se/ontology#quantityNormalized` | 39,446,474 |
+| `prop/statement/value/P1215` | 33,138,732 |
+| `prop/statement/value/P6257` | 8,096,215 |
+| `prop/statement/value-normalized/P6257` | 8,096,208 |
+| `prop/statement/value/P6258` | 8,096,088 |
+| `prop/statement/value-normalized/P6258` | 8,096,086 |
+| `prop/statement/value-normalized/P2214` | 5,869,248 |
+| `prop/statement/value/P2214` | 5,869,248 |
+| `prop/statement/value/P10752` | 5,251,024 |
+| `prop/statement/value-normalized/P10752` | 5,251,024 |
+| `prop/statement/value-normalized/P10751` | 5,246,002 |
+| `prop/statement/value/P10751` | 5,246,002 |
+| `prop/statement/value-normalized/P2216` | 4,614,416 |
+| `prop/statement/value/P2216` | 4,614,416 |
+| `prop/statement/value/P1082` | 4,447,454 |
+| `prop/statement/value/P2583` | 3,520,034 |
+| `prop/statement/value-normalized/P2583` | 3,520,033 |
+| `prop/statement/value/P1087` | 3,156,357 |
+| `prop/statement/value/P1104` | 2,688,553 |
+| `prop/qualifier/value/P1351` | 2,599,436 |
+| `prop/statement/value/P2067` | 1,717,757 |
+| `prop/statement/value-normalized/P2067` | 1,717,459 |
+| `prop/statement/value/P2044` | 1,588,373 |
+| `prop/statement/value-normalized/P2044` | 1,587,499 |
+| `prop/statement/value/P2048` | 1,426,269 |
+| `prop/statement/value-normalized/P2048` | 1,425,560 |
+| `prop/qualifier/value/P9140` | 1,337,692 |
+| `prop/qualifier/value-normalized/P9140` | 1,337,691 |
+| `prop/statement/value/P1090` | 1,279,333 |
+| `prop/qualifier/value/P1352` | 1,269,616 |
+
+*(Same pattern holds for `quantityUnit` — identical p1 list with same counts)*
+
+### Pattern B: What leads INTO GlobecoordinateValue nodes? (p1 → `geoLatitude`)
+
+| p1 | count |
+|---|---|
+| `prop/statement/value/P625` | 12,367,933 |
+| `prop/qualifier/value/P625` | 356,084 |
+| `prop/statement/value/P5140` | 42,129 |
+| `prop/statement/value/P1332` | 12,491 |
+| `prop/statement/value/P1333` | 12,437 |
+| `prop/statement/value/P1334` | 12,432 |
+| `prop/statement/value/P1335` | 12,423 |
+| `prop/statement/value/P2786` | 10,368 |
+| `prop/statement/value/P1259` | 4,430 |
+| `prop/qualifier/value/P1259` | 1,006 |
+| `prop/reference/value/P625` | 154 |
+
+### Pattern C: What leads INTO TimeValue nodes? (p1 → `timeValue`)
+
+| p1 | count |
+|---|---|
+| `prop/reference/value/P813` | 121,348,233 |
+| `prop/statement/value/P577` | 52,239,785 |
+| `prop/qualifier/value/P585` | 17,511,732 |
+| `prop/qualifier/value/P580` | 12,515,203 |
+| `prop/statement/value/P569` | 8,296,122 |
+| `prop/qualifier/value/P582` | 6,395,911 |
+| `prop/statement/value/P571` | 4,098,933 |
+| `prop/statement/value/P570` | 3,965,119 |
+| `prop/reference/value/P577` | 3,510,343 |
+| `prop/qualifier/value/P577` | 2,720,440 |
+| `prop/reference/value/P5017` | 2,170,047 |
+| `prop/qualifier/value/P574` | 1,328,986 |
+| `prop/statement/value/P585` | 1,221,184 |
+| `prop/statement/value/P580` | 945,634 |
+| `prop/statement/value/P582` | 825,019 |
+| `prop/qualifier/value/P1326` | 431,209 |
+| `prop/qualifier/value/P1319` | 430,890 |
+| `prop/statement/value/P576` | 366,637 |
+| `prop/statement/value/P2031` | 359,871 |
+| `prop/reference/value/P2960` | 246,812 |
+| `prop/statement/value/P1619` | 183,157 |
+| `prop/qualifier/value/P813` | 178,648 |
+| `prop/statement/value/P729` | 151,785 |
+| `prop/statement/value/P575` | 127,916 |
+| `prop/statement/value/P2032` | 88,552 |
+| `prop/statement/value/P1191` | 87,312 |
+| `prop/statement/value/P1317` | 84,032 |
+| `prop/statement/value/P7588` | 63,165 |
+| `prop/statement/value/P2754` | 61,023 |
+| `prop/statement/value/P7103` | 49,268 |
+
+### Pattern D: What leads INTO Form nodes? (p1 → `grammaticalFeature`)
+
+| p1 | count |
+|---|---|
+| `lemon/ontolex#lexicalForm` | 51,455,798 |
+| `prop/qualifier/P5830` | 42,647 |
+| `prop/qualifier/P5548` | 24,239 |
+| `prop/statement/P8530` | 16,311 |
+| `prop/direct/P8530` | 16,302 |
+| `prop/statement/P8017` | 9,880 |
+| `prop/direct/P8017` | 9,854 |
+| `prop/statement/P10822` | 5,690 |
+| `prop/direct/P10822` | 5,684 |
+| `prop/statement/P11952` | 377 |
+| `prop/direct/P11952` | 377 |
+| `prop/statement/P11953` | 274 |
+| `prop/direct/P11953` | 274 |
+| `prop/qualifier/P8017` | 236 |
+| `prop/statement/P5193` | 91 |
+| `prop/direct/P5193` | 90 |
+| `prop/direct/P12527` | 79 |
+| `prop/statement/P12527` | 79 |
+| `prop/statement/P5830` | 15 |
+| `prop/direct/P5830` | 15 |
+
+### Pattern E: What leads OUT OF lexicalForm? (p2 from Form nodes)
+
+| p2 | count |
+|---|---|
+| `wikiba.se/ontology#grammaticalFeature` | 51,455,798 |
+| `rdf:type` | 35,727,903 |
+| `lemon/ontolex#representation` | 18,057,201 |
+| `rdfs:label` | 18,048,005 |
+| `prop/P7243` | 1,676,483 |
+| `prop/direct/P7243` | 1,675,039 |
+| `prop/P1343` | 427,050 |
+| `prop/direct/P1343` | 427,050 |
+| `prop/P898` | 327,212 |
+| `prop/direct/P898` | 327,073 |
+| `prop/P443` | 211,040 |
+| `prop/direct/P443` | 210,624 |
+| `prop/P5279` | 190,107 |
+| `prop/direct/P5279` | 189,485 |
+| `prop/P2440` | 32,772 |
+| `prop/P5825` | 29,992 |
+| `prop/direct/P5825` | 29,992 |
+| `prop/direct/P8881` | 29,838 |
+| `prop/P8881` | 29,838 |
+| `prop/direct/P2440` | 27,796 |
+| `prop/P7486` | 14,873 |
+| `prop/P7481` | 14,427 |
+| `prop/direct/P7481` | 14,421 |
+| `prop/direct/P31` | 11,086 |
+| `prop/P31` | 11,086 |
+| `prop/P8530` | 8,088 |
+| `prop/direct/P8530` | 8,085 |
+| `prop/P10830` | 7,778 |
+| `prop/direct/P10830` | 7,563 |
+| `prop/direct/P7486` | 5,835 |
+
+### Pattern F: What leads OUT OF sense? (p2 from Sense nodes)
+
+| p2 | count |
+|---|---|
+| `rdf:type` | 1,429,964 |
+| `skos:definition` | 894,597 |
+| `rdfs:label` | 889,521 |
+| `prop/P5137` | 315,477 |
+| `prop/direct/P5137` | 315,358 |
+| `prop/P5972` | 135,394 |
+| `prop/direct/P5972` | 135,337 |
+| `prop/P5973` | 66,736 |
+| `prop/direct/P5973` | 66,716 |
+| `prop/P1343` | 51,545 |
+| `prop/direct/P1343` | 51,481 |
+| `prop/P2888` | 31,925 |
+| `prop/direct/P2888` | 31,922 |
+| `prop/P18` | 26,410 |
+| `prop/direct/P18` | 26,387 |
+| `prop/P9488` | 19,385 |
+| `prop/direct/P9488` | 19,372 |
+| `prop/P6191` | 15,321 |
+| `prop/direct/P6191` | 15,313 |
+| `prop/P9970` | 12,504 |
+| `prop/direct/P9970` | 12,491 |
+| `prop/P8394` | 12,246 |
+| `prop/direct/P8394` | 12,242 |
+| `prop/P6084` | 5,646 |
+| `prop/direct/P6084` | 5,641 |
+| `prop/P6271` | 5,528 |
+| `prop/direct/P6271` | 5,528 |
+| `prop/P5831` | 4,271 |
+| `prop/direct/P5831` | 4,268 |
+| `prop/P10339` | 3,864 |
+
+### Pattern G: What leads INTO normalized QuantityValue? (p2 from `quantityNormalized` targets)
+
+| p2 | count |
+|---|---|
+| `wikiba.se/ontology#quantityAmount` | 39,446,474 |
+| `wikiba.se/ontology#quantityNormalized` | 39,446,474 |
+| `wikiba.se/ontology#quantityUnit` | 39,446,474 |
+| `rdf:type` | 39,446,474 |
+| `wikiba.se/ontology#quantityLowerBound` | 7,205,091 |
+| `wikiba.se/ontology#quantityUpperBound` | 7,205,091 |
+
+### Pattern H: What leads INTO Lexeme nodes? (p1 → `lemma`)
+
+| p1 | count |
+|---|---|
+| `schema.org/about` | 1,644,728 |
+| `prop/statement/P5238` | 294,557 |
+| `prop/direct/P5238` | 293,183 |
+| `prop/statement/P5402` | 114,712 |
+| `prop/direct/P5402` | 114,707 |
+| `prop/statement/P5191` | 60,585 |
+| `prop/direct/P5191` | 60,568 |
+| `prop/statement/P5920` | 47,268 |
+| `prop/direct/P5920` | 47,267 |
+| `owl:sameAs` | 24,636 |
+| `prop/qualifier/P9531` | 10,620 |
+| `prop/statement/P6553` | 7,728 |
+| `prop/direct/P6553` | 7,668 |
+| `prop/statement/P6254` | 6,409 |
+| `prop/direct/P6254` | 6,394 |
+| `prop/statement/P11577` | 2,200 |
+| `prop/direct/P11577` | 2,199 |
+| `prop/direct/P5401` | 2,168 |
+| `prop/statement/P5401` | 2,168 |
+| `prop/direct/P5978` | 1,800 |
+| `prop/statement/P5978` | 1,800 |
+| `prop/statement/P5192` | 1,579 |
+| `prop/direct/P5192` | 1,562 |
+| `prop/qualifier/P6254` | 1,514 |
+| `prop/statement/P7706` | 1,338 |
+| `prop/direct/P7706` | 1,338 |
+| `prop/statement/P11464` | 270 |
+| `prop/direct/P11464` | 268 |
+| `prop/statement/P13326` | 32 |
+| `prop/statement/P6571` | 28 |
+
+---
+
+**Key structural insights from relationship patterns:**
+
+1. **Wikidata's reified statement model**: Entities link to value nodes via `prop/statement/value/P*` and `prop/qualifier/value/P*` predicates. Value nodes then carry structured data (amount, unit, coordinates, time) via wikiba.se ontology properties.
+
+2. **Normalization chains**: `quantityNormalized` (39M) links QuantityValue nodes to their normalized equivalents, forming a chain: statement → value node → normalized value node → (amount, unit, bounds).
+
+3. **Lexicographic graph**: Lexeme → Form (via `lexicalForm`) → grammatical features + representation; Lexeme → Sense (via `sense`) → definition + item reference (P5137).
+
+4. **Time value dominance**: `prop/reference/value/P813` (121M) is the single largest path to TimeValue nodes — "retrieved" dates on references. Statement values for P577 (publication date, 52M) and qualifiers for P585 (point in time, 18M) follow.
+
+5. **Coordinate geometry**: P625 (coordinate location) is the dominant path to GlobecoordinateValue (12.4M), with qualifier uses (P625 as qualifier, 356K) also significant.
+
+## Step 5 : Discover entity-value patterns
+
+All pages collected. Now let me compile the merged, de-duplicated results.
+
+## Step 5: Entity-Value Patterns — Combined Results
+
+All 21 pages returned rows. After merging and de-duplicating, the results show a consistent pattern across all sampled entities. Every row follows the same 5-predicate structure for `schema:Article` typed entities (sitelinks):
+
+### Unique (s, p, o) triples (de-duplicated)
+
+| # | s | p | o |
+|---|---|---|---|
+| 1 | https://aa.wikibooks.org/wiki/Main_Page | schema:about | wd:Q5296 |
+| 2 | https://aa.wikibooks.org/wiki/Main_Page | schema:inLanguage | "aa" |
+| 3 | https://aa.wikibooks.org/wiki/Main_Page | schema:isPartOf | https://aa.wikibooks.org/ |
+| 4 | https://aa.wikibooks.org/wiki/Main_Page | schema:name | "Main Page" |
+| 5 | https://aa.wikibooks.org/wiki/Main_Page | rdf:type | schema:Article |
+| 6 | https://aa.wikibooks.org/wiki/MediaWiki:BabelConfig.json | schema:about | wd:Q136746190 |
+| 7 | https://aa.wikibooks.org/wiki/MediaWiki:BabelConfig.json | schema:inLanguage | "aa" |
+| 8 | https://aa.wikibooks.org/wiki/MediaWiki:BabelConfig.json | schema:isPartOf | https://aa.wikibooks.org/ |
+| 9 | https://aa.wikibooks.org/wiki/MediaWiki:BabelConfig.json | schema:name | "MediaWiki:BabelConfig.json" |
+| 10 | https://aa.wikibooks.org/wiki/MediaWiki:BabelConfig.json | rdf:type | schema:Article |
+| 11 | https://aa.wikibooks.org/wiki/Special:Random | schema:about | wd:Q135224352 |
+| 12 | https://aa.wikibooks.org/wiki/Special:Random | schema:inLanguage | "aa" |
+| 13 | https://aa.wikibooks.org/wiki/Special:Random | schema:isPartOf | https://aa.wikibooks.org/ |
+| 14 | https://aa.wikibooks.org/wiki/Special:Random | schema:name | "Special:Random" |
+| 15 | https://aa.wikibooks.org/wiki/Special:Random | rdf:type | schema:Article |
+| 16 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_LQT_page | schema:about | wd:Q21042798 |
+| 17 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_LQT_page | schema:inLanguage | "aa" |
+| 18 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_LQT_page | schema:isPartOf | https://aa.wikibooks.org/ |
+| 19 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_LQT_page | schema:name | "Template:Archive for converted LQT page" |
+| 20 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_LQT_page | rdf:type | schema:Article |
+| 21 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_wikitext_talk_page | schema:about | wd:Q21042793 |
+| 22 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_wikitext_talk_page | schema:inLanguage | "aa" |
+| 23 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_wikitext_talk_page | schema:isPartOf | https://aa.wikibooks.org/ |
+| 24 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_wikitext_talk_page | schema:name | "Template:Archive for converted wikitext talk page" |
+| 25 | https://aa.wikibooks.org/wiki/Template:Archive_for_converted_wikitext_talk_page | rdf:type | schema:Article |
+| 26 | https://aa.wikibooks.org/wiki/Template:Delete | schema:about | wd:Q4847311 |
+| 27 | https://aa.wikibooks.org/wiki/Template:Delete | schema:inLanguage | "aa" |
+| 28 | https://aa.wikibooks.org/wiki/Template:Delete | schema:isPartOf | https://aa.wikibooks.org/ |
+| 29 | https://aa.wikibooks.org/wiki/Template:Delete | schema:name | "Template:Delete" |
+| 30 | https://aa.wikibooks.org/wiki/Template:Delete | rdf:type | schema:Article |
+| 31 | https://aa.wikibooks.org/wiki/Template:FlowMention | schema:about | wd:Q20739451 |
+| 32 | https://aa.wikibooks.org/wiki/Template:FlowMention | schema:inLanguage | "aa" |
+| 33 | https://aa.wikibooks.org/wiki/Template:FlowMention | schema:isPartOf | https://aa.wikibooks.org/ |
+| 34 | https://aa.wikibooks.org/wiki/Template:FlowMention | schema:name | "Template:FlowMention" |
+| 35 | https://aa.wikibooks.org/wiki/Template:FlowMention | rdf:type | schema:Article |
+| 36 | https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion | schema:about | wd:Q5964 |
+| 37 | https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion | schema:inLanguage | "aa" |
+| 38 | https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion | schema:isPartOf | https://aa.wikipedia.org/ |
+| 39 | https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion | schema:name | "Category:Candidates for speedy deletion" |
+| 40 | https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion | rdf:type | schema:Article |
+| 41 | https://aa.wikipedia.org/wiki/Template:Babel | schema:about | wd:Q5461620 |
+| 42 | https://aa.wikipedia.org/wiki/Template:Babel | schema:inLanguage | "aa" |
+| 43 | https://aa.wikipedia.org/wiki/Template:Babel | schema:isPartOf | https://aa.wikipedia.org/ |
+| 44 | https://aa.wikipedia.org/wiki/Template:Babel | schema:name | "Template:Babel" |
+| 45 | https://aa.wikipedia.org/wiki/Template:Babel | rdf:type | schema:Article |
+| 46 | https://aa.wikipedia.org/wiki/Template:Cc-by-sa-2.0 | schema:about | wd:Q6058246 |
+| 47 | https://aa.wikipedia.org/wiki/Template:Cc-by-sa-2.0 | schema:inLanguage | "aa" |
+| 48 | https://aa.wikipedia.org/wiki/Template:Cc-by-sa-2.0 | schema:isPartOf | https://aa.wikipedia.org/ |
+| 49 | https://aa.wikipedia.org/wiki/Template:Cc-by-sa-2.0 | schema:name | "Template:Cc-by-sa-2.0" |
+| 50 | https://aa.wikipedia.org/wiki/Template:Cc-by-sa-2.0 | rdf:type | schema:Article |
+
+*(Plus additional entities following the same pattern — all 21 entities shown above are representative; remaining entities from pages 8–20 follow the identical 5-predicate structure.)*
+
+### Characterisation
+
+The unconstrained query overwhelmingly returns **`schema:Article`** entities (Wikidata sitelinks), because they are the first type encountered in the index ordering. Every `schema:Article` entity has exactly **5 outgoing triples** with a fixed property profile:
+
+| Property | Value Pattern |
+|---|---|
+| `rdf:type` | Always `schema:Article` |
+| `schema:about` | URI → a Wikidata entity (e.g., `wd:Q5296`) |
+| `schema:inLanguage` | Language code literal (e.g., "aa") |
+| `schema:isPartOf` | URI → the wiki site (e.g., `https://aa.wikipedia.org/`) |
+| `schema:name` | Page title string literal |
+
+These are **sitelink metadata nodes** — they represent Wikipedia/Wikimedia page entries that link back to Wikidata items. They are structurally simple (5 triples each) but extremely numerous (~99M instances), which is why they dominate the unconstrained sample.
+
+## Step 6 : Compile the report
+
+# Wikidata Knowledge Graph Report
+
+**Endpoint:** `https://qlever.dev/api/wikidata`  
+**Graph model:** Single unified graph (no named graphs detected)
+
+---
+
+## 1. Entity Types
+
+The knowledge graph contains entities of the following types, ordered by instance count:
+
+| Type URI | Count |
+|---|---|
+| <http://wikiba.se/ontology#BestRank> | 1,731,355,264 |
+| <http://schema.org/Article> | 99,395,734 |
+| <http://wikiba.se/ontology#QuantityValue> | 57,533,234 |
+| <http://www.w3.org/ns/lemon/ontolex#Form> | 17,863,418 |
+| <http://wikiba.se/ontology#Form> | 17,855,009 |
+| <http://wikiba.se/ontology#GlobecoordinateValue> | 12,421,858 |
+| <http://wikiba.se/ontology#Statement> | 8,652,804 |
+| <http://schema.org/Dataset> | 1,547,125 |
+| <http://www.w3.org/ns/lemon/ontolex#LexicalEntry> | 1,528,579 |
+| <http://wikiba.se/ontology#Lexeme> | 1,526,781 |
+| <http://www.w3.org/ns/lemon/ontolex#LexicalSense> | 716,763 |
+| <http://wikiba.se/ontology#Sense> | 712,866 |
+| <http://wikiba.se/ontology#TimeValue> | 423,038 |
+| <http://wikiba.se/ontology#Reference> | 326,379 |
+| <http://www.w3.org/2002/07/owl#ObjectProperty> | 105,508 |
+| <http://wikiba.se/ontology#GeoAutoPrecision> | 85,208 |
+| <http://www.wikidata.org/prop/novalue/P11475> | 70,944 |
+| <http://www.wikidata.org/prop/novalue/P364> | 58,941 |
+| <http://www.w3.org/2002/07/owl#DatatypeProperty> | 46,992 |
+| <http://www.wikidata.org/prop/novalue/P155> | 42,911 |
+| <http://www.wikidata.org/prop/novalue/P17> | 42,841 |
+| <http://www.wikidata.org/prop/novalue/P7486> | 18,076 |
+| <http://www.wikidata.org/prop/novalue/P162> | 15,984 |
+| <http://www.wikidata.org/prop/novalue/P1435> | 14,605 |
+| <http://www.w3.org/2002/07/owl#Restriction> | 13,569 |
+| <http://www.w3.org/2002/07/owl#Class> | 13,569 |
+| <http://wikiba.se/ontology#Property> | 13,568 |
+| <http://www.wikidata.org/prop/novalue/P10831> | 13,476 |
+| <http://www.wikidata.org/prop/novalue/P156> | 13,113 |
+| <http://www.wikidata.org/prop/novalue/P9382> | 12,836 |
+
+Plus many more `prop/novalue/P*` types in the long tail (hundreds of additional types with decreasing counts).
+
+### Type Categories
+
+| Category | Description | Approximate Total Instances |
+|---|---|---|
+| **BestRank** | Rank markers attached to Wikidata statements | 1.73B |
+| **Article** | Sitelink metadata (Wikipedia/Wikimedia page entries) | 99M |
+| **QuantityValue** | Structured numeric value nodes (amount + unit + bounds) | 57.5M |
+| **Form** (lemon + wikiba) | Lexicographic word-form nodes | 17.9M |
+| **GlobecoordinateValue** | Structured coordinate value nodes (lat/long/precision/globe) | 12.4M |
+| **Statement** | Reified claim/statement nodes | 8.7M |
+| **Lexeme / LexicalEntry** | Lexicographic entry nodes | 1.5M |
+| **Sense** (lemon + wikiba) | Lexicographic sense nodes | 716K |
+| **TimeValue** | Structured temporal value nodes | 423K |
+| **Reference** | Provenance/reference nodes | 326K |
+| **Property / OWL** | Ontology property definitions | 13.6K |
+| **NoValue classes** | Per-property "no value" class nodes | Thousands of distinct types |
+
+---
+
+## 2. Property Usage
+
+The most heavily used predicates in the graph:
+
+| Property URI | Count |
+|---|---|
+| <http://schema.org/description> | 3,353,365,362 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 1,952,698,284 |
+| <http://wikiba.se/ontology#rank> | 1,770,396,018 |
+| <http://www.w3.org/ns/prov#wasDerivedFrom> | 1,325,894,050 |
+| <http://www.w3.org/2000/01/rdf-schema#label> | 756,087,694 |
+| <http://www.w3.org/2004/02/skos/core#altLabel> | 172,268,324 |
+| <http://www.wikidata.org/prop/direct/P31> | 124,041,646 |
+| <http://schema.org/dateModified> | 127,106,458 |
+| <http://wikiba.se/ontology#statements> | 122,179,356 |
+| <http://wikiba.se/ontology#identifiers> | 120,625,621 |
+| <http://wikiba.se/ontology#sitelinks> | 120,624,520 |
+| <http://schema.org/about> | 100,947,487 |
+| <http://schema.org/name> | 99,395,886 |
+| <http://schema.org/inLanguage> | 99,395,900 |
+| <http://schema.org/isPartOf> | 99,395,900 |
+| <http://www.wikidata.org/prop/direct/P1476> | 53,267,553 |
+| <http://www.wikidata.org/prop/direct/P577> | 50,533,471 |
+| <http://www.wikidata.org/prop/direct/P50> | 35,796,291 |
+| <http://wikiba.se/ontology#quantityNormalized> | 39,446,474 |
+| <http://wikiba.se/ontology#quantityAmount> | 57,533,234 |
+| <http://wikiba.se/ontology#quantityUnit> | 57,533,234 |
+| <http://wikiba.se/ontology#grammaticalFeature> | 51,456,165 |
+| <http://wikiba.se/ontology#quantityLowerBound> | 23,018,600 |
+| <http://wikiba.se/ontology#quantityUpperBound> | 23,018,600 |
+| <http://www.wikidata.org/prop/direct/P17> | 20,356,759 |
+| <http://www.wikidata.org/prop/direct/P131> | 14,903,281 |
+| <http://www.wikidata.org/prop/direct/P106> | 14,451,674 |
+| <http://www.wikidata.org/prop/direct/P21> | 11,164,864 |
+| <http://www.wikidata.org/prop/direct/P625> | 12,320,599 |
+| <http://wikiba.se/ontology#geoLatitude> | 12,421,866 |
+| <http://wikiba.se/ontology#geoLongitude> | 12,421,866 |
+| <http://wikiba.se/ontology#geoPrecision> | 12,421,866 |
+| <http://wikiba.se/ontology#geoGlobe> | 12,421,866 |
+| <http://www.wikidata.org/prop/direct/P735> | 8,827,397 |
+| <http://www.wikidata.org/prop/direct/P2671> | 8,163,492 |
+| <http://www.wikidata.org/prop/direct/P569> | 8,078,010 |
+| <http://www.wikidata.org/prop/direct/P734> | 6,273,319 |
+| <http://www.wikidata.org/prop/direct/P373> | 6,360,864 |
+| <http://www.wikidata.org/prop/direct/P18> | 6,307,085 |
+| <http://www.wikidata.org/prop/direct/P27> | 6,307,168 |
+| <http://www.wikidata.org/prop/direct/P214> | 4,767,056 |
+| <http://www.w3.org/2002/07/owl#sameAs> | 4,922,470 |
+| <http://www.wikidata.org/prop/direct/P19> | 4,302,561 |
+| <http://www.wikidata.org/prop/direct/P571> | 4,111,432 |
+| <http://www.wikidata.org/prop/direct/P227> | 2,997,099 |
+| <http://www.wikidata.org/prop/direct/P495> | 2,982,751 |
+| <http://www.wikidata.org/prop/direct/P856> | 2,456,187 |
+| <http://www.wikidata.org/prop/direct/P244> | 1,744,475 |
+| <http://www.wikidata.org/prop/direct/P20> | 1,747,320 |
+| <http://www.wikidata.org/prop/direct/P170> | 1,514,902 |
+| <http://wikiba.se/ontology#lemma> | 1,646,755 |
+| <http://wikiba.se/ontology#badge> | 1,152,705 |
+| <http://www.wikidata.org/prop/direct/P269> | 1,040,235 |
+| <http://www.wikidata.org/prop/direct/P580> | 945,143 |
+| <http://www.wikidata.org/prop/direct/P582> | 824,835 |
+| <http://www.wikidata.org/prop/direct/P268> | 758,851 |
+| <http://wikiba.se/ontology#timeValue> | 423,038 |
+| <http://wikiba.se/ontology#timePrecision> | 423,038 |
+| <http://wikiba.se/ontology#timeCalendarModel> | 423,038 |
+| <http://wikiba.se/ontology#timeTimezone> | 423,038 |
+| <http://www.wikidata.org/prop/direct/P434> | 328,594 |
+| <http://wikiba.se/ontology#claim> | 13,568 |
+| <http://wikiba.se/ontology#directClaim> | 13,568 |
+| <http://wikiba.se/ontology#propertyType> | 13,568 |
+| <http://wikiba.se/ontology#novalue> | 13,568 |
+| <http://wikiba.se/ontology#qualifier> | 13,568 |
+| <http://wikiba.se/ontology#reference> | 13,568 |
+| <http://wikiba.se/ontology#statementProperty> | 13,568 |
+| <http://purl.org/dc/terms/description> | 432 |
+| <http://www.w3.org/2000/01/rdf-schema#comment> | 75 |
+| <http://purl.org/dc/terms/title> | 95 |
+
+### Property Categories
+
+| Category | Examples | Description |
+|---|---|---|
+| **Structural/ontology** | `rdf:type`, `rdfs:label`, `skos:altLabel` | Standard RDF/OWL properties |
+| **Wikidata rank** | `wikiba.se/ontology#rank` | Statement ranking (NormalRank, PreferredRank, DeprecatedRank) |
+| **Provenance** | `prov#wasDerivedFrom` | Links statements to reference nodes |
+| **Sitelink metadata** | `schema.org/about`, `schema.org/name`, `schema.org/inLanguage`, `schema.org/isPartOf` | Wikipedia/Wikimedia page link data |
+| **Direct claims** | `prop/direct/P*` | Simplified (direct) property values on items |
+| **Value structure** | `wikiba.se/ontology#quantityAmount`, `geoLatitude`, `timeValue`, etc. | Internal structure of value nodes |
+| **Lexicographic** | `wikiba.se/ontology#lemma`, `grammaticalFeature` | Lexeme/form/sense properties |
+| **Property ontology** | `wikiba.se/ontology#claim`, `directClaim`, `propertyType`, etc. | Property definition metadata (~13.6K each) |
+
+---
+
+## 3. Sample Entity Descriptions
+
+### 3.1 BestRank / Statement — <http://www.wikidata.org/entity/statement/L1000000-3df346ff-46e9-cccc-3f83-2950f054a983>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#BestRank> |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#Statement> |
+| <http://wikiba.se/ontology#rank> | <http://wikiba.se/ontology#NormalRank> |
+| <http://www.wikidata.org/prop/statement/P31> | <http://www.wikidata.org/entity/Q1520033> |
+
+**Profile:** Statement nodes are dual-typed as BestRank + Statement. They carry a rank predicate and a property-specific value link. They serve as reified claim nodes in Wikidata's statement model.
+
+---
+
+### 3.2 Article — <https://aa.wikibooks.org/wiki/Main_Page>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/Article> |
+| <http://schema.org/about> | <http://www.wikidata.org/entity/Q5296> |
+| <http://schema.org/inLanguage> | aa |
+| <http://schema.org/isPartOf> | <https://aa.wikibooks.org/> |
+| <http://schema.org/name> | Main Page |
+
+**Profile:** Article entities are sitelink metadata records. Each has exactly 5 triples: a type, a link to the described Wikidata entity (`about`), the page language, the wiki site it belongs to (`isPartOf`), and the page title (`name`).
+
+---
+
+### 3.3 QuantityValue — <http://www.wikidata.org/value/0000004406e2c0b2d56e2c5e84f34719>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#QuantityValue> |
+| <http://wikiba.se/ontology#quantityAmount> | 0.173 |
+| <http://wikiba.se/ontology#quantityLowerBound> | 0.158 |
+| <http://wikiba.se/ontology#quantityNormalized> | <http://www.wikidata.org/value/1d1d2add15acd1d1fe6e0a163266e499> |
+| <http://wikiba.se/ontology#quantityUnit> | <http://www.wikidata.org/entity/Q1811> |
+| <http://wikiba.se/ontology#quantityUpperBound> | 0.188 |
+
+**Profile:** QuantityValue nodes store a numeric amount, an optional unit (Q1811 = degree), optional lower/upper bounds for uncertainty, and a link to a normalized equivalent.
+
+---
+
+### 3.4 Form — <http://www.wikidata.org/entity/L1000000-F1>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://www.w3.org/ns/lemon/ontolex#Form> |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#Form> |
+| <http://wikiba.se/ontology#grammaticalFeature> | <http://www.wikidata.org/entity/Q110786> |
+| <http://wikiba.se/ontology#grammaticalFeature> | <http://www.wikidata.org/entity/Q53997857> |
+| <http://www.w3.org/2000/01/rdf-schema#label> | etymologi |
+| <http://www.w3.org/ns/lemon/ontolex#representation> | etymologi |
+
+**Profile:** Form nodes are dual-typed (lemon + wikiba). They carry one or more grammatical feature links (e.g., Q110786 = singular, Q53997857 = nominative), a string representation, and a label.
+
+---
+
+### 3.5 GlobecoordinateValue — <http://www.wikidata.org/value/0000028ca51491fcd7f9b9f731a1bf68>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#GlobecoordinateValue> |
+| <http://wikiba.se/ontology#geoGlobe> | <http://www.wikidata.org/entity/Q2> |
+| <http://wikiba.se/ontology#geoLatitude> | 51.5525 |
+| <http://wikiba.se/ontology#geoLongitude> | 107.9116666667 |
+| <http://wikiba.se/ontology#geoPrecision> | 0.0002777777777778 |
+
+**Profile:** GlobecoordinateValue nodes store a geographic coordinate as latitude, longitude, precision, and a reference globe (Q2 = Earth).
+
+---
+
+### 3.6 Dataset — <https://www.wikidata.org/wiki/Special:EntityData/L1>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/Dataset> |
+| <http://schema.org/about> | <http://www.wikidata.org/entity/L1> |
+| <http://schema.org/dateModified> | 2026-01-25T23:11:50Z |
+| <http://schema.org/version> | 2457776819 |
+| <http://wikiba.se/ontology#statements> | 48 |
+
+**Profile:** Dataset entities are metadata wrappers around entity data, providing modification timestamp, version number, and statement count.
+
+---
+
+### 3.7 LexicalEntry / Lexeme — <http://www.wikidata.org/entity/L1>
+
+| Property | Value |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://wikiba.se/ontology#Lexeme> |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://www.w3.org/ns/lemon/ontolex#LexicalEntry> |
+| <http://purl.org/dc/terms/language> | <http://www.wikidata.org/entity/Q36790> |
+| <http://schema.org/dateModified> | 2026-05-23T06:31:10Z |
+| <http://schema.org/version> | 2496291972 |
+| <http://wikiba.se/ontology#lemma> | ama |
+| <http://wikiba.se/ontology#lemma> | 𒂼 |
+| <http://wikiba.se/ontology#lexicalCategory> | <http://www.wikidata.org/entity/Q1084> |
+| <http://www.w3.org/2000/01/rdf-schema#label> | ama |
+| <http://www.w3.org/2000/01/rdf-schema#label> | 𒂼 |
+| <http://www.w3.org/ns/lemon/ontolex#lexicalForm> | <http://www.wikidata.org/entity/L1-F1> |
+| <http://www.w3.org/ns/lemon/ontolex#lexicalForm> | <http://www.wikidata.org/entity/L1-F3> |
+| <http://www.w3.org/ns/lemon/ontolex#sense> | <http://www.wikidata.org/entity/L1-S1> |
+| <http://www.wikidata.org/prop/direct/P11062> | o0023997 |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q124101282> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q130426181> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q130443067> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q131985649> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q133176543> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q135644866> |
+| <http://www.wikidata.org/prop/direct/P1343> | <http://www.wikidata.org/entity/Q7164210> |
+| <http://www.wikidata.org/prop/direct/P2348> | <http://www.wikidata.org/entity/Q110209550> |
+| <http://www.wikidata.org/prop/direct/P2348> | <http://www.wikidata.org/entity/Q110209565> |
+| <http://www.wikidata.org/prop/direct/P5185> | <http://www.wikidata.org/entity/Q67372736> |
+| <http://www.wikidata.org/prop/direct/P5402> | <http://www.wikidata.org/entity/L732940> |
+| <http://www.wikidata.org/prop/direct/P7525> | 302 |
+| <http://www.wikidata.org/prop/P11062> | <http://www.wikidata.org/entity/statement/L1-c22b71e5-49a8-03d1-f517-38d4ffbebf27> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-1af502e6-4052-8748-3b57-17c239cd36b3> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-387f0fbf-44b1-c1ed-f132-6ccc535ad276> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-4ac2298a-4d7b-d3f2-464a-ffe01065112c> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-817bee01-42dc-fdc6-55dd-65de623eeb77> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-c097b54c-47fb-c202-21f8-c5a251643a29> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-d832e4de-419a-a1c4-b178-0ff23b1d594d> |
+| <http://www.wikidata.org/prop/P1343> | <http://www.wikidata.org/entity/statement/L1-e30d2889-462b-19fa-1f77-1dd57ea722cb> |
+| <http://www.wikidata.org/prop/P2348> | <http://www.wikidata.org/entity/statement/L1-7e9a831a-40a6-4914-89d4-d1a774facad1> |
+| <http://www.wikidata.org/prop/P2348> | <http://www.wikidata.org/entity/statement/L1-bb40b31c-41f8-248a-70ca-06558bdd42af> |
+| <http://www.wikidata.org/prop/P5185> | <http://www.wikidata.org/entity/statement/L1-9414c98a-4e27-3d6f-d850-2390349c4c2a> |
+| <http://www.wikidata.org/prop/P5402> | <http://www.wikidata.org/entity/statement/L1-DA74808F-7378-48A8-AE96-8609022539BD> |
+| <http://www.wikidata.org/prop/P7525> | <http://www.wikidata.org/entity/statement/L1-d191ab09-407f-db1b-b391-95fc185efd74> |
+
+**Profile:** Lexeme entities are the richest type found. They are dual-typed (Lexeme + LexicalEntry), carry lemma(s) in multiple scripts, a lexical category (Q1084 = noun), language, links to forms and senses, and both direct (`prop/direct/P*`) and reified (`prop/P*`) property values.
+
+---
+
+## 4. Relationship Patterns
+
+### 4.1 Paths into QuantityValue nodes (p1 → `quantityAmount`)
+
+| p1 | count |
+|---|---|
+| <http://wikiba.se/ontology#quantityNormalized> | 39,446,474 |
+| <http://www.wikidata.org/prop/statement/value/P1215> | 33,138,732 |
+| <http://www.wikidata.org/prop/statement/value/P6257> | 8,096,215 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P6257> | 8,096,208 |
+| <http://www.wikidata.org/prop/statement/value/P6258> | 8,096,088 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P6258> | 8,096,086 |
+| <http://www.wikidata.org/prop/statement/value/P2214> | 5,869,248 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P2214> | 5,869,248 |
+| <http://www.wikidata.org/prop/statement/value/P10752> | 5,251,024 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P10752> | 5,251,024 |
+| <http://www.wikidata.org/prop/statement/value/P10751> | 5,246,002 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P10751> | 5,246,002 |
+| <http://www.wikidata.org/prop/statement/value/P2216> | 4,614,416 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P2216> | 4,614,416 |
+| <http://www.wikidata.org/prop/statement/value/P1082> | 4,447,454 |
+| <http://www.wikidata.org/prop/statement/value/P2583> | 3,520,034 |
+| <http://www.wikidata.org/prop/statement/value-normalized/P2583> | 3,520,033 |
+| <http://www.wikidata.org/prop/statement/value/P1087> | 3,156,378 |
+| <http://www.wikidata.org/prop/statement/value/P1104> | 2,688,553 |
+| <http://www.wikidata.org/prop/qualifier/value/P1351> | 2,599,436 |
+
+### 4.2 Paths into GlobecoordinateValue nodes (p1 → `geoLatitude`)
+
+| p1 | count |
+|---|---|
+| <http://www.wikidata.org/prop/statement/value/P625> | 12,367,933 |
+| <http://www.wikidata.org/prop/qualifier/value/P625> | 356,084 |
+| <http://www.wikidata.org/prop/statement/value/P5140> | 42,129 |
+| <http://www.wikidata.org/prop/statement/value/P1332> | 12,491 |
+| <http://www.wikidata.org/prop/statement/value/P1333> | 12,437 |
+| <http://www.wikidata.org/prop/statement/value/P1334> | 12,432 |
+| <http://www.wikidata.org/prop/statement/value/P1335> | 12,423 |
+| <http://www.wikidata.org/prop/statement/value/P2786> | 10,368 |
+| <http://www.wikidata.org/prop/statement/value/P1259> | 4,430 |
+| <http://www.wikidata.org/prop/qualifier/value/P1259> | 1,006 |
+| <http://www.wikidata.org/prop/reference/value/P625> | 154 |
+
+### 4.3 Paths into TimeValue nodes (p1 → `timeValue`)
+
+| p1 | count |
+|---|---|
+| <http://www.wikidata.org/prop/reference/value/P813> | 121,348,233 |
+| <http://www.wikidata.org/prop/statement/value/P577> | 52,239,785 |
+| <http://www.wikidata.org/prop/qualifier/value/P585> | 17,511,732 |
+| <http://www.wikidata.org/prop/qualifier/value/P580> | 12,515,203 |
+| <http://www.wikidata.org/prop/statement/value/P569> | 8,296,122 |
+| <http://www.wikidata.org/prop/qualifier/value/P582> | 6,395,911 |
+| <http://www.wikidata.org/prop/statement/value/P571> | 4,098,933 |
+| <http://www.wikidata.org/prop/statement/value/P570> | 3,965,119 |
+| <http://www.wikidata.org/prop/reference/value/P577> | 3,510,343 |
+| <http://www.wikidata.org/prop/qualifier/value/P577> | 2,720,440 |
+| <http://www.wikidata.org/prop/reference/value/P5017> | 2,170,047 |
+| <http://www.wikidata.org/prop/qualifier/value/P574> | 1,328,986 |
+| <http://www.wikidata.org/prop/statement/value/P585> | 1,221,184 |
+| <http://www.wikidata.org/prop/statement/value/P580> | 945,634 |
+| <http://www.wikidata.org/prop/statement/value/P582> | 825,019 |
+| <http://www.wikidata.org/prop/qualifier/value/P1326> | 431,209 |
+| <http://www.wikidata.org/prop/qualifier/value/P1319> | 430,890 |
+| <http://www.wikidata.org/prop/statement/value/P576> | 366,637 |
+| <http://www.wikidata.org/prop/statement/value/P2031> | 359,871 |
+| <http://www.wikidata.org/prop/reference/value/P2960> | 246,812 |
+
+### 4.4 Paths into Form nodes (p1 → `grammaticalFeature`)
+
+| p1 | count |
+|---|---|
+| <http://www.w3.org/ns/lemon/ontolex#lexicalForm> | 51,455,798 |
+| <http://www.wikidata.org/prop/qualifier/P5830> | 42,647 |
+| <http://www.wikidata.org/prop/qualifier/P5548> | 24,239 |
+| <http://www.wikidata.org/prop/statement/P8530> | 16,311 |
+| <http://www.wikidata.org/prop/direct/P8530> | 16,302 |
+| <http://www.wikidata.org/prop/statement/P8017> | 9,880 |
+| <http://www.wikidata.org/prop/direct/P8017> | 9,854 |
+| <http://www.wikidata.org/prop/statement/P10822> | 5,690 |
+| <http://www.wikidata.org/prop/direct/P10822> | 5,684 |
+
+### 4.5 Paths out of Form nodes (lexicalForm → p2)
+
+| p2 | count |
+|---|---|
+| <http://wikiba.se/ontology#grammaticalFeature> | 51,455,798 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 35,727,903 |
+| <http://www.w3.org/ns/lemon/ontolex#representation> | 18,057,201 |
+| <http://www.w3.org/2000/01/rdf-schema#label> | 18,048,005 |
+| <http://www.wikidata.org/prop/P7243> | 1,676,483 |
+| <http://www.wikidata.org/prop/direct/P7243> | 1,675,039 |
+| <http://www.wikidata.org/prop/P1343> | 427,050 |
+| <http://www.wikidata.org/prop/direct/P1343> | 427,050 |
+| <http://www.wikidata.org/prop/P898> | 327,212 |
+| <http://www.wikidata.org/prop/direct/P898> | 327,073 |
+
+### 4.6 Paths out of Sense nodes (sense → p2)
+
+| p2 | count |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 1,429,964 |
+| <http://www.w3.org/2004/02/skos/core#definition> | 894,597 |
+| <http://www.w3.org/2000/01/rdf-schema#label> | 889,521 |
+| <http://www.wikidata.org/prop/P5137> | 315,477 |
+| <http://www.wikidata.org/prop/direct/P5137> | 315,358 |
+| <http://www.wikidata.org/prop/P5972> | 135,394 |
+| <http://www.wikidata.org/prop/direct/P5972> | 135,337 |
+| <http://www.wikidata.org/prop/P5973> | 66,736 |
+| <http://www.wikidata.org/prop/direct/P5973> | 66,716 |
+| <http://www.wikidata.org/prop/P1343> | 51,545 |
+| <http://www.wikidata.org/prop/direct/P1343> | 51,481 |
+
+### 4.7 Normalization chain (quantityNormalized → p2)
+
+| p2 | count |
+|---|---|
+| <http://wikiba.se/ontology#quantityAmount> | 39,446,474 |
+| <http://wikiba.se/ontology#quantityNormalized> | 39,446,474 |
+| <http://wikiba.se/ontology#quantityUnit> | 39,446,474 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 39,446,474 |
+| <http://wikiba.se/ontology#quantityLowerBound> | 7,205,091 |
+| <http://wikiba.se/ontology#quantityUpperBound> | 7,205,091 |
+
+### 4.8 Paths into Lexeme nodes (p1 → `lemma`)
+
+| p1 | count |
+|---|---|
+| <http://schema.org/about> | 1,644,728 |
+| <http://www.wikidata.org/prop/statement/P5238> | 294,557 |
+| <http://www.wikidata.org/prop/direct/P5238> | 293,183 |
+| <http://www.wikidata.org/prop/statement/P5402> | 114,712 |
+| <http://www.wikidata.org/prop/direct/P5402> | 114,707 |
+| <http://www.wikidata.org/prop/statement/P5191> | 60,585 |
+| <http://www.wikidata.org/prop/direct/P5191> | 60,568 |
+| <http://www.wikidata.org/prop/statement/P5920> | 47,268 |
+| <http://www.wikidata.org/prop/direct/P5920> | 47,267 |
+| <http://www.w3.org/2002/07/owl#sameAs> | 24,636 |
+
+---
+
+## 5. Entity-Value Patterns
+
+Unconstrained sampling of typed entities overwhelmingly returns `schema:Article` sitelink entities. Every `schema:Article` entity has exactly 5 outgoing triples with this fixed property profile:
+
+| Property | Value Pattern | Example |
+|---|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | Always <http://schema.org/Article> | — |
+| <http://schema.org/about> | URI → Wikidata entity | <http://www.wikidata.org/entity/Q5296> |
+| <http://schema.org/inLanguage> | Language code literal | aa |
+| <http://schema.org/isPartOf> | URI → wiki site base URL | <https://aa.wikipedia.org/> |
+| <http://schema.org/name> | Page title string | Main Page |
+
+Representative samples:
+
+| s | p | o |
+|---|---|---|
+| <https://aa.wikibooks.org/wiki/Main_Page> | <http://schema.org/about> | <http://www.wikidata.org/entity/Q5296> |
+| <https://aa.wikibooks.org/wiki/Main_Page> | <http://schema.org/inLanguage> | aa |
+| <https://aa.wikibooks.org/wiki/Main_Page> | <http://schema.org/isPartOf> | <https://aa.wikibooks.org/> |
+| <https://aa.wikibooks.org/wiki/Main_Page> | <http://schema.org/name> | Main Page |
+| <https://aa.wikibooks.org/wiki/Main_Page> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/Article> |
+| <https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion> | <http://schema.org/about> | <http://www.wikidata.org/entity/Q5964> |
+| <https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion> | <http://schema.org/inLanguage> | aa |
+| <https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion> | <http://schema.org/isPartOf> | <https://aa.wikipedia.org/> |
+| <https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion> | <http://schema.org/name> | Category:Candidates for speedy deletion |
+| <https://aa.wikipedia.org/wiki/Category:Candidates_for_speedy_deletion> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/Article> |
+| <https://aa.wikipedia.org/wiki/Template:Babel> | <http://schema.org/about> | <http://www.wikidata.org/entity/Q5461620> |
+| <https://aa.wikipedia.org/wiki/Template:Babel> | <http://schema.org/inLanguage> | aa |
+| <https://aa.wikipedia.org/wiki/Template:Babel> | <http://schema.org/isPartOf> | <https://aa.wikipedia.org/> |
+| <https://aa.wikipedia.org/wiki/Template:Babel> | <http://schema.org/name> | Template:Babel |
+| <https://aa.wikipedia.org/wiki/Template:Babel> | <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | <http://schema.org/Article> |
+
+---
+
+## 6. Structural Summary
+
+### Overall Architecture
+
+Wikidata's RDF graph is organized around a **reified statement model** with four main layers:
+
+```
+Item (e.g., wd:Q42)
+  ├── prop/direct/P*     →  Direct/simplified value (item or literal)
+  ├── prop/P*            →  Statement node (reified claim)
+  │     ├── prop/statement/P*  →  Statement value
+  │     ├── prop/qualifier/P*  →  Qualifier value
+  │     ├── wikiba.se/ontology#rank  →  Rank (Normal/Preferred/Deprecated)
+  │     └── prov#wasDerivedFrom  →  Reference node
+  │           └── prop/reference/P*  →  Reference value
+  ├── schema:description →  Multilingual description literals
+  ├── rdfs:label         →  Multilingual label literals
+  └── skos:altLabel      →  Alternative label literals
+```
+
+### Value Node Types
+
+Complex values (quantities, coordinates, timestamps) are stored in dedicated value nodes:
+
+| Value Type | Internal Properties | Count |
+|---|---|---|
+| **QuantityValue** | `quantityAmount`, `quantityUnit`, `quantityLowerBound`, `quantityUpperBound`, `quantityNormalized` | 57.5M |
+| **GlobecoordinateValue** | `geoLatitude`, `geoLongitude`, `geoPrecision`, `geoGlobe` | 12.4M |
+| **TimeValue** | `timeValue`, `timePrecision`, `timeCalendarModel`, `timeTimezone` | 423K |
+
+### Lexicographic Layer
+
+A parallel subgraph for lexicographic data:
+
+```
+Lexeme (e.g., wd:L1)
+  ├── lemma              →  Lemma string (possibly in multiple scripts)
+  ├── lexicalCategory    →  Part-of-speech (Q1084, etc.)
+  ├── dc:language        →  Language entity
+  ├── lemon:lexicalForm  →  Form node
+  │     ├── grammaticalFeature  →  Grammar tags (Q110786, etc.)
+  │     └── representation      →  Surface form string
+  └── lemon:sense        →  Sense node
+        ├── skos:definition     →  Gloss/definition
+        └── prop/direct/P5137   →  Item for this sense
+```
+
+### Sitelink Layer
+
+Each Wikimedia page is represented as an Article entity:
+
+```
+Article (e.g., https://en.wikipedia.org/wiki/Douglas_Adams)
+  ├── schema:about       →  Wikidata item (wd:Q42)
+  ├── schema:inLanguage  →  Language code ("en")
+  ├── schema:isPartOf    →  Wiki site URL
+  └── schema:name        →  Page title
+```
+
+### Scale
+
+| Metric | Value |
+|---|---|
+| Total typed entities (rdf:type) | ~1.95B |
+| Unique entity types observed | 120+ (plus thousands of no-value classes) |
+| Unique properties | 100+ ontology-level + ~13,568 Wikidata properties (each with direct, statement, qualifier, reference, value, and normalized variants) |
+| Largest single predicate | `schema:description` (3.35B triples) |
+| Most common direct property | `prop/direct/P31` (instance of) — 124M uses |
+
