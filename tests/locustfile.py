@@ -114,6 +114,7 @@ class QuaggaAgentUser(HttpUser):
         # Track metrics
         total_chunks = 0
         total_content_length = 0
+        answer_parts: list[str] = []
         
         with self.client.post(
             "/v1/chat/completions",
@@ -152,6 +153,7 @@ class QuaggaAgentUser(HttpUser):
                                 if content:
                                     total_chunks += 1
                                     total_content_length += len(content)
+                                    answer_parts.append(content)
 
                             except json.JSONDecodeError:
                                 pass
@@ -166,7 +168,18 @@ class QuaggaAgentUser(HttpUser):
                     logger.error("[run=%s] FAIL kg=%s no_content done=%s duration_ms=%s prompt=%r", run_id, kg_name, done_received, duration_ms, question)
                     response.failure(failure_msg)
                 else:
-                    logger.info("[run=%s] OK kg=%s chunks=%s chars=%s done=%s duration_ms=%s prompt=%r", run_id, kg_name, total_chunks, total_content_length, done_received, duration_ms, question)
+                    answer_text = "".join(answer_parts).strip()
+                    logger.info(
+                        "[run=%s] OK kg=%s chunks=%s chars=%s done=%s duration_ms=%s prompt=%r answer=%r",
+                        run_id,
+                        kg_name,
+                        total_chunks,
+                        total_content_length,
+                        done_received,
+                        duration_ms,
+                        question,
+                        answer_text,
+                    )
                     response.success()
 
             except Exception as e:
