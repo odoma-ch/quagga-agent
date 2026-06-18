@@ -70,7 +70,7 @@ def create_llm(
     max_tokens: int | None = None,
     extra_body: dict | None = None,
 ) -> ChatOpenAI:
-    http_client = httpx.Client(verify=False)
+    http_client = httpx.Client(verify=False, timeout=120.0)
     return ChatOpenAI(
         base_url=base_url,
         model=model,
@@ -80,6 +80,7 @@ def create_llm(
         max_tokens=max_tokens,
         extra_body=extra_body,
         http_client=http_client,
+        timeout=120.0,
     )
 
 
