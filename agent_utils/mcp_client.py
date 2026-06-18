@@ -36,7 +36,7 @@ def get_current_thread_id() -> str:
 
 def _get_session_state():
     from agent_utils.agent_runtime_state import runtime_state
-    thread_id = runtime_state.current_thread_id
+    thread_id = _current_thread_id.get() or runtime_state.current_thread_id
     return runtime_state.get_or_create_session(thread_id)
 
 

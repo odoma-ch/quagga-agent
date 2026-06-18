@@ -5,7 +5,7 @@ metadata:
   labels:
     app: quagga-agent-api
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: Recreate
   selector:
@@ -144,7 +144,8 @@ metadata:
   name: quagga-agent-chroma-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
+  storageClassName: manila-share
   resources:
     requests:
       storage: 2Gi
