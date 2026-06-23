@@ -126,7 +126,7 @@ def _get_scope_relevance_scores(query: str, passages: list[dict]) -> dict:
     )
     response = tool_client.chat.completions.parse(
         model=tool_model,
-        max_tokens=2048,
+        max_tokens=4096,
         response_format=GraphRelevanceBatchResponse,
         messages=[
             {
