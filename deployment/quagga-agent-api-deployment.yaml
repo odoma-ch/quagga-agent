@@ -5,7 +5,7 @@ metadata:
   labels:
     app: quagga-agent-api
 spec:
-  replicas: 2
+  replicas: 3
   strategy:
     type: Recreate
   selector:
@@ -156,6 +156,10 @@ metadata:
   name: quagga-agent-api-service
 spec:
   type: ClusterIP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
   selector:
     app: quagga-agent-api
   ports:
