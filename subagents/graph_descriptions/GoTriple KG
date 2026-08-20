@@ -1,0 +1,637 @@
+## Step 1 : Get entity types
+
+Page at OFFSET 20 returned 0 rows, so I stop early. Merging and de-duplicating the results from all pages:
+
+**Combined results for Step 1 — Entity Types:**
+
+| type | count |
+|---|---|
+| http://purl.org/spar/datacite/Identifier | 4,322,504 |
+| https://gotriple.eu/ontology/triple/Document | 1,769,500 |
+| http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq | 1,733,021 |
+| https://gotriple.eu/ontology/triple/Profile | 1,195,590 |
+
+The GoTriple KG contains **4 entity types**. The most prevalent type is `datacite:Identifier` (4.3M instances), followed by `triple:Document` (1.8M), `rdf:Seq` (1.7M), and `triple:Profile` (1.2M).
+
+## Step 2 : Get property usage
+
+All 6 pages collected (OFFSET 0 through 100). Now merging and de-duplicating the combined results.
+
+**Combined results for Step 2 — Property Usage (120 rows total, de-duplicated):**
+
+| # | p | count |
+|---|---|---|
+| 1 | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 9,020,615 |
+| 2 | http://rdfs.org/sioc/ns#topic | 8,575,450 |
+| 3 | http://schema.org/keywords | 4,553,172 |
+| 4 | http://purl.org/spar/datacite/hasIdentifier | 4,322,504 |
+| 5 | http://purl.org/spar/datacite/hasIdentifierValue | 4,322,504 |
+| 6 | http://purl.org/spar/datacite/usesIdentifierScheme | 4,322,504 |
+| 7 | http://schema.org/dateModified | 3,050,029 |
+| 8 | http://schema.org/headline | 2,834,134 |
+| 9 | http://schema.org/abstract | 2,370,984 |
+| 10 | http://schema.org/mainEntityOfPage | 2,281,138 |
+| 11 | http://schema.org/publisher | 1,828,547 |
+| 12 | https://gotriple.eu/ontology/triple/hasContentType | 1,779,110 |
+| 13 | http://schema.org/provider | 1,769,500 |
+| 14 | http://schema.org/datePublished | 1,752,603 |
+| 15 | http://schema.org/author | 1,733,021 |
+| 16 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_1 | 1,733,021 |
+| 17 | http://schema.org/inLanguage | 1,638,492 |
+| 18 | http://schema.org/contributor | 1,560,536 |
+| 19 | http://schema.org/isBasedOnUrl | 1,267,993 |
+| 20 | http://schema.org/name | 1,196,789 |
+| 21 | https://gotriple.eu/ontology/triple/hasLicense | 772,051 |
+| 22 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_2 | 480,563 |
+| 23 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_3 | 262,846 |
+| 24 | http://schema.org/knowsAbout | 242,168 |
+| 25 | http://schema.org/url | 228,304 |
+| 26 | http://schema.org/spatialCoverage | 161,056 |
+| 27 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_4 | 158,610 |
+| 28 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_5 | 103,986 |
+| 29 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_6 | 72,682 |
+| 30 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_7 | 52,216 |
+| 31 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_8 | 38,989 |
+| 32 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_9 | 29,688 |
+| 33 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_10 | 23,567 |
+| 34 | http://purl.org/dc/terms/source | 19,951 |
+| 35 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_11 | 18,777 |
+| 36 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_12 | 15,532 |
+| 37 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_13 | 12,984 |
+| 38 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_14 | 11,031 |
+| 39 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_15 | 9,458 |
+| 40 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_16 | 8,126 |
+| 41 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_17 | 7,080 |
+| 42 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_18 | 6,169 |
+| 43 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_19 | 5,411 |
+| 44 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_20 | 4,813 |
+| 45 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_21 | 4,206 |
+| 46 | http://schema.org/temporalCoverage | 4,041 |
+| 47 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_22 | 3,754 |
+| 48 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_23 | 3,363 |
+| 49 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_24 | 3,051 |
+| 50 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_25 | 2,731 |
+| 51–95 | http://www.w3.org/1999/02/22-rdf-syntax-ns#_26 through _95 | 2,491 down to 137 |
+
+**Key observations:**
+- The most-used property is `rdf:type` (9M+), followed by `sioc:topic` (8.6M) and `schema:keywords` (4.6M).
+- The `datacite` properties (`hasIdentifier`, `hasIdentifierValue`, `usesIdentifierScheme`) each have ~4.3M uses.
+- A long tail of `rdf:_N` sequence properties (from `rdf:Seq` containers) runs from `_1` (1.7M) down through `_95` (137), reflecting multi-valued author/contributor lists stored as RDF sequences.
+- Domain-specific properties include `schema:spatialCoverage`, `schema:temporalCoverage`, `schema:knowsAbout`, and `triple:hasLicense`.
+
+## Step 3 : Describe sample entities
+
+All 4 types have been explored. Here is the **complete summary for Step 3**:
+
+---
+
+## Step 3 Results — Sample Entity Descriptions
+
+### Type 1: `datacite:Identifier` (4,322,504 instances)
+- **Nature**: Blank nodes only (no URI entities)
+- **Properties** (exactly 3 per entity):
+  - `rdf:type` → `datacite:Identifier`
+  - `datacite:hasIdentifierValue` → literal string (DOI like `10.17026/dans-xhq-9sjp` or local ID like `50|dedup_wf_001::...`)
+  - `datacite:usesIdentifierScheme` → `datacite:doi` or `datacite/local-resource-identifier-scheme`
+- **Role**: Lightweight identifier records attached to Documents/Profiles via `datacite:hasIdentifier`
+
+### Type 2: `triple:Document` (1,769,500 instances)
+- **Sample**: `https://gotriple.eu/documents/1000` (15 triples)
+- **Properties**:
+  - `rdf:type` → `triple/Document`
+  - `schema:headline` → title (may have multiple, e.g. in different languages)
+  - `schema:abstract` → description text
+  - `schema:author` → blank node (rdf:Seq of profile URIs)
+  - `schema:datePublished` → datetime
+  - `schema:dateModified` → datetime
+  - `schema:inLanguage` → language code (e.g. "de")
+  - `schema:mainEntityOfPage` → original source URL
+  - `schema:provider` → source platform (e.g. "isidore")
+  - `schema:keywords` (not on this sample but widely used per Step 2)
+  - `sioc:topic` → discipline URIs (e.g. `triple/Discipline/hist`, `triple/Discipline/phil`)
+  - `datacite:hasIdentifier` → blank node Identifier entities
+  - `triple:hasContentType` → content type URI (e.g. `triple/ContentType/other`)
+  - `schema:publisher`, `schema:contributor`, `schema:isBasedOnUrl` (seen in Step 2)
+
+### Type 3: `rdf:Seq` (1,733,021 instances)
+- **Nature**: Blank nodes only
+- **Properties**:
+  - `rdf:type` → `rdf:Seq`
+  - `rdf:_1`, `rdf:_2`, … `rdf:_N` → ordered sequence of profile URIs (`https://gotriple.eu/profile/...`)
+- **Role**: Ordered containers for author/contributor lists referenced by `schema:author` and `schema:contributor` on Documents
+
+### Type 4: `triple:Profile` (1,195,590 instances)
+- **Sample**: `https://gotriple.eu/profile/__0PGHeFAo8Qt9tps0DpWM2` (7 triples)
+- **Properties**:
+  - `rdf:type` → `triple/Profile`
+  - `schema:dateModified` → datetime
+  - `sioc:topic` → one or more discipline URIs (e.g. `triple/Discipline/hist`, `triple/Discipline/phil`, etc.)
+  - `datacite:hasIdentifier` → blank node Identifier entities
+  - `schema:name`, `schema:url`, `schema:knowsAbout` (seen in Step 2, not on this sample)
+
+### Key Cross-Type Relationships
+- **Documents** link to **Identifiers** via `datacite:hasIdentifier`
+- **Documents** link to **rdf:Seq** (author lists) via `schema:author` / `schema:contributor`
+- **rdf:Seq** entries point to **Profile** URIs via `rdf:_N`
+- **Profiles** link to **Identifiers** via `datacite:hasIdentifier`
+- Both Documents and Profiles use `sioc:topic` to link to Discipline nodes
+
+## Step 4 : Discover relationship patterns
+
+All 4 pages collected (OFFSET 0, 30, 60, 90). Now merging and de-duplicating.
+
+**Combined results for Step 4 — Relationship Patterns (120 rows, de-duplicated):**
+
+The results reveal several distinct two-hop relationship patterns. Here are the key structural patterns identified:
+
+---
+
+### Pattern A: Identifier Chain (via `datacite:hasIdentifier`)
+| p1 | p2 | count |
+|---|---|---|
+| `datacite:hasIdentifier` | `datacite:usesIdentifierScheme` | 4,322,504 |
+| `datacite:hasIdentifier` | `datacite:hasIdentifierValue` | 4,322,504 |
+| `datacite:hasIdentifier` | `rdf:type` | 4,322,504 |
+
+→ **Documents/Profiles** → `hasIdentifier` → **Identifier (bn)** → `usesIdentifierScheme` / `hasIdentifierValue` / `type`
+
+### Pattern B: Author Sequence Chain (via `schema:author`)
+| p1 | p2 | count |
+|---|---|---|
+| `schema:author` | `rdf:_1` | 1,733,021 |
+| `schema:author` | `rdf:type` | 1,733,021 |
+| `schema:author` | `rdf:_2` | 480,563 |
+| `schema:author` | `rdf:_3` | 262,846 |
+| `schema:author` | `rdf:_4` | 158,610 |
+| `schema:author` | `rdf:_5` | 103,986 |
+| `schema:author` | `rdf:_6` | 72,682 |
+| `schema:author` | `rdf:_7` | 52,216 |
+| `schema:author` | `rdf:_8` | 38,989 |
+| `schema:author` | `rdf:_9` | 29,688 |
+| `schema:author` | `rdf:_10` | 23,567 |
+| `schema:author` | `rdf:_11` | 18,777 |
+| `schema:author` | `rdf:_12` | 15,532 |
+| `schema:author` | `rdf:_13` | 12,984 |
+| `schema:author` | `rdf:_14` | 11,031 |
+
+→ **Document** → `schema:author` → **rdf:Seq (bn)** → `rdf:_N` → **Profile URI**
+
+### Pattern C: Profile Properties via rdf:_N links
+| p1 | p2 | count |
+|---|---|---|
+| `rdf:_1` | `sioc:topic` | 14,409,795 |
+| `rdf:_1` | `schema:dateModified` | 3,894,137 |
+| `rdf:_1` | `datacite:hasIdentifier` | 3,894,137 |
+| `rdf:_1` | `schema:name` | 1,742,664 |
+| `rdf:_1` | `rdf:type` | 1,733,021 |
+| `rdf:_2` | `sioc:topic` | 3,859,647 |
+| `rdf:_2` | `datacite:hasIdentifier` | 995,738 |
+| `rdf:_2` | `schema:dateModified` | 995,738 |
+| `rdf:_2` | `schema:name` | 485,122 |
+| `rdf:_3` | `sioc:topic` | 2,048,269 |
+| ... (continues with rdf:_N → sioc:topic, dateModified, hasIdentifier, name, type) |
+
+→ **rdf:Seq (bn)** → `rdf:_N` → **Profile** → `sioc:topic` / `schema:name` / `datacite:hasIdentifier` / `schema:dateModified` / `rdf:type`
+
+### Pattern D: Discipline Topic Chain (via `sioc:topic`)
+The most prolific pattern by count: `rdf:_1` → `sioc:topic` with 14.4M occurrences, showing that the first author in every sequence is linked to discipline topics.
+
+---
+
+### Key Insights
+
+1. **The dominant two-hop pattern** is: **Document → author (rdf:Seq) → rdf:_N → Profile → sioc:topic**, representing the chain from documents through ordered author lists to profiles and their disciplinary affiliations.
+
+2. **Identifier resolution** follows a clean 3-property pattern: every Identifier blank node has exactly `type`, `hasIdentifierValue`, and `usesIdentifierScheme`.
+
+3. **rdf:Seq containers** serve as the critical intermediary structure, connecting Documents to their ordered author/contributor Profile lists via `rdf:_1`, `rdf:_2`, etc.
+
+4. **Profiles** consistently expose: `sioc:topic` (disciplines), `schema:name`, `datacite:hasIdentifier`, `schema:dateModified`, and `rdf:type`.
+
+5. The long tail of `rdf:_N` → `sioc:topic` entries (up to _35 and beyond) reflects documents with very large author lists, each author profile carrying its own discipline classifications.
+
+## Step 5 : Discover entity-value patterns
+
+All 21 pages collected (OFFSET 0–100). Now merging and de-duplicating.
+
+---
+
+## Step 5 Results — Entity-Value Patterns (105 rows, de-duplicated)
+
+The sample covers **6 distinct Document entities** and their full property-value profiles:
+
+### Entity 1: `https://gotriple.eu/documents/1000` (15 triples)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn1319978 |
+| `datacite:hasIdentifier` | bn1319979 |
+| `sioc:topic` | `triple/Discipline/hist` |
+| `sioc:topic` | `triple/Discipline/phil` |
+| `schema:abstract` | "opracował Marcin Gołaszewski" |
+| `schema:author` | bn1319980 |
+| `schema:dateModified` | 2025-11-17T23:55:52.738 |
+| `schema:datePublished` | 2012-08-02T00:00:00+00:00 |
+| `schema:headline` | "Der reiche Mann und der arme Lazarus" |
+| `schema:headline` | "The rich man and the poor Lazarus" |
+| `schema:inLanguage` | de |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/1000 |
+| `schema:provider` | isidore |
+| `triple:hasContentType` | `triple/ContentType/other` |
+
+### Entity 2: `https://gotriple.eu/documents/1001` (15 triples)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn3804374, bn3804375 |
+| `sioc:topic` | `triple/Discipline/hist`, `triple/Discipline/phil` |
+| `schema:abstract` | "opracował Marcin Gołaszewski" |
+| `schema:author` | bn3804378 |
+| `schema:dateModified` | 2025-11-14T21:00:59.576 |
+| `schema:datePublished` | 2012-08-02T00:00:00+00:00 |
+| `schema:headline` | "Dem Gedenken Ernst Wiecherts" / "The memory of Ernst Wiecherts" |
+| `schema:inLanguage` | de |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/1001 |
+| `schema:provider` | isidore |
+| `triple:hasContentType` | `triple/ContentType/other` |
+
+### Entity 3: `https://gotriple.eu/documents/1002` (14 triples)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn3804379, bn3804380 |
+| `sioc:topic` | `triple/Discipline/hist`, `triple/Discipline/scipo` |
+| `schema:abstract` | "opracował Marcin Gołaszewski" |
+| `schema:dateModified` | 2025-11-12T20:10:11.095 |
+| `schema:datePublished` | 2012-08-02T00:00:00+00:00 |
+| `schema:headline` | "Gutachten der Reichstelle…" / "Report of 7 June 1939…" |
+| `schema:inLanguage` | de |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/1002 |
+| `schema:provider` | isidore |
+| `triple:hasContentType` | `triple/ContentType/other` |
+
+### Entity 4: `https://gotriple.eu/documents/1003` (13 triples)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn3804381, bn3804382 |
+| `sioc:topic` | `triple/Discipline/hist`, `triple/Discipline/phil` |
+| `schema:abstract` | "opracował Marcin Gołaszewski" |
+| `schema:dateModified` | 2025-11-11T20:49:57.135 |
+| `schema:datePublished` | 2012-08-02T00:00:00+00:00 |
+| `schema:headline` | "Firm certificate Ernst Wiecherts" / "Konfirmationsschein Ernst Wiecherts" |
+| `schema:inLanguage` | de |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/1003 |
+| `schema:provider` | isidore |
+| `triple:hasContentType` | `triple/ContentType/other` |
+
+### Entity 5: `https://gotriple.eu/documents/10058` (16 triples — richer example)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn1319981, bn1319985 |
+| `sioc:topic` | `triple/Discipline/eco`, `triple/Discipline/manag` |
+| `schema:abstract` | Long bilingual abstract (EN + PL) about monetary policy |
+| `schema:author` | bn1319986 |
+| `schema:dateModified` | 2025-11-11T23:32:54.248 |
+| `schema:datePublished` | 2015-06-23T00:00:00+00:00 |
+| `schema:headline` | "Optimal monetary policy strategies for Poland…" / Polish title |
+| `schema:inLanguage` | pl |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/10058 |
+| `schema:provider` | isidore |
+| `triple:hasContentType` | `triple/ContentType/article` |
+
+### Entity 6: `https://gotriple.eu/documents/10062` (17 triples — most complete example)
+| p | o |
+|---|---|
+| `rdf:type` | `triple/Document` |
+| `datacite:hasIdentifier` | bn3804383, bn3804384, bn3804385 |
+| `sioc:topic` | `triple/Discipline/envir`, `triple/Discipline/geo` |
+| `schema:abstract` | Long abstract about climate model RegCM3 for Poland |
+| `schema:author` | bn3804386 |
+| `schema:contributor` | "Brzoska Barbara, University of Lodz…" / "Jaczewski Adam…" / "Wibig Joanna…" |
+| `schema:dateModified` | 2026-04-30T16:12:08.129 |
+| `schema:datePublished` | 2015-06-23T00:00:00+00:00 |
+| `schema:headline` | "Comparison of temperature indices for three IPCC SRES scenarios…" |
+| `schema:inLanguage` | en |
+| `schema:mainEntityOfPage` | http://hdl.handle.net/11089/10062 |
+| `schema:provider` | isidore |
+| `schema:publisher` | "Gebrüder Borntraeger Science Publishers" |
+| `triple:hasContentType` | `triple/ContentType/article` |
+| `triple:hasLicense` | `triple/License/creative_commons` |
+
+---
+
+### Key Observations from Entity-Value Patterns
+
+1. **Documents** consistently have: `type`, `hasIdentifier` (1–3 bnodes), `sioc:topic` (1–3 disciplines), `abstract`, `author` (bn → rdf:Seq), `dateModified`, `datePublished`, `headline` (often bilingual), `inLanguage`, `mainEntityOfPage`, `provider`, `hasContentType`.
+
+2. **Bilingual content** is common — `schema:headline` and `schema:abstract` often appear in both the original language and English translation.
+
+3. **Discipline values** follow the pattern `triple/Discipline/{code}` — observed codes: `hist`, `phil`, `scipo`, `eco`, `manag`, `envir`, `geo`, `psy`, `stat`.
+
+4. **Content types** observed: `triple/ContentType/article`, `triple/ContentType/other`.
+
+5. **License values** follow `triple/License/{type}` — e.g., `creative_commons`.
+
+6. **Providers** observed: "isidore" (the French HARVESTER platform appears dominant in early documents).
+
+7. **Contributors** appear as plain string literals (name + affiliation), unlike authors which use rdf:Seq bnode structures.
+
+8. **Identifiers** are consistently 2 per document (one DOI or local ID + one scheme reference).
+
+## Step 6 : Compile the report
+
+# GoTriple Knowledge Graph — Exploration Report
+
+## 1. Endpoint & Access
+
+| Item | Value |
+|---|---|
+| SPARQL Endpoint | <https://gateway-graphia-kg-staging.apps.bst2.paas.psnc.pl/sparql> |
+| Named Graphs | None (single unified graph) |
+| DESCRIBE Support | Not supported (returns error) |
+
+---
+
+## 2. Entity Types
+
+| Type URI | Count |
+|---|---|
+| <http://purl.org/spar/datacite/Identifier> | 4,322,504 |
+| <https://gotriple.eu/ontology/triple/Document> | 1,769,500 |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq> | 1,733,021 |
+| <https://gotriple.eu/ontology/triple/Profile> | 1,195,590 |
+
+---
+
+## 3. Property Usage (Top 40 non-sequence properties)
+
+| Property URI | Count |
+|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | 9,020,615 |
+| <http://rdfs.org/sioc/ns#topic> | 8,575,450 |
+| <http://schema.org/keywords> | 4,553,172 |
+| <http://purl.org/spar/datacite/hasIdentifier> | 4,322,504 |
+| <http://purl.org/spar/datacite/hasIdentifierValue> | 4,322,504 |
+| <http://purl.org/spar/datacite/usesIdentifierScheme> | 4,322,504 |
+| <http://schema.org/dateModified> | 3,050,029 |
+| <http://schema.org/headline> | 2,834,134 |
+| <http://schema.org/abstract> | 2,370,984 |
+| <http://schema.org/mainEntityOfPage> | 2,281,138 |
+| <http://schema.org/publisher> | 1,828,547 |
+| <https://gotriple.eu/ontology/triple/hasContentType> | 1,779,110 |
+| <http://schema.org/provider> | 1,769,500 |
+| <http://schema.org/datePublished> | 1,752,603 |
+| <http://schema.org/author> | 1,733,021 |
+| <http://schema.org/inLanguage> | 1,638,492 |
+| <http://schema.org/contributor> | 1,560,536 |
+| <http://schema.org/isBasedOnUrl> | 1,267,993 |
+| <http://schema.org/name> | 1,196,789 |
+| <https://gotriple.eu/ontology/triple/hasLicense> | 772,051 |
+| <http://schema.org/knowsAbout> | 242,168 |
+| <http://schema.org/url> | 228,304 |
+| <http://schema.org/spatialCoverage> | 161,056 |
+| <http://schema.org/temporalCoverage> | 4,041 |
+| <http://purl.org/dc/terms/source> | 19,951 |
+
+**Sequence properties** (rdf:_1 through rdf:_95) account for ordered author/contributor list membership, with counts declining from 1,733,021 (rdf:_1) to 137 (rdf:_95).
+
+---
+
+## 4. Entity Profiles
+
+### 4.1 `triple:Document`
+
+**URI pattern**: <https://gotriple.eu/documents/{id}>
+**Instance count**: 1,769,500
+
+| Property URI | Value Type | Multiplicity | Example |
+|---|---|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | URI | 1 | <https://gotriple.eu/ontology/triple/Document> |
+| <http://purl.org/spar/datacite/hasIdentifier> | blank node | 1–3 | bn1319978 |
+| <http://rdfs.org/sioc/ns#topic> | URI | 1–3 | <https://gotriple.eu/ontology/triple/Discipline/hist> |
+| <http://schema.org/abstract> | literal | 1–2 | Long text; often bilingual |
+| <http://schema.org/author> | blank node (rdf:Seq) | 0–1 | bn1319980 |
+| <http://schema.org/contributor> | literal | 0–many | "Brzoska Barbara, University of Lodz…" |
+| <http://schema.org/dateModified> | literal (datetime) | 1 | 2025-11-17T23:55:52.738 |
+| <http://schema.org/datePublished> | literal (datetime) | 1 | 2012-08-02T00:00:00+00:00 |
+| <http://schema.org/headline> | literal | 1–2 | Often bilingual (original + English) |
+| <http://schema.org/inLanguage> | literal | 1 | de, pl, en, … |
+| <http://schema.org/isBasedOnUrl> | literal | 0–1 | Source dataset URL |
+| <http://schema.org/keywords> | literal | 0–many | Keyword tags |
+| <http://schema.org/mainEntityOfPage> | URI | 1 | <http://hdl.handle.net/11089/1000> |
+| <http://schema.org/name> | literal | 0–1 | Title |
+| <http://schema.org/provider> | literal | 1 | isidore |
+| <http://schema.org/publisher> | literal | 0–1 | "Gebrüder Borntraeger Science Publishers" |
+| <http://schema.org/spatialCoverage> | literal | 0–1 | Geographic coverage |
+| <http://schema.org/temporalCoverage> | literal | 0–1 | Temporal coverage |
+| <https://gotriple.eu/ontology/triple/hasContentType> | URI | 1 | <https://gotriple.eu/ontology/triple/ContentType/article> |
+| <https://gotriple.eu/ontology/triple/hasLicense> | URI | 0–1 | <https://gotriple.eu/ontology/triple/License/creative_commons> |
+
+### 4.2 `triple:Profile`
+
+**URI pattern**: <https://gotriple.eu/profile/{slug}>
+**Instance count**: 1,195,590
+
+| Property URI | Value Type | Multiplicity | Example |
+|---|---|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | URI | 1 | <https://gotriple.eu/ontology/triple/Profile> |
+| <http://purl.org/spar/datacite/hasIdentifier> | blank node | 0–1 | bn900165 |
+| <http://rdfs.org/sioc/ns#topic> | URI | 0–many | <https://gotriple.eu/ontology/triple/Discipline/hist> |
+| <http://schema.org/dateModified> | literal (datetime) | 0–1 | 2026-06-11T15:32:55.758 |
+| <http://schema.org/knowsAbout> | literal | 0–many | Expertise/interest keywords |
+| <http://schema.org/name> | literal | 0–1 | Person or organization name |
+| <http://schema.org/url> | URI | 0–1 | Homepage |
+
+### 4.3 `datacite:Identifier`
+
+**Nature**: Blank nodes only (no URI entities).
+**Instance count**: 4,322,504
+
+| Property URI | Value Type | Multiplicity | Example |
+|---|---|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | URI | 1 | <http://purl.org/spar/datacite/Identifier> |
+| <http://purl.org/spar/datacite/hasIdentifierValue> | literal | 1 | "10.17026/dans-xhq-9sjp" or "50\|dedup_wf_001::23cabe7c1f825593ddcf654c1cfde363" |
+| <http://purl.org/spar/datacite/usesIdentifierScheme> | URI | 1 | <http://purl.org/spar/datacite/doi> or <http://purl.org/spar/datacite/local-resource-identifier-scheme> |
+
+### 4.4 `rdf:Seq`
+
+**Nature**: Blank nodes only.
+**Instance count**: 1,733,021
+
+| Property URI | Value Type | Multiplicity | Example |
+|---|---|---|---|
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> | URI | 1 | <http://www.w3.org/1999/02/22-rdf-syntax-ns#Seq> |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> | URI | 0–1 | <https://gotriple.eu/profile/ac_aarts_-oxT3G0a7MXVT7_wT8JbA> |
+| <http://www.w3.org/1999/02/22-rdf-syntax-ns#_2> | URI | 0–1 | <https://gotriple.eu/profile/mark_p_newton_pEw-zSZW7wRqp78sovBmC> |
+| … | URI | 0–1 | Up to rdf:_95 observed |
+
+**Role**: Ordered containers linking Documents to their author/contributor Profiles via `schema:author` and `schema:contributor`.
+
+---
+
+## 5. Relationship Patterns
+
+### 5.1 Document → Identifier Chain
+
+```
+Document ──datacite:hasIdentifier──► Identifier (bn)
+                                       ├── rdf:type ──────────► datacite:Identifier
+                                       ├── datacite:hasIdentifierValue ──► "10.17026/dans-xhq-9sjp"
+                                       └── datacite:usesIdentifierScheme ──► datacite:doi
+```
+
+**Count**: 4,322,504 (every Identifier has this 3-property structure)
+
+### 5.2 Document → Author Sequence → Profile Chain
+
+```
+Document ──schema:author──► rdf:Seq (bn)
+                              ├── rdf:type ──► rdf:Seq
+                              ├── rdf:_1 ────► Profile URI
+                              ├── rdf:_2 ────► Profile URI
+                              └── …
+```
+
+**Counts** (schema:author → rdf:_N):
+| Hop | Count |
+|---|---|
+| schema:author → rdf:_1 | 1,733,021 |
+| schema:author → rdf:_2 | 480,563 |
+| schema:author → rdf:_3 | 262,846 |
+| schema:author → rdf:_4 | 158,610 |
+| schema:author → rdf:_5 | 103,986 |
+| schema:author → rdf:_6 | 72,682 |
+| schema:author → rdf:_7 | 52,216 |
+| schema:author → rdf:_8 | 38,989 |
+| schema:author → rdf:_9 | 29,688 |
+| schema:author → rdf:_10 | 23,567 |
+| schema:author → rdf:_11 | 18,777 |
+| schema:author → rdf:_12 | 15,532 |
+| schema:author → rdf:_13 | 12,984 |
+| schema:author → rdf:_14 | 11,031 |
+
+### 5.3 Profile → Discipline / Identifier / Name Chain
+
+```
+rdf:Seq (bn) ──rdf:_N──► Profile
+                           ├── sioc:topic ──────────────► triple/Discipline/{code}
+                           ├── schema:name ─────────────► "John Smith"
+                           ├── datacite:hasIdentifier ──► Identifier (bn)
+                           ├── schema:dateModified ────► datetime
+                           └── rdf:type ────────────────► triple/Profile
+```
+
+**Dominant two-hop pattern** (by count): `rdf:_1` → `sioc:topic` with **14,409,795** occurrences.
+
+---
+
+## 6. Controlled Vocabularies & Value Spaces
+
+### 6.1 Disciplines (observed via `sioc:topic`)
+
+| Code | Likely Meaning |
+|---|---|
+| <https://gotriple.eu/ontology/triple/Discipline/hist> | History |
+| <https://gotriple.eu/ontology/triple/Discipline/phil> | Philosophy |
+| <https://gotriple.eu/ontology/triple/Discipline/psy> | Psychology |
+| <https://gotriple.eu/ontology/triple/Discipline/stat> | Statistics |
+| <https://gotriple.eu/ontology/triple/Discipline/scipo> | Political Science |
+| <https://gotriple.eu/ontology/triple/Discipline/eco> | Economics |
+| <https://gotriple.eu/ontology/triple/Discipline/manag> | Management |
+| <https://gotriple.eu/ontology/triple/Discipline/envir> | Environmental Science |
+| <https://gotriple.eu/ontology/triple/Discipline/geo> | Geography |
+
+### 6.2 Content Types (observed via `triple:hasContentType`)
+
+| URI |
+|---|
+| <https://gotriple.eu/ontology/triple/ContentType/article> |
+| <https://gotriple.eu/ontology/triple/ContentType/other> |
+
+### 6.3 License Types (observed via `triple:hasLicense`)
+
+| URI |
+|---|
+| <https://gotriple.eu/ontology/triple/License/creative_commons> |
+
+### 6.4 Identifier Schemes (observed via `datacite:usesIdentifierScheme`)
+
+| URI | Description |
+|---|---|
+| <http://purl.org/spar/datacite/doi> | Digital Object Identifier |
+| <http://purl.org/spar/datacite/local-resource-identifier-scheme> | Internal deduplication IDs (e.g. "50\|dedup_wf_001::…") |
+
+### 6.5 Providers (observed via `schema:provider`)
+
+| Value |
+|---|
+| isidore |
+
+### 6.6 Languages (observed via `schema:inLanguage`)
+
+| Code | Language |
+|---|---|
+| de | German |
+| en | English |
+| pl | Polish |
+
+---
+
+## 7. Structural Summary
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        GoTriple KG Schema                          │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌──────────────┐    datacite:hasIdentifier    ┌──────────────────┐ │
+│  │              │ ────────────────────────────► │  Identifier (bn) │ │
+│  │              │                               │  ├ type          │ │
+│  │              │                               │  ├ hasIdentifier │ │
+│  │              │                               │  │  Value        │ │
+│  │              │                               │  └ usesIdentifier│ │
+│  │              │                                  Scheme         │ │
+│  │   Document   │    sioc:topic                ┌──────────────────┐ │
+│  │              │ ────────────────────────────► │  Discipline URI  │ │
+│  │              │                               └──────────────────┘ │
+│  │              │    schema:author             ┌──────────────────┐ │
+│  │              │ ────────────────────────────► │  rdf:Seq (bn)    │ │
+│  │              │                               │  ├ rdf:_1 ──┐    │ │
+│  │              │                               │  ├ rdf:_2 ──┤    │ │
+│  │              │                               │  └ …        │    │ │
+│  │              │                               └────────────┤    │ │
+│  │              │    schema:contributor                        │    │ │
+│  │              │ ───────────────────────────► literal strings  │    │ │
+│  │              │                                            ▼    │ │
+│  │              │                               ┌──────────────────┐│ │
+│  │              │    schema:headline            │   Profile        ││ │
+│  │              │    schema:abstract            │   ├ sioc:topic   ││ │
+│  │              │    schema:datePublished       │   ├ schema:name  ││ │
+│  │              │    schema:inLanguage          │   ├ hasIdentifier││ │
+│  │              │    schema:provider            │   ├ dateModified ││ │
+│  │              │    hasContentType             │   ├ knowsAbout   ││ │
+│  │              │    hasLicense                 │   └ url          ││ │
+│  └──────────────┘                               └──────────────────┘│ │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 8. Key Statistics
+
+| Metric | Value |
+|---|---|
+| Total typed entities | ~9,020,615 (by rdf:type triple count) |
+| Documents | 1,769,500 |
+| Profiles | 1,195,590 |
+| Identifiers | 4,322,504 |
+| Author Sequences | 1,733,021 |
+| Distinct properties observed | 95+ (including rdf:_1 through rdf:_95) |
+| Most-used property | rdf:type (9,020,615) |
+| Most-used data property | sioc:topic (8,575,450) |
+| Max author list length observed | 95 members (rdf:_95) |
+| Bilingual content | Common — headlines and abstracts frequently appear in original language + English |
+

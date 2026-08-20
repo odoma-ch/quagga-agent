@@ -21,6 +21,9 @@ from langgraph.runtime import get_runtime
 from langchain_community.retrievers import BM25Retriever
 from langchain_classic.retrievers.ensemble import EnsembleRetriever
 
+
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 from SPARQLWrapper import SPARQLWrapper, JSON
 from concurrent.futures import ThreadPoolExecutor
 

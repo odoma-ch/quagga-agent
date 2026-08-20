@@ -176,13 +176,14 @@ async def lifespan(app: FastAPI):
     llm_tools = [run_sparql_subagent_tool, describe_knowledge_graphs_tool, scope_checker_tool]
     all_tools = [run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
 
-    mcp_server_url = get_mcp_server_url()
-    if mcp_server_url:
-        mcp_tools = await initialize_mcp_tools(mcp_server_url)
-        if mcp_tools:
-            llm_tools = llm_tools + mcp_tools
-            all_tools = all_tools + mcp_tools
-            logger.info(f"Added {len(mcp_tools)} MCP tools to agent")
+    # TODO: Uncomment this when MCP is more stable from the GoTriple side
+    # mcp_server_url = get_mcp_server_url()
+    # if mcp_server_url:
+    #     mcp_tools = await initialize_mcp_tools(mcp_server_url)
+    #     if mcp_tools:
+    #         llm_tools = llm_tools + mcp_tools
+    #         all_tools = all_tools + mcp_tools
+    #         logger.info(f"Added {len(mcp_tools)} MCP tools to agent")
 
     startup_llm, is_healthy, reason = await build_llm_from_health(
         base_url=base_url,
