@@ -10,6 +10,8 @@ Watch a short video showing how to access and use GRAPHIA's Quagga agent instanc
 
 [![Quagga agent demo](https://img.youtube.com/vi/lcOEKtBUK5Q/maxresdefault.jpg)](https://www.youtube.com/watch?v=lcOEKtBUK5Q)
 
+Quagga Agent received the Award for Maturity at the third [HERMES Data Challenge "From Notes to Nodes"](https://www.hermes-hub.de/forschen/datachallenges/challenges/challenge-2026.html) (2026), where Team MusiGraphia took part with it. Read the [report](https://odoma-ch.github.io/hermes-musigraphia-report/) submitted to the challenge.
+
 ## Features
 
 - **Schema-guided SPARQL generation**: ShEx schema chunks are retrieved from a vector store (ChromaDB) to ground query generation.
