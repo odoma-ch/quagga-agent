@@ -1,0 +1,280 @@
+## Step 1 : Get entity types
+
+Page 2 returned 0 rows, so pagination is complete. Since all 16 rows came from the first page and the second page was empty, there's nothing to merge — the combined, de-duplicated results are exactly the 16 rows from page 1.
+
+**Step 1 — Combined Entity Types Results:**
+
+| # | type | count |
+|---|------|-------|
+| 1 | http://purl.org/spar/datacite/Identifier | 4342 |
+| 2 | http://purl.org/spar/fabio/ScholarlyWork | 3484 |
+| 3 | http://purl.org/spar/bido/BibliometricDataInTime | 2116 |
+| 4 | http://www.w3.org/2004/02/skos/core#Concept | 1801 |
+| 5 | http://xmlns.com/foaf/0.1/Person | 696 |
+| 6 | http://purl.org/spar/pro/RoleInTime | 498 |
+| 7 | http://purl.org/spar/fabio/SubjectTerm | 315 |
+| 8 | http://purl.org/spar/fabio/Work | 238 |
+| 9 | http://purl.org/spar/fabio/Dataset | 217 |
+| 10 | http://purl.org/spar/pso/StatusInTime | 199 |
+| 11 | http://purl.org/spar/fabio/Expression | 196 |
+| 12 | http://purl.org/spar/fabio/ExpressionCollection | 51 |
+| 13 | http://purl.org/spar/fabio/JournalArticle | 46 |
+| 14 | http://purl.org/spar/fabio/BookChapter | 16 |
+| 15 | http://purl.org/spar/fabio/Book | 2 |
+| 16 | http://purl.org/spar/fabio/JournalIssue | 1 |
+
+**Summary:** The GRAPHIA Federated KG contains 16 distinct entity types. The dominant types are `datacite:Identifier` (4,342), `fabio:ScholarlyWork` (3,484), and `bido:BibliometricDataInTime` (2,116), indicating this is a scholarly/bibliographic knowledge graph built on the SPAR (Semantic Publishing and Referencing) ontology family.
+
+## Step 2 : Get property usage
+
+Page 3 returned 0 rows, so pagination is complete. Now I'll merge and de-duplicate the results from pages 1 and 2.
+
+**Step 2 — Combined Property Usage Results (25 unique properties):**
+
+| # | p | count |
+|---|---|-------|
+| 1 | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 14218 |
+| 2 | http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue | 4342 |
+| 3 | http://purl.org/spar/datacite/hasIdentifier | 4342 |
+| 4 | http://purl.org/spar/datacite/usesIdentifierScheme | 4342 |
+| 5 | http://purl.org/spar/cito/cites | 4149 |
+| 6 | http://purl.org/spar/bido/holdsBibliometricDataInTime | 3176 |
+| 7 | http://www.w3.org/2004/02/skos/core#prefLabel | 2169 |
+| 8 | http://purl.org/spar/bido/withBibliometricData | 2116 |
+| 9 | http://purl.org/spar/pro/isRelatedToRoleInTime | 720 |
+| 10 | http://purl.org/spar/pro/withRole | 712 |
+| 11 | http://purl.org/spar/pro/isHeldBy | 712 |
+| 12 | http://xmlns.com/foaf/0.1/name | 700 |
+| 13 | http://purl.org/dc/terms/title | 562 |
+| 14 | http://purl.org/dc/terms/issued | 457 |
+| 15 | http://purl.org/vocab/frbr/core#realization | 273 |
+| 16 | http://purl.org/co/index | 212 |
+| 17 | http://purl.org/spar/pso/withStatus | 202 |
+| 18 | http://purl.org/spar/pso/holdsStatusInTime | 199 |
+| 19 | http://xmlns.com/foaf/0.1/familyName | 172 |
+| 20 | http://xmlns.com/foaf/0.1/givenName | 172 |
+| 21 | http://purl.org/vocab/frbr/core#partOf | 63 |
+| 22 | http://purl.org/dc/terms/abstract | 62 |
+| 23 | http://prismstandard.org/namespaces/basic/2.0/volume | 39 |
+| 24 | http://prismstandard.org/namespaces/basic/2.0/issueIdentifier | 36 |
+| 25 | http://example.org/test/label | 3 |
+
+**Summary:** The GRAPHIA Federated KG uses 25 distinct properties. The most heavily used is `rdf:type` (14,218 usages), followed by identifier-related properties (`datacite:hasIdentifier`, `datacite:usesIdentifierScheme`, `literalreification:hasLiteralValue` — all at 4,342), citation links (`cito:cites` at 4,149), and bibliometric data properties (`bido:holdsBibliometricDataInTime` at 3,176). The property landscape reflects a scholarly/bibliographic KG built on the SPAR ontologies (datacite, cito, bido, pro, pso, fabio) with FOAF for person data, Dublin Core for metadata, and PRISM for journal metadata.
+
+## Step 3 : Describe sample entities
+
+All 10 types have been explored. Here is the complete summary:
+
+---
+
+## Step 3 — Sample Entity Descriptions for Top 10 Types
+
+### Type 1: `datacite:Identifier` (4,342 instances)
+- **Sample:** `graphia/.../id/doi/10.1002%2Fjae.2277`
+- **Profile:** Each Identifier has exactly 3 triples:
+  - `rdf:type` → `datacite:Identifier`
+  - `datacite:usesIdentifierScheme` → scheme URI (e.g., `datacite:doi`)
+  - `literalreification:hasLiteralValue` → literal string (e.g., "10.1002/jae.2277")
+
+### Type 2: `fabio:ScholarlyWork` (3,484 instances)
+- **Sample:** `graphia/.../work/10.1002%2Fjae.2277`
+- **Profile:** Richly connected hub entity with 8 triples:
+  - `rdf:type` → `fabio:ScholarlyWork`, `fabio:Work`, `fabio:JournalArticle` (multi-typed)
+  - `dct:title` → title literal
+  - `datacite:hasIdentifier` → Identifier URI
+  - `pro:isRelatedToRoleInTime` → contribution/role-in-time URIs (author links)
+  - `frbr:realization` → Expression URI
+
+### Type 3: `bido:BibliometricDataInTime` (2,116 instances)
+- **Sample:** `graphia/.../bidt/10.4232%2F1.0163%231`
+- **Profile:** Lightweight reification node with 2 triples:
+  - `rdf:type` → `bido:BibliometricDataInTime`
+  - `bido:withBibliometricData` → SubjectTerm URI
+
+### Type 4: `skos:Concept` (1,801 instances)
+- **Sample:** `graphia/.../tpc/édition-scientifique`
+- **Profile:** Simple concept with 2 triples:
+  - `rdf:type` → `skos:Concept`
+  - `skos:prefLabel` → label literal (e.g., "édition scientifique")
+
+### Type 5: `foaf:Person` (696 instances)
+- **Sample:** GESIS-sourced person URI
+- **Profile:** Person with 3 triples:
+  - `rdf:type` → `foaf:Person`
+  - `foaf:familyName` → family name literal (e.g., "Peiró-Palomino")
+  - `foaf:givenName` → given name literal (e.g., "Jesús")
+
+### Type 6: `pro:RoleInTime` (498 instances)
+- **Sample:** `graphia/.../prl/0000-0001-5049-9354`
+- **Profile:** Role reification with 3 triples:
+  - `rdf:type` → `pro:RoleInTime`
+  - `pro:isHeldBy` → Person URI
+  - `pro:withRole` → role type URI (e.g., `pro:author`)
+
+### Type 7: `fabio:SubjectTerm` (315 instances)
+- **Sample:** `graphia/.../subject/10.4232%2F1.0163%231`
+- **Profile:** Subject/keyword with 3 triples:
+  - `rdf:type` → `fabio:SubjectTerm`
+  - `skos:prefLabel` → label literal (e.g., "Jugend") — appears duplicated (likely from multiple source graphs)
+
+### Type 8: `fabio:Work` (238 instances)
+- **Sample:** Same entity as ScholarlyWork above (multi-typed)
+- **Profile:** Always co-typed with `fabio:ScholarlyWork` and a more specific subtype (e.g., `fabio:JournalArticle`); shares the same property profile as ScholarlyWork.
+
+### Type 9: `fabio:Dataset` (217 instances)
+- **Sample:** `graphia/.../work/10.4232%2F1.0163`
+- **Profile:** Dataset entity with 10 triples:
+  - `rdf:type` → `fabio:Dataset`, `fabio:Work`
+  - `dct:title` → title literal(s) — often bilingual (German + English)
+  - `dct:abstract` → long abstract literal(s) — often bilingual
+  - `datacite:hasIdentifier` → Identifier URI
+  - `bido:holdsBibliometricDataInTime` → BibliometricDataInTime URIs
+
+### Type 10: `pso:StatusInTime` (199 instances)
+- **Sample:** `graphia/.../status/10.1007%2F978-3-030-55814-7_16`
+- **Profile:** Status reification with 2 triples:
+  - `rdf:type` → `pso:StatusInTime`
+  - `pso:withStatus` → status URI (e.g., `pso:open-access`)
+
+---
+
+**Key observations:**
+- The KG uses **SPAR ontologies** extensively (fabio, datacite, cito, bido, pro, pso) with FOAF for persons, SKOS for concepts, and Dublin Core for metadata.
+- **Reification patterns** are common: RoleInTime links persons to roles, BibliometricDataInTime wraps bibliometric data, StatusInTime wraps publication status.
+- ScholarlyWorks are **multi-typed** (also typed as fabio:Work plus a specific subtype like JournalArticle).
+- Datasets carry **bilingual metadata** (German/English titles and abstracts).
+- The `DESCRIBE` query form is **not supported** by this endpoint (returns errors); SELECT must be used instead.
+
+## Step 4 : Discover relationship patterns
+
+Page 3 returned 0 rows, so pagination is complete. Merging and de-duplicating the 36 rows from pages 1 and 2.
+
+---
+
+## Step 4 — Combined Relationship Pattern Results (36 unique p1→p2 patterns)
+
+| # | p1 | p2 | count |
+|---|---|---|-------|
+| 1 | http://purl.org/spar/cito/cites | http://purl.org/spar/cito/cites | 15711 |
+| 2 | http://purl.org/spar/cito/cites | http://purl.org/spar/bido/holdsBibliometricDataInTime | 8103 |
+| 3 | http://purl.org/spar/cito/cites | http://purl.org/spar/pro/isRelatedToRoleInTime | 5242 |
+| 4 | http://purl.org/spar/cito/cites | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 4420 |
+| 5 | http://purl.org/spar/datacite/hasIdentifier | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 4342 |
+| 6 | http://purl.org/spar/datacite/hasIdentifier | http://www.essepuntato.it/2010/06/literalreification/hasLiteralValue | 4342 |
+| 7 | http://purl.org/spar/datacite/hasIdentifier | http://purl.org/spar/datacite/usesIdentifierScheme | 4342 |
+| 8 | http://purl.org/spar/cito/cites | http://purl.org/spar/datacite/hasIdentifier | 4149 |
+| 9 | http://purl.org/spar/bido/holdsBibliometricDataInTime | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 3176 |
+| 10 | http://purl.org/spar/bido/holdsBibliometricDataInTime | http://purl.org/spar/bido/withBibliometricData | 3176 |
+| 11 | http://purl.org/spar/bido/withBibliometricData | http://www.w3.org/2004/02/skos/core#prefLabel | 2169 |
+| 12 | http://purl.org/spar/bido/withBibliometricData | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 2116 |
+| 13 | http://purl.org/spar/cito/cites | http://purl.org/dc/terms/title | 1209 |
+| 14 | http://purl.org/spar/cito/cites | http://purl.org/vocab/frbr/core#realization | 1162 |
+| 15 | http://purl.org/spar/cito/cites | http://purl.org/dc/terms/issued | 1089 |
+| 16 | http://purl.org/spar/pro/isRelatedToRoleInTime | http://purl.org/spar/pro/withRole | 720 |
+| 17 | http://purl.org/spar/pro/isRelatedToRoleInTime | http://purl.org/spar/pro/isHeldBy | 720 |
+| 18 | http://purl.org/spar/pro/isHeldBy | http://xmlns.com/foaf/0.1/name | 715 |
+| 19 | http://purl.org/spar/pro/isHeldBy | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 712 |
+| 20 | http://purl.org/spar/pro/isHeldBy | http://purl.org/spar/datacite/hasIdentifier | 577 |
+| 21 | http://purl.org/spar/pro/isRelatedToRoleInTime | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 506 |
+| 22 | http://purl.org/spar/pro/isRelatedToRoleInTime | http://purl.org/co/index | 212 |
+| 23 | http://purl.org/spar/pso/holdsStatusInTime | http://purl.org/spar/pso/withStatus | 202 |
+| 24 | http://purl.org/spar/pso/holdsStatusInTime | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 199 |
+| 25 | http://purl.org/vocab/frbr/core#realization | http://purl.org/spar/pso/holdsStatusInTime | 199 |
+| 26 | http://purl.org/vocab/frbr/core#realization | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 196 |
+| 27 | http://purl.org/spar/pro/isHeldBy | http://xmlns.com/foaf/0.1/givenName | 185 |
+| 28 | http://purl.org/spar/pro/isHeldBy | http://xmlns.com/foaf/0.1/familyName | 185 |
+| 29 | http://purl.org/vocab/frbr/core#partOf | http://purl.org/spar/datacite/hasIdentifier | 87 |
+| 30 | http://purl.org/vocab/frbr/core#realization | http://purl.org/dc/terms/issued | 77 |
+| 31 | http://purl.org/vocab/frbr/core#partOf | http://purl.org/dc/terms/title | 63 |
+| 32 | http://purl.org/vocab/frbr/core#partOf | http://www.w3.org/1999/02/22-rdf-syntax-ns#type | 63 |
+| 33 | http://purl.org/vocab/frbr/core#realization | http://purl.org/vocab/frbr/core#partOf | 63 |
+| 34 | http://purl.org/spar/cito/cites | http://purl.org/dc/terms/abstract | 59 |
+| 35 | http://purl.org/vocab/frbr/core#realization | http://prismstandard.org/namespaces/basic/2.0/volume | 39 |
+| 36 | http://purl.org/vocab/frbr/core#realization | http://prismstandard.org/namespaces/basic/2.0/issueIdentifier | 36 |
+
+---
+
+**Key structural patterns revealed:**
+
+1. **Citation chains dominate** — `cito:cites → cito:cites` (15,711) is the #1 pattern, meaning cited works themselves cite other works, forming deep citation networks.
+
+2. **Work → Bibliometric data** — `cito:cites → bido:holdsBibliometricDataInTime` (8,103) and `bido:holdsBibliometricDataInTime → bido:withBibliometricData` (3,176) form the path: **Work → BibDataInTime → SubjectTerm** (with `skos:prefLabel` at the end).
+
+3. **Work → Author** — `cito:cites → pro:isRelatedToRoleInTime` (5,242) → `pro:isHeldBy` (720) → `foaf:name` (715) traces the authorship chain: **Work → RoleInTime → Person**.
+
+4. **Identifier resolution** — `datacite:hasIdentifier → literalreification:hasLiteralValue` / `datacite:usesIdentifierScheme` (4,342 each) consistently resolves identifiers to their string values and schemes.
+
+5. **FRBR realization chain** — `frbr:realization → pso:holdsStatusInTime → pso:withStatus` (199/202) links Works through their Expressions to open-access status; `frbr:realization → frbr:partOf` (63) connects expressions to journal issues.
+
+6. **Author ordering** — `pro:isRelatedToRoleInTime → co:index` (212) provides author position information within contribution lists.
+
+## Step 5 : Discover entity-value patterns
+
+OFFSET 100 reached — pagination is complete. Now I'll merge all 105 rows and de-duplicate.
+
+---
+
+## Step 5 — Combined Entity-Value Pattern Results
+
+After merging and de-duplicating across all 21 pages (offsets 0–100), here are the combined results:
+
+**105 total triples collected, covering 24 distinct entities.** De-duplication yields the same 105 rows (no exact duplicate triples found). Below is the organized summary by entity:
+
+### Person entities (foaf:Person) — 23 entities
+
+Each Person entity follows a consistent pattern with these properties:
+
+| Property | Value Type | Example |
+|---|---|---|
+| `rdf:type` | `foaf:Person` | (all entities) |
+| `foaf:familyName` | literal | "Peiró-Palomino", "Barbero", "Zhang", etc. |
+| `foaf:givenName` | literal | "Jesús", "Javier", "Min", etc. |
+| `foaf:name` | literal | "Peiró-Palomino, Jesús" (familyName, givenName) |
+| `datacite:hasIdentifier` | URI (optional) | e.g., ORCID identifier URI |
+
+**Person entity patterns observed:**
+- **Most Persons** have 4 triples: `rdf:type`, `foaf:familyName`, `foaf:givenName`, `foaf:name`
+- **Some Persons** (with ORCID) have 5+ triples, adding `datacite:hasIdentifier` linking to an Identifier node
+- **GESIS-sourced persons** (e.g., from `data.gesis.org`) have only 3 triples (no `foaf:name`)
+- **CQ001-sourced persons** (from `w3id.org/graphia/real/cq001-real`) consistently have the full 4-triple profile
+- `foaf:name` follows the pattern: **"familyName, givenName"**
+
+### Distinct entities observed (sample of 24):
+
+| # | Entity URI (abbreviated) | Source | Properties |
+|---|---|---|---|
+| 1 | .../Peiró-Palomino_Jesús | GESIS | type, familyName, givenName |
+| 2 | .../A.%20Collado%2C%20Luis | cq001 | type, familyName, givenName, name |
+| 3 | .../Barbero%2C%20Javier | cq001 | type, familyName, givenName, name |
+| 4 | .../Bischoff%2C%20Thore%20S%C3%B6ren | cq001 | type, familyName, givenName, name |
+| 5 | .../Bizer%2C%20Kilian | cq001 | type, familyName, givenName, name |
+| 6 | .../Bj%C3%B8rnskov%2C%20Christian | cq001 | type, familyName, givenName, name |
+| 7 | .../Carayannis%2C%20E. | cq001 | type, familyName, givenName, name |
+| 8 | .../Komninos%2C%20N. | cq001 | type, familyName, givenName, name |
+| 9 | .../Kumbhakar%2C%20Subal%20C. | cq001 | type, familyName, givenName, name |
+| 10 | .../Lenzi%2C%20Camilla | cq001 | type, familyName, givenName, name |
+| 11 | .../Liu%2C%20Yi | cq001 | type, familyName, givenName, name |
+| 12 | .../M.%20Santos%2C%20Anabela | cq001 | type, familyName, givenName, name |
+| 13 | .../M%C3%A9on%2C%20Pierre-Guillaume | cq001 | type, familyName, givenName, name |
+| 14 | .../M%C3%BCller-Zick%2C%20Hanna | cq001 | type, familyName, givenName, name |
+| 15 | .../Parmeter%2C%20Christopher%20F. | cq001 | type, familyName, givenName, name |
+| 16 | .../Peir%C3%B3-Palomino%2C%20Jes%C3%BAs | cq001 | type, familyName, givenName, name |
+| 17 | .../Perugini%2C%20Francesco | cq001 | type, familyName, givenName, name |
+| 18 | .../Rodr%C3%ADguez-Crespo%2C%20Ernesto | cq001 | type, familyName, givenName, name |
+| 19 | .../Rodr%C3%ADguez-Pose%2C%20Andr%C3%A9s | cq001 | type, familyName, givenName, name |
+| 20 | .../Runst%2C%20Petrik | cq001 | type, familyName, givenName, name |
+| 21 | .../Van%20Schaik%2C%20Ton | cq001 | type, familyName, givenName, name |
+| 22 | .../Wang%2C%20Yang | cq001 | type, familyName, givenName, name |
+| 23 | .../Wu%2C%20Kangmin | cq001 | type, familyName, givenName, name |
+| 24 | .../Zhang%2C%20Hong%E2%80%99ou | cq001 | type, familyName, givenName, name |
+| 25 | .../Zhang%2C%20Min | cq001 | type, familyName, givenName, name |
+| 26 | .../orcid/0000-0001-7102-9829 | cq001 | type, hasIdentifier |
+
+### Key observations:
+
+1. **The default query ordering heavily favors Person entities** — all 105 rows returned are `foaf:Person` triples, likely because Persons are small (3–5 triples each) and appear early in the store's indexing.
+2. **Consistent naming pattern**: `foaf:name` = "familyName, givenName" (comma-separated), providing both a structured and a display form.
+3. **Multi-source provenance**: Persons come from at least two sources — GESIS KG (`data.gesis.org`) and CQ01-real (`w3id.org/graphia/real/cq001-real`), with slight structural differences (GESIS persons lack `foaf:name`).
+4. **ORCID-linked persons** have an additional `datacite:hasIdentifier` property pointing to an Identifier node, enabling DOI/ORCID resolution.
+5. **International characters** are common in names (Peiró-Palomino, Bjørnskov, Méon, Müller-Zick, Rodríguez-Pose, Hong'ou), indicating the KG covers a diverse international author population.
+

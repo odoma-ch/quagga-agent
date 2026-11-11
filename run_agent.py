@@ -26,10 +26,17 @@ from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import InMemorySaver
 
 from models import ContextSchema, State
-from helpers.helper_functions import get_embeddings_for_chunks, load_shex_file, chunk_shex_file, chunk_sample_file
+from helpers.helper_functions import (
+    get_embeddings_for_chunks,
+    load_shex_file,
+    chunk_shex_file,
+    chunk_sample_file,
+)
 from tools import (
-    CustomShexRetrieverTool, validate_sparql_tool, 
-    generate_hypothetical_description_tool, CustomSampleRetrieverTool
+    CustomShexRetrieverTool,
+    validate_sparql_tool,
+    generate_hypothetical_description_tool,
+    CustomSampleRetrieverTool,
 )
 
 USE_OLLAMA = True if os.getenv("LOCAL_MODE") == "True" else False
@@ -48,7 +55,9 @@ def setup_rag_environment(path_to_shex, collection_name, k=3):
 
         shex_content = load_shex_file(path_to_shex)
         shex_prefixes, shex_chunks, chunk_titles = chunk_shex_file(shex_content)
-        shex_vector_store = get_embeddings_for_chunks(shex_collection_name, shex_chunks, use_chonkie=False)
+        shex_vector_store = get_embeddings_for_chunks(
+            shex_collection_name, shex_chunks, use_chonkie=False
+        )
 
         # sample_content = load_shex_file(path_to_sample)
         # sample_prefixes, sample_chunks = chunk_sample_file(sample_content)
@@ -56,41 +65,42 @@ def setup_rag_environment(path_to_shex, collection_name, k=3):
 
         retriever_tool = CustomShexRetrieverTool(vectorstore=shex_vector_store, k=k)
         # sample_retriever_tool = CustomSampleRetrieverTool(vectorstore=sample_vector_store, k=k)
-        return retriever_tool, shex_prefixes, chunk_titles # , sample_retriever_tool
+        return retriever_tool, shex_prefixes, chunk_titles  # , sample_retriever_tool
     else:
         client = chromadb.PersistentClient(path="chroma_db")
         embedding_model = OpenAIEmbeddings(
             model="Qwen/Qwen3-Embedding-0.6B",
             openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
-            openai_api_key="EMPTY"
+            openai_api_key="EMPTY",
         )
 
         available_collections = [_.name for _ in client.list_collections()]
 
         if not shex_collection_name in available_collections:
             raise Exception(f"Collection {shex_collection_name} not found")
-            
+
         # if not sample_collection_name in available_collections:
         #     raise Exception(f"Collection {sample_collection_name} not found")
-        
+
         retriever_tool = CustomShexRetrieverTool(
             vectorstore=Chroma(
-                collection_name=shex_collection_name, persist_directory="chroma_db",
+                collection_name=shex_collection_name,
+                persist_directory="chroma_db",
                 embedding_function=embedding_model,
-            ), 
-            k=k
+            ),
+            k=k,
         )
         # sample_retriever_tool = CustomSampleRetrieverTool(
         #     vectorstore=Chroma(
         #         collection_name=sample_collection_name, persist_directory="chroma_db", embedding_function=embedding_model
-        #     ), 
+        #     ),
         #     k=k
         # )
 
         shex_content = load_shex_file(path_to_shex)
         shex_prefixes, _, chunk_titles = chunk_shex_file(shex_content)
 
-        return retriever_tool, shex_prefixes, chunk_titles # , sample_retriever_tool
+        return retriever_tool, shex_prefixes, chunk_titles  # , sample_retriever_tool
 
 
 def sparql_chat(state: State, config: RunnableConfig):
@@ -99,22 +109,26 @@ def sparql_chat(state: State, config: RunnableConfig):
     endpoint = runtime.context["sparql_endpoint"]
     benchmark_method_description = runtime.context["benchmark_method_description"]
     shex_already_added = any(
-        hasattr(msg, "type") and msg.type == "system" and msg.content == shex_prefixes 
+        hasattr(msg, "type") and msg.type == "system" and msg.content == shex_prefixes
         for msg in state["messages"]
     )
 
     if not shex_already_added and shex_prefixes:
         state["messages"].insert(0, ("system", shex_prefixes))
-        state["messages"].insert(0, (
-            "system", f"""
+        state["messages"].insert(
+            0,
+            (
+                "system",
+                f"""
             You are a helpful assistant that can help with SPARQL queries.
 
             Generate the SPARQL query for a given user input for the endpoint: {endpoint}
 
             Use the {benchmark_method_description} retriever tool to retrieve the relevant schemas for the question.
             After generating the SPARQL query, always use the validate_sparql_tool to validate the query.
-            """
-        ))
+            """,
+            ),
+        )
     return {"messages": [llm_with_tools.invoke(state["messages"])]}
 
 
@@ -130,8 +144,15 @@ if __name__ == "__main__":
     # Example collection name: "opencitations_meta"
     parser.add_argument("--collection-name", type=str, required=True)
     parser.add_argument("--benchmark-mode", action="store_true", default=False)
-    parser.add_argument("--benchmark-model", type=str, default="M", choices=["S", "M", "L"])
-    parser.add_argument("--benchmark-method", type=str, default="3", choices=["2", "3", "4", "5", "6", "7"])
+    parser.add_argument(
+        "--benchmark-model", type=str, default="M", choices=["S", "M", "L"]
+    )
+    parser.add_argument(
+        "--benchmark-method",
+        type=str,
+        default="3",
+        choices=["2", "3", "4", "5", "6", "7"],
+    )
     args = parser.parse_args()
 
     retriever_tool, shex_prefixes, chunk_titles = setup_rag_environment(
@@ -146,19 +167,29 @@ if __name__ == "__main__":
         tools = [retriever_tool, validate_sparql_tool]
         llm_with_tools = llm.bind_tools(tools)
     else:
-        base_url, model, api_key = os.getenv("PSNC_OKD_BASE_URL"), os.getenv("PSNC_OKD_MODEL"), os.getenv("PSNC_OKD_API_KEY")
+        base_url, model, api_key = (
+            os.getenv("PSNC_OKD_BASE_URL"),
+            os.getenv("PSNC_OKD_MODEL"),
+            os.getenv("PSNC_OKD_API_KEY"),
+        )
         if args.benchmark_mode:
             if args.benchmark_model == "S":
                 base_url, api_key, model = (
-                    os.getenv("SMALL_MODEL_BASE_URL"), os.getenv("SMALL_MODEL_API_KEY"), "Qwen/Qwen2.5-Coder-7B-Instruct"
+                    os.getenv("SMALL_MODEL_BASE_URL"),
+                    os.getenv("SMALL_MODEL_API_KEY"),
+                    "Qwen/Qwen2.5-Coder-7B-Instruct",
                 )
             elif args.benchmark_model == "M":
                 base_url, api_key, model = (
-                    os.getenv("PSNC_OKD_BASE_URL"), os.getenv("PSNC_OKD_API_KEY"), "Qwen3-Coder-30B-A3B-Instruct-Q8_0"
+                    os.getenv("PSNC_OKD_BASE_URL"),
+                    os.getenv("PSNC_OKD_API_KEY"),
+                    "Qwen3-Coder-30B-A3B-Instruct-Q8_0",
                 )
             elif args.benchmark_model == "L":
                 base_url, api_key, model = (
-                    os.getenv("PSNC_HPC_BASE_URL"), os.getenv("PSNC_HPC_API_KEY"), "DeepSeek-V3.1-vLLM"
+                    os.getenv("PSNC_HPC_BASE_URL"),
+                    os.getenv("PSNC_HPC_API_KEY"),
+                    "DeepSeek-V3.1-vLLM",
                 )
 
         http_client = httpx.Client(verify=False)
@@ -169,7 +200,7 @@ if __name__ == "__main__":
             temperature=0.1,
             top_p=0.9,
             http_client=http_client,
-            max_tokens=None
+            max_tokens=None,
         )
         tools = [retriever_tool, validate_sparql_tool]
         llm_with_tools = llm.bind_tools(tools)
@@ -199,29 +230,49 @@ if __name__ == "__main__":
                 console.print("Goodbye!", style="bold blue")
                 break
 
-            prefixes_str = "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
+            prefixes_str = (
+                "You might need to use these prefixes in the SPARQL query: "
+                + shex_prefixes
+            )
 
             for event in graph.stream(
                 {"messages": [("user", user_input)]},
-                config, context={"sparql_endpoint": args.endpoint_url, 
-                "shex_prefixes": prefixes_str, "chunk_titles": chunk_titles, "retrieved_chunks": set()}):
+                config,
+                context={
+                    "sparql_endpoint": args.endpoint_url,
+                    "shex_prefixes": prefixes_str,
+                    "chunk_titles": chunk_titles,
+                    "retrieved_chunks": set(),
+                },
+            ):
                 for value in event.values():
                     if value["messages"]:
                         latest_message = value["messages"][-1]
                         # tool call message
-                        if hasattr(latest_message, "tool_calls") and len(latest_message.tool_calls) > 0:
+                        if (
+                            hasattr(latest_message, "tool_calls")
+                            and len(latest_message.tool_calls) > 0
+                        ):
                             tool_name = latest_message.tool_calls[0]["name"]
                             # if tool_name == "shex_retriever":
                             continue
                         # tool result message
-                        elif hasattr(latest_message, "type") and latest_message.type == "tool":
+                        elif (
+                            hasattr(latest_message, "type")
+                            and latest_message.type == "tool"
+                        ):
                             continue
-                        console.print(f"\nAssistant:\n{latest_message.content}", style="bold green")
+                        console.print(
+                            f"\nAssistant:\n{latest_message.content}",
+                            style="bold green",
+                        )
 
     # run only when the benchamrk mode is enabled
     if args.benchmark_mode:
         home_dir = os.getenv("HOME")
-        with open(f"{home_dir}/quagga-agent/benchmark/dataset/orkg_sciqa_rows.json", "r") as f:
+        with open(
+            f"{home_dir}/quagga-agent/benchmark/dataset/orkg_sciqa_rows.json", "r"
+        ) as f:
             sciqa_test_rows = json.load(f)
 
             for row in sciqa_test_rows:
@@ -230,41 +281,60 @@ if __name__ == "__main__":
                 ground_truth_query = row["query"]["sparql"]
 
                 # only used when the RAG involves VoID and ShEX files
-                prefixes_str = "You might need to use these prefixes in the SPARQL query: " + shex_prefixes
+                prefixes_str = (
+                    "You might need to use these prefixes in the SPARQL query: "
+                    + shex_prefixes
+                )
 
                 context = {
-                    "sparql_endpoint": args.endpoint_url, "shex_prefixes": prefixes_str, "chunk_titles": chunk_titles, "retrieved_chunks": set()
+                    "sparql_endpoint": args.endpoint_url,
+                    "shex_prefixes": prefixes_str,
+                    "chunk_titles": chunk_titles,
+                    "retrieved_chunks": set(),
                 }
-                # benchmark model: S, M and L 
+                # benchmark model: S, M and L
                 # benchmark prompt: from SCiQA test set
                 # benchmark method: 2, 3, 4, 5, 6, 7
                 if args.benchmark_mode:
                     benckmark_method_mapping = {"2": "VoID", "3": "ShEX", "4": "Sample"}
                     added_context = {
-                        "benchmark_method": args.benchmark_method, 
-                        "benchmark_prompt": user_input, 
+                        "benchmark_method": args.benchmark_method,
+                        "benchmark_prompt": user_input,
                         "benchmark_model": args.benchmark_model,
-                        "benchmark_method_description": benckmark_method_mapping[args.benchmark_method],
+                        "benchmark_method_description": benckmark_method_mapping[
+                            args.benchmark_method
+                        ],
                         "benchmark_mode": args.benchmark_mode,
                         "ground_truth_query": ground_truth_query,
                         "ground_truth_id": ground_truth_id,
-
                     }
                     context.update(added_context)
 
-                console.print(f"Using the following context: {context}", style="bold blue")
+                console.print(
+                    f"Using the following context: {context}", style="bold blue"
+                )
 
                 for event in graph.stream(
-                    {"messages": [("user", user_input)]}, config, context=context):
+                    {"messages": [("user", user_input)]}, config, context=context
+                ):
                     for value in event.values():
                         if value["messages"]:
                             latest_message = value["messages"][-1]
                             # tool call message
-                            if hasattr(latest_message, "tool_calls") and len(latest_message.tool_calls) > 0:
+                            if (
+                                hasattr(latest_message, "tool_calls")
+                                and len(latest_message.tool_calls) > 0
+                            ):
                                 tool_name = latest_message.tool_calls[0]["name"]
                                 # if tool_name == "shex_retriever":
                                 continue
                             # tool result message
-                            elif hasattr(latest_message, "type") and latest_message.type == "tool":
+                            elif (
+                                hasattr(latest_message, "type")
+                                and latest_message.type == "tool"
+                            ):
                                 continue
-                            console.print(f"\nAssistant:\n{latest_message.content}", style="bold green")
+                            console.print(
+                                f"\nAssistant:\n{latest_message.content}",
+                                style="bold green",
+                            )

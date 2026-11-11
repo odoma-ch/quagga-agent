@@ -10,15 +10,19 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi.testclient import TestClient
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
 from api import app
 from tests.answers_const import (
-    EVAL_QUESTIONS, TRACE_ASSERT_EXCEPTIONS, TEST_ANSWER_TOOLS
+    EVAL_QUESTIONS,
+    TRACE_ASSERT_EXCEPTIONS,
+    TEST_ANSWER_TOOLS,
 )
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -32,7 +36,9 @@ def agent_client():
         yield client
 
 
-def _chat(client, question: str, chat_id: str | None = None, stream: bool = False) -> dict:
+def _chat(
+    client, question: str, chat_id: str | None = None, stream: bool = False
+) -> dict:
     """Helper: POST a question to /v1/chat/completions, return parsed response."""
     body = {
         "messages": [{"role": "user", "content": question}],
@@ -83,8 +89,7 @@ def test_full_flow(agent_client: TestClient, question: str):
 
     metric = GEval(
         name="answer_relevance_and_correctness",
-        criteria=(
-"""
+        criteria=("""
 Evaluate whether the final answer is logical and relevant given the user's input and the
 full API response context. The answer should directly address the user's question, and any
 final query or reported result must include all columns and fields the user requested. The
@@ -92,8 +97,7 @@ fields present in the final results should match what was asked for and align wi
 logic — there should be no obvious contradictions or omitted fields. If the user did not
 explicitly specify a knowledge graph, it is acceptable for the assistant to prompt the user
 to select one rather than generating a fabricated query or result.
-"""
-        ),
+"""),
         evaluation_params=[
             LLMTestCaseParams.INPUT,
             LLMTestCaseParams.ACTUAL_OUTPUT,
@@ -109,10 +113,12 @@ to select one rather than generating a fabricated query or result.
         context=[response_context],
     )
     metric.measure(test_case)
-    assert metric.score is not None, f"DeepEval returned no score. reason={metric.reason}"
-    assert metric.score >= 0.7, (
-        f"DeepEval score too low: {metric.score:.2f}. reason={metric.reason}"
-    )
+    assert (
+        metric.score is not None
+    ), f"DeepEval returned no score. reason={metric.reason}"
+    assert (
+        metric.score >= 0.7
+    ), f"DeepEval score too low: {metric.score:.2f}. reason={metric.reason}"
 
 
 @pytest.mark.parametrize("question", EVAL_QUESTIONS)
@@ -174,9 +180,9 @@ def test_execution_trace(agent_client: TestClient, question: str):
 
     if question not in TRACE_ASSERT_EXCEPTIONS:
         assert tool_calls, "Expected at least one tool call"
-        assert "Retrieving knowledge graph metadata" not in str(tool_calls[-1]), (
-            "Last tool call should not be retrieving metadata"
-        )
+        assert "Retrieving knowledge graph metadata" not in str(
+            tool_calls[-1]
+        ), "Last tool call should not be retrieving metadata"
     # check if tool calls of the expected list are present in the generated ones
     for expected_call in TEST_ANSWER_TOOLS[question]:
         matched = any(expected_call in actual for actual in tool_calls)

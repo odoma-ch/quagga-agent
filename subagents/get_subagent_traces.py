@@ -42,7 +42,11 @@ def _content_as_text(msg: Any) -> str:
                 parts.append(block)
             elif isinstance(block, dict):
                 text = next(
-                    (block.get(key) for key in ("text", "content", "reasoning", "output") if block.get(key)),
+                    (
+                        block.get(key)
+                        for key in ("text", "content", "reasoning", "output")
+                        if block.get(key)
+                    ),
                     None,
                 )
                 parts.append(str(text) if text else str(block))
@@ -76,10 +80,14 @@ def _is_failed_tool_message(msg: Any) -> bool:
 
 
 def _serialize_message(msg: Any, index: int) -> dict[str, Any]:
-    payload = msg.model_dump(mode="json") if hasattr(msg, "model_dump") else {
-        "type": _msg_value(msg, "type"),
-        "content": _msg_value(msg, "content"),
-    }
+    payload = (
+        msg.model_dump(mode="json")
+        if hasattr(msg, "model_dump")
+        else {
+            "type": _msg_value(msg, "type"),
+            "content": _msg_value(msg, "content"),
+        }
+    )
     payload["index"] = index
     payload["content_text"] = _content_as_text(msg)
     return payload
@@ -107,7 +115,11 @@ def _extract_tool_calls(msg: Any) -> list[dict[str, Any]]:
                 {
                     "id": tool_call.get("id"),
                     "name": function.get("name"),
-                    "args": arguments if isinstance(arguments, dict) else {"raw_arguments": arguments},
+                    "args": (
+                        arguments
+                        if isinstance(arguments, dict)
+                        else {"raw_arguments": arguments}
+                    ),
                     "type": tool_call.get("type"),
                 }
             )
@@ -158,7 +170,9 @@ def _looks_like_good_result(query: str, result_text: str) -> bool:
         for line in result_text.splitlines()
         if line.strip().startswith("| http")
     ]
-    if data_lines and all(any(marker in line for marker in INTERNAL_RESULT_MARKERS) for line in data_lines):
+    if data_lines and all(
+        any(marker in line for marker in INTERNAL_RESULT_MARKERS) for line in data_lines
+    ):
         return False
     return True
 
@@ -204,7 +218,8 @@ def _collect_successful_query_messages(messages: Sequence[Any]) -> list[Any]:
             matching_ids = {
                 str(tool_call.get("id", ""))
                 for tool_call in tool_calls
-                if isinstance(tool_call, dict) and str(tool_call.get("id", "")) in successful_tool_ids
+                if isinstance(tool_call, dict)
+                and str(tool_call.get("id", "")) in successful_tool_ids
             }
             if matching_ids:
                 selected_indexes.add(idx)
@@ -235,7 +250,9 @@ def _collect_successful_query_messages(messages: Sequence[Any]) -> list[Any]:
 def get_successful_query_messages(thread_id: str) -> list[dict]:
     raw_messages = _load_raw_checkpoint_messages(thread_id)
     successful_messages = _collect_successful_query_messages(raw_messages)
-    successful_messages_serialized = [_serialize_message(msg, idx) for idx, msg in enumerate(successful_messages)]
+    successful_messages_serialized = [
+        _serialize_message(msg, idx) for idx, msg in enumerate(successful_messages)
+    ]
     with open("successful_messages.json", "w", encoding="utf-8") as f:
         json.dump(successful_messages_serialized, f, ensure_ascii=False, indent=2)
     return successful_messages_serialized
@@ -301,7 +318,9 @@ def get_useful_queries_by_question(thread_id: str) -> list[dict[str, Any]]:
 def _tokenize_query_for_jaccard(query: str) -> set[str]:
     return {
         token
-        for token in re.findall(r"[A-Za-z_][A-Za-z0-9_:/#.-]*|\?[A-Za-z_][A-Za-z0-9_]*", query.lower())
+        for token in re.findall(
+            r"[A-Za-z_][A-Za-z0-9_:/#.-]*|\?[A-Za-z_][A-Za-z0-9_]*", query.lower()
+        )
         if token
     }
 
@@ -405,7 +424,9 @@ def _build_postgres_conn_string() -> str:
     postgres_host = os.getenv("POSTGRES_HOST")
     postgres_password = os.getenv("POSTGRES_PASSWORD")
     if not all((postgres_user, postgres_host, postgres_password)):
-        raise ValueError("Missing one or more Postgres env vars: POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD")
+        raise ValueError(
+            "Missing one or more Postgres env vars: POSTGRES_USER, POSTGRES_HOST, POSTGRES_PASSWORD"
+        )
     return f"postgresql://{postgres_user}:{postgres_password}@{postgres_host}/{postgres_db}"
 
 
@@ -417,12 +438,14 @@ def get_checkpoint_messages(thread_id: str) -> list[dict]:
             messages = latest["channel_values"].get("messages", [])
             all_msgs = []
             for i, msg in enumerate(messages):
-                all_msgs.append({
-                    "index": i,
-                    "role": msg.type,
-                    "content": msg.content,
-                    "metadata": getattr(msg, "additional_kwargs", {}),
-                })
+                all_msgs.append(
+                    {
+                        "index": i,
+                        "role": msg.type,
+                        "content": msg.content,
+                        "metadata": getattr(msg, "additional_kwargs", {}),
+                    }
+                )
             return all_msgs
         return []
 

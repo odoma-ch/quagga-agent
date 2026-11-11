@@ -23,7 +23,10 @@ from langchain_openai import OpenAIEmbeddings
 
 from models import ContextSchema, State
 from tools import (
-    run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool,
+    run_sparql_subagent_tool,
+    validate_sparql_tool,
+    describe_knowledge_graphs_tool,
+    scope_checker_tool,
 )
 
 from agent_utils.agent_constants import MODEL_ID
@@ -46,7 +49,14 @@ from helpers.message_format_helpers import (
 from helpers.tool_helpers import _TOOL_DISPLAY_NAMES
 from agent_utils.agent_helpers import _run_agent, _stream_agent, _load_prompt
 from helpers.tool_helpers import _after_tool
-from agent_utils.mcp_client import initialize_mcp_tools, get_mcp_server_url, shutdown_mcp_client, initialize_mcp_session, set_current_thread_id, get_mcp_tools
+from agent_utils.mcp_client import (
+    initialize_mcp_tools,
+    get_mcp_server_url,
+    shutdown_mcp_client,
+    initialize_mcp_session,
+    set_current_thread_id,
+    get_mcp_tools,
+)
 
 load_dotenv()
 
@@ -63,7 +73,9 @@ logging.basicConfig(level=logging.INFO)
 
 def is_openwebui_internal(message: str) -> bool:
     stripped_message = message.strip()
-    return (stripped_message.startswith("### Task:") or stripped_message.startswith("### TASK:"))
+    return stripped_message.startswith("### Task:") or stripped_message.startswith(
+        "### TASK:"
+    )
 
 
 def check_for_follow_up_and_tags(value_string: str) -> bool:
@@ -149,12 +161,14 @@ async def lifespan(app: FastAPI):
     """Initialise the LangGraph agent once at startup."""
 
     # Initialize ChromaDB client and embedding model
-    chroma_path = "/data/chroma_db" if os.getenv("LOCAL_MODE", "False") != "True" else "chroma_db"
+    chroma_path = (
+        "/data/chroma_db" if os.getenv("LOCAL_MODE", "False") != "True" else "chroma_db"
+    )
     runtime_state.chroma_client = chromadb.PersistentClient(path=chroma_path)
     runtime_state.embedding_model = OpenAIEmbeddings(
         model="Qwen/Qwen3-Embedding-0.6B",
         openai_api_base="https://qwen-embedding-route-graphia-app1-staging.apps.bst2.paas.psnc.pl/v1",
-        openai_api_key="EMPTY"
+        openai_api_key="EMPTY",
     )
 
     base_url = os.getenv("PSNC_OKD_BASE_URL")
@@ -173,8 +187,17 @@ async def lifespan(app: FastAPI):
     # validate_sparql_tool is intentionally excluded from llm_tools — the LLM must never
     # call it directly. It is only invoked by force_validate (graph-enforced) to ensure
     # it always runs AFTER run_sparql_subagent_tool's result is committed to state.
-    llm_tools = [run_sparql_subagent_tool, describe_knowledge_graphs_tool, scope_checker_tool]
-    all_tools = [run_sparql_subagent_tool, validate_sparql_tool, describe_knowledge_graphs_tool, scope_checker_tool]
+    llm_tools = [
+        run_sparql_subagent_tool,
+        describe_knowledge_graphs_tool,
+        scope_checker_tool,
+    ]
+    all_tools = [
+        run_sparql_subagent_tool,
+        validate_sparql_tool,
+        describe_knowledge_graphs_tool,
+        scope_checker_tool,
+    ]
 
     # TODO: Uncomment this when MCP is more stable from the GoTriple side
     # mcp_server_url = get_mcp_server_url()
@@ -201,19 +224,23 @@ async def lifespan(app: FastAPI):
     else:
         logger.warning(f"Primary model unhealthy at startup ({reason}), using fallback")
 
-    tool_client, active_tool_model, tool_is_healthy, tool_reason = await build_tool_client_from_health(
-        base_url=tool_base_url,
-        api_key=tool_api_key,
-        model_name=tool_model,
-        fallback_base_url=tool_fallback_base_url,
-        fallback_api_key=tool_fallback_api_key,
-        fallback_model_name=tool_fallback_model,
+    tool_client, active_tool_model, tool_is_healthy, tool_reason = (
+        await build_tool_client_from_health(
+            base_url=tool_base_url,
+            api_key=tool_api_key,
+            model_name=tool_model,
+            fallback_base_url=tool_fallback_base_url,
+            fallback_api_key=tool_fallback_api_key,
+            fallback_model_name=tool_fallback_model,
+        )
     )
     update_runtime_tool_client(runtime_state, tool_client, active_tool_model)
     if tool_is_healthy:
         logger.info("Primary tool model healthy at startup")
     else:
-        logger.warning("Primary tool model unhealthy at startup (%s), using fallback", tool_reason)
+        logger.warning(
+            "Primary tool model unhealthy at startup (%s), using fallback", tool_reason
+        )
     # runtime_state.scope_graph = scope_subgraph()
 
     graph_builder = StateGraph(State)
@@ -280,7 +307,6 @@ async def lifespan(app: FastAPI):
         logger.info("Shutted down Quagga SPARQL Agent API")
 
 
-
 app = FastAPI(
     title="Quagga SPARQL Agent API",
     description="OpenAI-compatible API wrapping the LangGraph ShEx-based SPARQL agent",
@@ -333,7 +359,9 @@ async def chat_completions(request: Request):
         messages = _extract_messages(body)
         stream = body.get("stream", False)
         last_message = messages[-1][1] if messages else ""
-        internal_task = isinstance(last_message, str) and is_openwebui_internal(last_message)
+        internal_task = isinstance(last_message, str) and is_openwebui_internal(
+            last_message
+        )
 
         # Use a stable thread_id per conversation when provided, else throw an error as it should come from OpenWebUI.
         thread_id = body.get("chat_id", None)
@@ -343,10 +371,22 @@ async def chat_completions(request: Request):
         # OpenWebUI sends internal metadata requests (title/tags/follow-ups)
         # as regular chat completions. Handle them directly to avoid running scope/tools.
         if internal_task and not stream and runtime_state.llm is not None:
-            sys_msgs = [m for m in messages if isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system"]
-            other_msgs = [m for m in messages if not (isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system")]
+            sys_msgs = [
+                m
+                for m in messages
+                if isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system"
+            ]
+            other_msgs = [
+                m
+                for m in messages
+                if not (
+                    isinstance(m, (tuple, list)) and len(m) >= 2 and m[0] == "system"
+                )
+            ]
             ordered_messages = sys_msgs + other_msgs
-            response = await asyncio.to_thread(lambda: runtime_state.llm.invoke(ordered_messages))
+            response = await asyncio.to_thread(
+                lambda: runtime_state.llm.invoke(ordered_messages)
+            )
             content = _message_content_to_text(getattr(response, "content", ""))
             return JSONResponse(_make_chat_completion(content))
 
@@ -406,7 +446,9 @@ async def get_chat_by_id(chat_id: str):
         for msg in messages:
             message_content = getattr(msg, "content", "")
             if_it_follow_up_or_tags = check_for_follow_up_and_tags(message_content)
-            if isinstance(message_content, str) and (is_openwebui_internal(message_content) or if_it_follow_up_or_tags):
+            if isinstance(message_content, str) and (
+                is_openwebui_internal(message_content) or if_it_follow_up_or_tags
+            ):
                 continue
 
             key = (
@@ -447,8 +489,12 @@ async def get_chat_by_id(chat_id: str):
                                 "id": tc.get("id"),
                                 "type": "function",
                                 "function": {
-                                    "name": _TOOL_DISPLAY_NAMES.get(tc.get("name"), tc.get("name")),
-                                    "arguments": json.dumps(tc.get("args", {}), ensure_ascii=False),
+                                    "name": _TOOL_DISPLAY_NAMES.get(
+                                        tc.get("name"), tc.get("name")
+                                    ),
+                                    "arguments": json.dumps(
+                                        tc.get("args", {}), ensure_ascii=False
+                                    ),
                                 },
                             }
                         )

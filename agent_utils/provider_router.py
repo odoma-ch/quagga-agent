@@ -41,7 +41,7 @@ def is_model_healthy(
             json={
                 "model": model_name,
                 "messages": [{"role": "user", "content": "Hi!"}],
-                "max_tokens": 1
+                "max_tokens": 1,
             },
             timeout=timeout_seconds,
         )
@@ -100,7 +100,9 @@ def update_runtime_llm(
         runtime_state.llm_with_tools = llm.bind_tools(llm_tools)
 
 
-def update_runtime_tool_client(runtime_state: Any, client: openai.OpenAI, model_name: str) -> None:
+def update_runtime_tool_client(
+    runtime_state: Any, client: openai.OpenAI, model_name: str
+) -> None:
     runtime_state.tool_openai_client = client
     runtime_state.tool_model = model_name
 
@@ -249,9 +251,13 @@ async def periodic_health_check(
 
         last_is_healthy = is_healthy
         if is_healthy:
-            logger.info("[periodic-main] Primary LLM recovered, switched back to primary")
+            logger.info(
+                "[periodic-main] Primary LLM recovered, switched back to primary"
+            )
         else:
-            logger.warning(f"[periodic-main] Primary LLM down ({reason}), switching to fallback")
+            logger.warning(
+                f"[periodic-main] Primary LLM down ({reason}), switching to fallback"
+            )
 
 
 async def periodic_tool_health_check(
@@ -306,6 +312,10 @@ async def periodic_tool_health_check(
 
         last_is_healthy = is_healthy
         if is_healthy:
-            logger.info("[periodic-tools] Primary tool model recovered, switched back to primary")
+            logger.info(
+                "[periodic-tools] Primary tool model recovered, switched back to primary"
+            )
         else:
-            logger.warning(f"[periodic-tools] Primary tool model down ({reason}), switching to fallback")
+            logger.warning(
+                f"[periodic-tools] Primary tool model down ({reason}), switching to fallback"
+            )

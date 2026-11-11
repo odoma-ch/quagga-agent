@@ -5,6 +5,7 @@ from psycopg_pool import AsyncConnectionPool
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 

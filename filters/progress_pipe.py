@@ -6,6 +6,7 @@ funding_url: https://github.com/open-webui
 version: 0.2
 Function Name: QuaggaProgressPipe
 """
+
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -20,7 +21,9 @@ class Filter:
         self.valves = self.Valves()
         self._last_action = "kg_query"
 
-    async def stream(self, event: dict, __event_emitter__: Optional[callable] = None) -> Optional[dict]:
+    async def stream(
+        self, event: dict, __event_emitter__: Optional[callable] = None
+    ) -> Optional[dict]:
         if not isinstance(event, dict):
             return event
 

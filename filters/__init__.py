@@ -6,6 +6,7 @@ funding_url: https://github.com/open-webui
 version: 0.1
 Function Name: ChatIDInlet
 """
+
 from pydantic import BaseModel, Field
 from typing import Optional
 

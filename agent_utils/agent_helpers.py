@@ -23,16 +23,18 @@ from langgraph.errors import GraphRecursionError
 
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from agent_utils.mcp_client import set_current_thread_id, initialize_mcp_session
-
 
 PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "prompts")
 
 _progress_lock = threading.Lock()
 _progress_streams: dict[str, tuple[asyncio.Queue, asyncio.AbstractEventLoop, str]] = {}
-_progress_token_ctx: contextvars.ContextVar[str] = contextvars.ContextVar("progress_token", default="")
+_progress_token_ctx: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "progress_token", default=""
+)
 
 
 def emit_progress(message: str):
@@ -59,24 +61,26 @@ def _load_prompt(filename: str) -> str:
 def extract_question_answer_pairs(state, keep_last_n=5):
     """Extract question-answer pairs from the state."""
     messages = state["messages"]
-    
+
     pairs = []
     current_question = None
-    
+
     for msg in messages:
         if isinstance(msg, HumanMessage) and msg.content.strip():
             current_question = msg.content
         elif isinstance(msg, ToolMessage) and msg.name == "validate_sparql_tool":
             if current_question is not None:
                 artifact = getattr(msg, "artifact", None)
-                pairs.append({
-                    "question": current_question,
-                    "answer": msg.content,
-                    "sparql_query": artifact.get("query") if artifact else None,
-                    "results": artifact.get("rows") if artifact else None
-                })
+                pairs.append(
+                    {
+                        "question": current_question,
+                        "answer": msg.content,
+                        "sparql_query": artifact.get("query") if artifact else None,
+                        "results": artifact.get("rows") if artifact else None,
+                    }
+                )
             current_question = None
-    
+
     return pairs[-keep_last_n:]
 
 
@@ -85,7 +89,7 @@ def _build_agent_context(thread_id: str):
     session = runtime_state.get_or_create_session(thread_id)
     prefixes_str = session.shex_prefixes or ""
     sparql_endpoint = session.sparql_endpoint or SPARQL_ENDPOINT
-    
+
     return ContextSchema(
         thread_id=thread_id,
         selected_kg=session.selected_kg,
@@ -100,8 +104,11 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
     """Invoke the LangGraph agent and collect the full response including thinking."""
     set_current_thread_id(thread_id)
     await initialize_mcp_session()
-    
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
+
+    config = {
+        "configurable": {"thread_id": thread_id},
+        "recursion_limit": MAX_AGENT_STEPS,
+    }
     context = _build_agent_context(thread_id)
 
     # Only send the last user message; the checkpointer provides prior history.
@@ -109,13 +116,16 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
 
     parts: list[str] = []
     try:
+
         def _collect_events():
             set_current_thread_id(thread_id)
-            return list(runtime_state.graph.stream({"messages": last_message}, config, context=context))
+            return list(
+                runtime_state.graph.stream(
+                    {"messages": last_message}, config, context=context
+                )
+            )
 
-        for event in await asyncio.to_thread(
-            _collect_events
-        ):
+        for event in await asyncio.to_thread(_collect_events):
             for value in event.values():
                 if value.get("messages"):
                     latest = value["messages"][-1]
@@ -137,7 +147,9 @@ async def _run_agent(messages: list[tuple[str, str]], thread_id: str) -> str:
                         parts.append(text)
     except GraphRecursionError:
         print("[DEBUG] GraphRecursionError caught in _run_agent", flush=True)
-        parts.append("I've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?")
+        parts.append(
+            "I've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?"
+        )
 
     return "\n".join(parts)
 
@@ -146,8 +158,11 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
     """Yield SSE chunks as tool steps + tokenized assistant output."""
     set_current_thread_id(thread_id)
     await initialize_mcp_session()
-    
-    config = {"configurable": {"thread_id": thread_id}, "recursion_limit": MAX_AGENT_STEPS}
+
+    config = {
+        "configurable": {"thread_id": thread_id},
+        "recursion_limit": MAX_AGENT_STEPS,
+    }
     context = _build_agent_context(thread_id)
 
     # Only send the last user message; the checkpointer provides prior history.
@@ -182,7 +197,9 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
         token = _progress_token_ctx.set(progress_token)
         set_current_thread_id(thread_id)
         try:
-            for event in runtime_state.graph.stream({"messages": last_message}, config, context=context):
+            for event in runtime_state.graph.stream(
+                {"messages": last_message}, config, context=context
+            ):
                 for value in event.values():
                     if not value.get("messages"):
                         continue
@@ -231,11 +248,14 @@ async def _stream_agent(messages: list[tuple[str, str]], thread_id: str):
                             text_chunk,
                         )
         except GraphRecursionError:
-            print("[DEBUG] GraphRecursionError caught in _stream_agent/_producer", flush=True)
+            print(
+                "[DEBUG] GraphRecursionError caught in _stream_agent/_producer",
+                flush=True,
+            )
             error_chunk = _make_chat_completion_chunk(
                 "\n\nI've reached the conversation depth limit for this part of our discussion. Could we take a step back or try a different approach?",
                 chunk_id=stream_id,
-                chunk_type="error"
+                chunk_type="error",
             )
             loop.call_soon_threadsafe(
                 queue.put_nowait,

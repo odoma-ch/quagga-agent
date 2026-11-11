@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+
 load_dotenv()
 
 import json
@@ -39,7 +40,9 @@ def _format_tool_call(message) -> str:
 
 def _format_tool_result(message) -> str:
     """Render a tool result message as a collapsible markdown details block."""
-    content = message.content if isinstance(message.content, str) else str(message.content)
+    content = (
+        message.content if isinstance(message.content, str) else str(message.content)
+    )
     tool_name = getattr(message, "name", "tool")
     display = _TOOL_DISPLAY_NAMES.get(tool_name, tool_name)
 
@@ -95,13 +98,19 @@ def _extract_terminal_tool_answer(message) -> str | None:
         or getattr(message, "name", "") != "validate_sparql_tool"
     ):
         return None
-    content = message.content if isinstance(message.content, str) else str(message.content)
+    content = (
+        message.content if isinstance(message.content, str) else str(message.content)
+    )
     return content
 
 
 _MCP_TOOL_NAMES = {
-    "search_documents", "get_document", "search_authors", "get_author",
-    "search_projects", "get_project",
+    "search_documents",
+    "get_document",
+    "search_authors",
+    "get_author",
+    "search_projects",
+    "get_project",
 }
 _MCP_MAX_SEQUENTIAL_CALLS = 5
 
@@ -109,7 +118,10 @@ _MCP_MAX_SEQUENTIAL_CALLS = 5
 def _count_recent_mcp_calls(messages: list) -> int:
     count = 0
     for msg in reversed(messages):
-        if getattr(msg, "type", None) == "tool" and getattr(msg, "name", "") in _MCP_TOOL_NAMES:
+        if (
+            getattr(msg, "type", None) == "tool"
+            and getattr(msg, "name", "") in _MCP_TOOL_NAMES
+        ):
             count += 1
         else:
             break
@@ -128,7 +140,11 @@ def _after_tool(state: State):
         getattr(last_message, "type", None) == "tool"
         and getattr(last_message, "name", "") == "run_sparql_subagent_tool"
     ):
-        content = last_message.content if isinstance(last_message.content, str) else str(last_message.content)
+        content = (
+            last_message.content
+            if isinstance(last_message.content, str)
+            else str(last_message.content)
+        )
         if content.strip() == _NO_KG_SELECTED_MESSAGE:
             return "sparql_chat_agent"
         return "force_validate"
@@ -148,7 +164,7 @@ def _is_sparql_endpoint_up(endpoint_url: str, timeout: int = 15) -> bool:
             endpoint_url,
             params={"query": "ASK { ?s ?p ?o }"},
             headers={"Accept": "application/sparql-results+json"},
-            timeout=timeout
+            timeout=timeout,
         )
         return 200 <= response.status_code < 300
     except requests.exceptions.RequestException:

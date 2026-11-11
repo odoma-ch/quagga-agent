@@ -94,7 +94,9 @@ def load_cached_ontology(kg_name: str) -> str:
 def build_llm() -> ChatOpenAI:
     base_url = "https://openrouter.ai/api/v1"
     model = "qwen/qwen3.7-max"
-    api_key = "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"
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        raise ValueError("OPENROUTER_API_KEY environment variable is not set")
 
     return ChatOpenAI(
         base_url=base_url,
@@ -123,13 +125,14 @@ def generate_questions(
         )
 
     ontology_description = load_cached_ontology(kg_name)
-    logger.info(f"Loaded ontology description for '{kg_name}' ({len(ontology_description)} chars)")
+    logger.info(
+        f"Loaded ontology description for '{kg_name}' ({len(ontology_description)} chars)"
+    )
 
     llm = build_llm()
 
     system_prompt = (
-        BOOTSTRAP_SYSTEM_PROMPT
-        .replace("$kg_name", kg_name)
+        BOOTSTRAP_SYSTEM_PROMPT.replace("$kg_name", kg_name)
         .replace("$endpoint", endpoint)
         .replace("$expertise_domain", expertise_domain)
         .replace("$ontology_description", ontology_description)
@@ -137,19 +140,22 @@ def generate_questions(
     )
 
     user_prompt = (
-        USER_PROMPT
-        .replace("$kg_name", kg_name)
+        USER_PROMPT.replace("$kg_name", kg_name)
         .replace("$endpoint", endpoint)
         .replace("$expertise_domain", expertise_domain)
         .replace("$num_questions", str(num_questions))
     )
 
-    logger.info(f"Generating {num_questions} questions for '{kg_name}' as {expertise_domain} expert...")
+    logger.info(
+        f"Generating {num_questions} questions for '{kg_name}' as {expertise_domain} expert..."
+    )
 
-    response = llm.invoke([
-        SystemMessage(content=system_prompt),
-        HumanMessage(content=user_prompt),
-    ])
+    response = llm.invoke(
+        [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=user_prompt),
+        ]
+    )
 
     raw = response.content.strip()
     if raw.startswith("```"):
@@ -171,7 +177,9 @@ def generate_questions(
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Bootstrap question generation for a knowledge graph")
+    parser = argparse.ArgumentParser(
+        description="Bootstrap question generation for a knowledge graph"
+    )
     parser.add_argument(
         "--kg",
         type=str,

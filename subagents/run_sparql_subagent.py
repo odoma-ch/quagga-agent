@@ -9,6 +9,13 @@ import threading
 from datetime import datetime
 from langchain_core.messages.utils import count_tokens_approximately
 
+import ssl
+import urllib.request
+
+ctx = ssl._create_unverified_context()
+opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=ctx))
+urllib.request.install_opener(opener)
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pathlib import Path
@@ -22,11 +29,16 @@ from langgraph.prebuilt import ToolNode
 from psycopg_pool import ConnectionPool
 from langgraph.checkpoint.postgres import PostgresSaver
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from tools import RunSPARQLTool
 from agent_utils.agent_runtime_state import runtime_state
-from agent_utils.provider_router import build_llm_from_health, periodic_health_check, update_runtime_llm
+from agent_utils.provider_router import (
+    build_llm_from_health,
+    periodic_health_check,
+    update_runtime_llm,
+)
 
 logger = logging.getLogger(__name__)
 GRAPH_DESCRIPTIONS_DIR = Path(__file__).parent / "graph_descriptions"
@@ -34,10 +46,11 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 # Matches XML-style tool call syntax that some models emit as plain text
 # instead of using the structured tool_calls field.
-_TEXT_TOOL_CALL_RE = re.compile(r"<invoke\s|<tool_call\b|<function_calls\b", re.IGNORECASE)
+_TEXT_TOOL_CALL_RE = re.compile(
+    r"<invoke\s|<tool_call\b|<function_calls\b", re.IGNORECASE
+)
 MAX_TEXT_TOOL_CALL_RETRIES = 2
 _STEP_HEADER_RE = re.compile(r"^\s*Step\s+\d+\s*:\s*.*$", re.IGNORECASE)
-
 
 
 def _looks_like_text_tool_call(content: str) -> bool:
@@ -107,7 +120,9 @@ async def _setup_routed_llm() -> None:
         logger.info(f"Using model: {model}")
         logger.info(f"Using endpoint: {base_url}")
     else:
-        logger.warning(f"Primary subagent model unhealthy at startup ({reason}), using fallback")
+        logger.warning(
+            f"Primary subagent model unhealthy at startup ({reason}), using fallback"
+        )
         logger.info(f"Using model: {fallback_model}")
         logger.info(f"Using endpoint: {fallback_base_url}")
 
@@ -136,7 +151,9 @@ def _start_routed_llm_health_monitor() -> None:
                 )
             )
 
-        threading.Thread(target=_runner, daemon=True, name="sparql-subagent-llm-health").start()
+        threading.Thread(
+            target=_runner, daemon=True, name="sparql-subagent-llm-health"
+        ).start()
         _HEALTH_MONITOR_STARTED = True
 
 
@@ -188,7 +205,11 @@ def build_subagent(endpoint: str):
         if hasattr(last, "tool_calls") and last.tool_calls:
             return "tools"
 
-        content = last.content if isinstance(last, AIMessage) and isinstance(last.content, str) else ""
+        content = (
+            last.content
+            if isinstance(last, AIMessage) and isinstance(last.content, str)
+            else ""
+        )
         if _looks_like_text_tool_call(content):
             # Count consecutive text-format AI messages before this one to enforce the cap.
             retries = 0
@@ -196,7 +217,9 @@ def build_subagent(endpoint: str):
                 if isinstance(msg, HumanMessage):
                     continue  # skip corrective messages injected by agent node
                 if isinstance(msg, AIMessage) and not getattr(msg, "tool_calls", None):
-                    if _looks_like_text_tool_call(msg.content if isinstance(msg.content, str) else ""):
+                    if _looks_like_text_tool_call(
+                        msg.content if isinstance(msg.content, str) else ""
+                    ):
                         retries += 1
                     else:
                         break
@@ -212,7 +235,9 @@ def build_subagent(endpoint: str):
     graph.add_node("tools", ToolNode(tools))
 
     graph.add_edge(START, "agent")
-    graph.add_conditional_edges("agent", should_continue, {"tools": "tools", "agent": "agent", END: END})
+    graph.add_conditional_edges(
+        "agent", should_continue, {"tools": "tools", "agent": "agent", END: END}
+    )
     graph.add_edge("tools", "agent")
 
     postgres_db = "sparql_traces"
@@ -273,7 +298,11 @@ def _stream_subagent(question: str, subagent, thread_id: str) -> str:
                     print(f"[Tool Response]\n{msg.content}\n")
                 elif isinstance(msg, AIMessage) and msg.content:
                     print(f"[AI Response]\n{msg.content}\n")
-                    content_str = msg.content if isinstance(msg.content, str) else str(msg.content)
+                    content_str = (
+                        msg.content
+                        if isinstance(msg.content, str)
+                        else str(msg.content)
+                    )
                     if not _looks_like_text_tool_call(content_str):
                         final_response = content_str
 
@@ -283,7 +312,9 @@ def _stream_subagent(question: str, subagent, thread_id: str) -> str:
 def _build_step_prompts(exploration_prompt: str) -> list[tuple[str, str]]:
     """Split a strategy prompt into per-step prompts while preserving shared context."""
     lines = exploration_prompt.splitlines()
-    step_indices = [idx for idx, line in enumerate(lines) if _STEP_HEADER_RE.match(line)]
+    step_indices = [
+        idx for idx, line in enumerate(lines) if _STEP_HEADER_RE.match(line)
+    ]
     if not step_indices:
         return []
 
@@ -310,12 +341,18 @@ def _build_step_prompts(exploration_prompt: str) -> list[tuple[str, str]]:
     return step_prompts
 
 
-def run_pipeline(endpoint: str, kg_name: str, question: str, parent_context=None) -> str:
+def run_pipeline(
+    endpoint: str, kg_name: str, question: str, parent_context=None
+) -> str:
     """Run the two-node pipeline: explore KG (with caching) then answer the user question."""
     from langgraph.errors import GraphRecursionError as _GRE
     from agent_utils.agent_helpers import emit_progress
+
     start_time = datetime.now()
-    print(f"[DEBUG] run_pipeline called at {start_time}: kg={kg_name!r}, question={question!r}", flush=True)
+    print(
+        f"[DEBUG] run_pipeline called at {start_time}: kg={kg_name!r}, question={question!r}",
+        flush=True,
+    )
     emit_progress("Initializing SPARQL subagent...")
     subagent = build_subagent(endpoint)
     thread_id = f"{kg_name}_{uuid.uuid4().hex}"
@@ -325,10 +362,14 @@ def run_pipeline(endpoint: str, kg_name: str, question: str, parent_context=None
     def explore_kg_node(state: PipelineState) -> PipelineState:
         """Node 1: load cached KG description or run full SPARQL exploration."""
         if desc_path.exists():
-            print(f"[Explorer] Cached description found for \'{kg_name}\'. Skipping exploration run...")
+            print(
+                f"[Explorer] Cached description found for '{kg_name}'. Skipping exploration run..."
+            )
             emit_progress(f"Loading cached description for {kg_name}...")
         else:
-            print(f"[Explorer] No cache found for \'{kg_name}\', detecting graph structure...")
+            print(
+                f"[Explorer] No cache found for '{kg_name}', detecting graph structure..."
+            )
             emit_progress("Detecting graph structure...")
             graphs_question = f"""For the {kg_name} endpoint: {endpoint}
 Run this ONE query to detect if this knowledge graph uses named graphs:
@@ -338,7 +379,7 @@ After looking at the result, your final reply MUST end with EXACTLY ONE of these
 MULTI_GRAPH   — if the result contains one or more proper URIs (starting with http:// or https://).
 SINGLE_GRAPH  — if no results are returned, returns no rows, or contains only blank nodes / non-URI graph names.
 Do not include both tokens. Do not add quotes, punctuation, or any text after the token."""
-            
+
             print(f"[Detector] Checking graph structure...\n")
             config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 200}
             graph_type = "UNKNOWN"
@@ -350,7 +391,9 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
             ):
                 for _, update in event.items():
                     for msg in update.get("messages", []):
-                        if isinstance(msg, AIMessage) and getattr(msg, "tool_calls", None):
+                        if isinstance(msg, AIMessage) and getattr(
+                            msg, "tool_calls", None
+                        ):
                             for tool_call in msg.tool_calls:
                                 query_text = _extract_query_from_tool_call(tool_call)
                                 print(f"[Detector Query]\n{query_text}\n")
@@ -364,11 +407,19 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                             elif "SINGLE_GRAPH" in content_upper:
                                 graph_type = "SINGLE"
                                 print(f"[Detector] Detected single unified graph\n")
-            
-            prompt_file = "exploration.txt" if graph_type == "MULTI" else "exploration_single_graph.txt"
+
+            prompt_file = (
+                "exploration.txt"
+                if graph_type == "MULTI"
+                else "exploration_single_graph.txt"
+            )
             print(f"[Explorer] Using {prompt_file} strategy for full exploration...")
-            emit_progress(f"Detected {graph_type.lower()} graph, exploring {kg_name}...")
-            exploration_prompt = _load_prompt(prompt_file, kg_name=kg_name, endpoint=endpoint)
+            emit_progress(
+                f"Detected {graph_type.lower()} graph, exploring {kg_name}..."
+            )
+            exploration_prompt = _load_prompt(
+                prompt_file, kg_name=kg_name, endpoint=endpoint
+            )
             step_prompts = _build_step_prompts(exploration_prompt)
 
             if not step_prompts:
@@ -383,7 +434,10 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
                     print(f"[Explorer] Running {step_label} ({idx}/{total_steps})...")
                     step_result = _stream_subagent(step_prompt, subagent, thread_id)
                     step_result = re.sub(
-                        r"<think>.*?</think>", "", step_result, flags=re.IGNORECASE | re.DOTALL
+                        r"<think>.*?</think>",
+                        "",
+                        step_result,
+                        flags=re.IGNORECASE | re.DOTALL,
                     ).strip()
                     with desc_path.open("a", encoding="utf-8") as f:
                         f.write(f"## {step_label}\n\n{step_result}\n\n")
@@ -397,10 +451,18 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
         """Node 2: answer the user question using the exploration context already in the thread."""
         MAX_QUERIES = 80
         from datetime import date
+
         current_date = date.today().strftime("%a %b %d %Y")
         parent_context = _format_parent_context(state.get("parent_context", ""))
         emit_progress("Generating SPARQL queries...")
-        prompt = _load_prompt("answer_question.txt", kg_name=kg_name, endpoint=endpoint, question=state["question"], current_date=current_date, parent_context=parent_context)
+        prompt = _load_prompt(
+            "answer_question.txt",
+            kg_name=kg_name,
+            endpoint=endpoint,
+            question=state["question"],
+            current_date=current_date,
+            parent_context=parent_context,
+        )
         if desc_path.exists():
             cached = desc_path.read_text()
             prompt = (
@@ -416,6 +478,7 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
         print(f"[Answer Question] User Prompt:\n{user_prompt}\n")
 
         from langgraph.errors import GraphRecursionError as _SubagentRecursionError
+
         config = {"configurable": {"thread_id": thread_id}, "recursion_limit": 200}
         queries_made: list[str] = []
         final_summary = ""
@@ -423,35 +486,53 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
 
         try:
             for event in subagent.stream(
-                {"messages": [SystemMessage(content=prompt), HumanMessage(content=user_prompt)]},
+                {
+                    "messages": [
+                        SystemMessage(content=prompt),
+                        HumanMessage(content=user_prompt),
+                    ]
+                },
                 config=config,
                 stream_mode="updates",
             ):
                 for _, update in event.items():
                     for msg in update.get("messages", []):
-                        if isinstance(msg, AIMessage) and getattr(msg, "tool_calls", None):
+                        if isinstance(msg, AIMessage) and getattr(
+                            msg, "tool_calls", None
+                        ):
                             for tool_call in msg.tool_calls:
                                 query_text = _extract_query_from_tool_call(tool_call)
                                 print(f"[Tool Query]\n{query_text}\n")
                                 queries_made.append(query_text)
-                                emit_progress(f"Executing SPARQL query {len(queries_made)}...")
+                                emit_progress(
+                                    f"Executing SPARQL query {len(queries_made)}..."
+                                )
                         elif isinstance(msg, ToolMessage):
                             print(f"[Tool Response]\n{msg.content}\n")
                         elif isinstance(msg, AIMessage) and msg.content:
-                            content_str = msg.content if isinstance(msg.content, str) else str(msg.content)
+                            content_str = (
+                                msg.content
+                                if isinstance(msg.content, str)
+                                else str(msg.content)
+                            )
                             print(f"[AI Response]\n{content_str}\n")
                             if not _looks_like_text_tool_call(content_str):
                                 final_summary = content_str
 
                 if len(queries_made) >= MAX_QUERIES:
-                    print(f"[Limit] Reached max_queries={MAX_QUERIES}. Stopping early.\n")
+                    print(
+                        f"[Limit] Reached max_queries={MAX_QUERIES}. Stopping early.\n"
+                    )
                     limit_hit = True
                     break
         except _SubagentRecursionError:
-            print(f"[Limit] Subagent hit recursion limit after {len(queries_made)} queries. Using accumulated summary.\n")
-            emit_progress(f"Query limit reached after {len(queries_made)} queries, summarizing...")
+            print(
+                f"[Limit] Subagent hit recursion limit after {len(queries_made)} queries. Using accumulated summary.\n"
+            )
+            emit_progress(
+                f"Query limit reached after {len(queries_made)} queries, summarizing..."
+            )
             limit_hit = True
-
 
         if limit_hit:
             queries_summary = "\n".join(
@@ -478,31 +559,49 @@ Do not include both tokens. Do not add quotes, punctuation, or any text after th
     pipeline.add_edge("answer_question", END)
 
     try:
-        result = pipeline.compile().invoke({
-            "kg_name": kg_name,
-            "question": question,
-            "parent_context": parent_context or "",
-            "final_summary": "",
-        })
+        result = pipeline.compile().invoke(
+            {
+                "kg_name": kg_name,
+                "question": question,
+                "parent_context": parent_context or "",
+                "final_summary": "",
+            }
+        )
     except _GRE as e:
-        print(f"[DEBUG] GraphRecursionError raised INSIDE run_pipeline (subagent hit its own recursion limit): {e}", flush=True)
+        print(
+            f"[DEBUG] GraphRecursionError raised INSIDE run_pipeline (subagent hit its own recursion limit): {e}",
+            flush=True,
+        )
         return "I was unable to fully answer the question — the subagent exhausted its step budget during exploration. Try a more specific question."
     end_time = datetime.now()
-    print(f"[DEBUG] run_pipeline finished successfully and took: {(end_time - start_time).total_seconds()} seconds: final_summary length={len(result['final_summary'])}", flush=True)
+    print(
+        f"[DEBUG] run_pipeline finished successfully and took: {(end_time - start_time).total_seconds()} seconds: final_summary length={len(result['final_summary'])}",
+        flush=True,
+    )
     return result["final_summary"]
 
 
 if __name__ == "__main__":
-    linkedmusic_questions = [
-        "Find all compositions in DIAMM that are composed by Guillaume de Machaut"
+    questions = [
+        "Give me the list of identifiers of all the available datasets I can find in this 'federation' of graphs related to topic 'migration'."
     ]
-    question = linkedmusic_questions[0]
+    question = questions[0]
     print(f"Running pipeline for question: {question}")
     run_pipeline(
-        endpoint="https://virtuoso.simssa.ca/sparql",
-        kg_name="LinkedMusic",
+        endpoint="https://qlever-fedagent-web-graphia-core-staging.apps.bst2.paas.psnc.pl/api/skg",
+        kg_name="GRAPHIA Federated KG",
         question=question,
     )
+    # linkedmusic_questions = [
+    #     "Find all compositions in DIAMM that are composed by Guillaume de Machaut"
+    # ]
+    # question = linkedmusic_questions[0]
+    # print(f"Running pipeline for question: {question}")
+    # run_pipeline(
+    #     endpoint="https://virtuoso.simssa.ca/sparql",
+    #     kg_name="LinkedMusic",
+    #     question=question,
+    # )
     # opencitation_questions = [
     #     "What is the title and publication date of publication with DOI 10.1162/qss_a_00023?",
     #     "How many publications are in the OpenCitations dataset?",

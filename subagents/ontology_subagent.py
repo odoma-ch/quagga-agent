@@ -18,6 +18,7 @@ from dotenv import load_dotenv
 
 try:
     from markdownify import markdownify as md
+
     _HAS_MARKDOWNIFY = True
 except ImportError:
     _HAS_MARKDOWNIFY = False
@@ -31,8 +32,8 @@ MAX_TIMEOUT = 120.0
 
 _ACCEPT_HEADERS = {
     "markdown": "text/markdown;q=1.0, text/x-markdown;q=0.9, text/plain;q=0.8, text/html;q=0.7, */*;q=0.1",
-    "text":     "text/plain;q=1.0, text/markdown;q=0.9, text/html;q=0.8, */*;q=0.1",
-    "html":     "text/html;q=1.0, application/xhtml+xml;q=0.9, text/plain;q=0.8, */*;q=0.1",
+    "text": "text/plain;q=1.0, text/markdown;q=0.9, text/html;q=0.8, */*;q=0.1",
+    "html": "text/html;q=1.0, application/xhtml+xml;q=0.9, text/plain;q=0.8, */*;q=0.1",
 }
 
 _BASE_HEADERS = {
@@ -60,7 +61,9 @@ def _html_to_markdown(html: str) -> str:
 def _html_to_text(html: str) -> str:
     text = re.sub(
         r"<(script|style|noscript|iframe|object|embed)[^>]*>.*?</\1>",
-        "", html, flags=re.IGNORECASE | re.DOTALL,
+        "",
+        html,
+        flags=re.IGNORECASE | re.DOTALL,
     )
     text = re.sub(r"<[^>]+>", " ", text)
     return re.sub(r"\s+", " ", text).strip()
@@ -97,8 +100,13 @@ async def webfetch(
         headers=headers,
     ) as client:
         response = await client.get(url)
-        if response.status_code == 403 and response.headers.get("cf-mitigated") == "challenge":
-            response = await client.get(url, headers={**headers, "User-Agent": "opencode"})
+        if (
+            response.status_code == 403
+            and response.headers.get("cf-mitigated") == "challenge"
+        ):
+            response = await client.get(
+                url, headers={**headers, "User-Agent": "opencode"}
+            )
 
     if response.status_code >= 400:
         raise RuntimeError(f"HTTP {response.status_code}")
@@ -115,8 +123,12 @@ async def webfetch(
     mime = content_type.split(";")[0].strip().lower()
     title = f"{url} ({content_type})"
 
-    if mime.startswith("image/") and mime not in ("image/svg+xml", "image/vnd.fastbidsheet"):
+    if mime.startswith("image/") and mime not in (
+        "image/svg+xml",
+        "image/vnd.fastbidsheet",
+    ):
         import base64
+
         b64 = base64.b64encode(raw).decode()
         return {
             "title": title,
@@ -145,7 +157,9 @@ async def webfetch(
 
 
 @tool
-async def webfetch_tool(url: str, format: str = "markdown", timeout: float = DEFAULT_TIMEOUT) -> str:
+async def webfetch_tool(
+    url: str, format: str = "markdown", timeout: float = DEFAULT_TIMEOUT
+) -> str:
     """
     Fetch the content of a URL and return a Markdown report of what is there.
 
@@ -176,11 +190,12 @@ llm = ChatOpenAI(
     temperature=0,
 )
 
+
 class WebFetchAgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    input_text: str # full user input (text + URLs + question)
-    urls: List[str] # all URLs extracted from input_text
-    fetched: dict # url -> {output, content_type, status_code} | {error}
+    input_text: str  # full user input (text + URLs + question)
+    urls: List[str]  # all URLs extracted from input_text
+    fetched: dict  # url -> {output, content_type, status_code} | {error}
     final_report: str
 
 
@@ -207,7 +222,12 @@ async def fetch_all_urls(state: WebFetchAgentState) -> WebFetchAgentState:
             result["output"] = result["output"][:20000]
             return url, result
         except Exception as exc:
-            return url, {"error": str(exc), "output": "", "content_type": "", "status_code": 0}
+            return url, {
+                "error": str(exc),
+                "output": "",
+                "content_type": "",
+                "status_code": 0,
+            }
 
     results = await asyncio.gather(*[_fetch_one(u) for u in state["urls"]])
     return {**state, "fetched": dict(results)}
@@ -239,21 +259,21 @@ def answer_question(state: WebFetchAgentState) -> WebFetchAgentState:
 
     context = "\n\n---\n\n".join(context_parts)
 
-    system = SystemMessage(content=(
-        """
+    system = SystemMessage(content=("""
 You are a helpful assistant. 
 The user has provided some text containing URLs. 
 The content of those URLs has been fetched and is provided below as context. 
 Answer the user's question based on that content. 
 Be thorough but concise. Use Markdown formatting.
 If the user's question is not related to the content of the URLs, say so clearly and explain what was tried and why it couldn't be resolved.
-        """
-    ))
-    user = HumanMessage(content=(
-        f"## Fetched URL Content\n\n{context}\n\n"
-        f"---\n\n"
-        f"## User Input\n\n{state['input_text']}"
-    ))
+        """))
+    user = HumanMessage(
+        content=(
+            f"## Fetched URL Content\n\n{context}\n\n"
+            f"---\n\n"
+            f"## User Input\n\n{state['input_text']}"
+        )
+    )
 
     response = llm.invoke([system, user])
     report = response.content
@@ -304,26 +324,28 @@ Scan the prefix URLs and give me a report of what might be potentially ontologie
 """
 
     async def _run():
-        return await subagent.ainvoke({
-            "messages": [HumanMessage(content=prompt)],
-            "input_text": prompt,
-            "urls": [],
-            "fetched": {},
-            "final_report": "",
-        })
+        return await subagent.ainvoke(
+            {
+                "messages": [HumanMessage(content=prompt)],
+                "input_text": prompt,
+                "urls": [],
+                "fetched": {},
+                "final_report": "",
+            }
+        )
 
     result = asyncio.run(_run())
     return result["final_report"]
 
 
 if __name__ == "__main__":
-#     example_prefixes = """
-# PREFIX eo: <http://lod.ehri-project-test.eu/ontology#>
-# PREFIX io: <https://www.ica.org/standards/RiC/ontology#>
-# PREFIX ww: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-# """
+    #     example_prefixes = """
+    # PREFIX eo: <http://lod.ehri-project-test.eu/ontology#>
+    # PREFIX io: <https://www.ica.org/standards/RiC/ontology#>
+    # PREFIX ww: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+    # """
 
-#     example_question = "How many archival descriptions does the EHRI KG contain?"
+    #     example_question = "How many archival descriptions does the EHRI KG contain?"
 
     example_prefixes = """
 PREFIX pc: <http://purl.org/vocab/frbr/core#>

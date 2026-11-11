@@ -23,6 +23,7 @@ from langchain_classic.retrievers.ensemble import EnsembleRetriever
 
 
 import ssl
+
 ssl._create_default_https_context = ssl._create_unverified_context
 from SPARQLWrapper import SPARQLWrapper, JSON
 from concurrent.futures import ThreadPoolExecutor
@@ -68,11 +69,47 @@ load_dotenv()
 # Disable LangChain verbose output
 os.environ["LANGCHAIN_VERBOSE"] = "false"
 
+
 def _as_bool(v: str | None) -> bool:
-  return (v or "").strip().lower() in {"1", "true", "yes", "on", "True"}
+    return (v or "").strip().lower() in {"1", "true", "yes", "on", "True"}
+
 
 console = Console(quiet=_as_bool(os.getenv("DISABLE_CONSOLE_PRINT")))
 logging.getLogger().setLevel(logging.INFO)
+
+GRAPHIA_FEDERATED_KG = "GRAPHIA Federated KG"
+GRAPHIA_FEDERATED_KG_PLACEHOLDER = {
+    "kg_name": GRAPHIA_FEDERATED_KG,
+    "description": (
+        """
+GRAPHIA is building a federated Knowledge Graph for Social Sciences and Humanities (SSH) research that meaningfully connects entities like researchers, publications, datasets, and projects across hundreds of siloed platforms. Rather than centralizing data, it uses a shared ontology layer to interlink autonomous knowledge graphs, letting each provider retain control over governance, provenance, and update cycles. This enables cross-source discovery and analytics while avoiding the data quality, operational, and governance challenges of a centralized model.
+        """
+    ),
+    "endpoint_url": "https://qlever-fedagent-web-graphia-core-staging.apps.bst2.paas.psnc.pl/api/skg",
+}
+
+
+def _load_graph_descriptions() -> list[dict]:
+    """Load KG descriptions while using local placeholders for Graphia Federated KG."""
+    graph_kg_descriptions: list[dict] = []
+    for kg_name in GRAPHS_INVOLVED:
+        if kg_name == GRAPHIA_FEDERATED_KG:
+            graph_kg_descriptions.append(dict(GRAPHIA_FEDERATED_KG_PLACEHOLDER))
+            continue
+        try:
+            response = requests.get(
+                GRAPH_KG_DESCRIPTIONS_URL,
+                params={"kg_name": kg_name},
+                headers={"accept": "application/json"},
+                timeout=15,
+            )
+            response.raise_for_status()
+            payload = response.json()
+            if isinstance(payload, dict):
+                graph_kg_descriptions.append(payload)
+        except Exception:
+            continue
+    return graph_kg_descriptions
 
 
 def _get_tool_client_and_model() -> tuple[openai.OpenAI, str]:
@@ -159,24 +196,10 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
     """Classify input user messages and tool messages against known KGs, load the selected KG metadata into runtime, and return confirmation."""
     from helpers.kg_metadata_helper import setup_kg_rag_environment
     from agent_utils.agent_runtime_state import runtime_state
-    
+
     retriever_k = int(os.getenv("RETRIEVER_K", "10"))
-    
-    graph_kg_descriptions = []
-    for kg_name in GRAPHS_INVOLVED:
-        try:
-            response = requests.get(
-                GRAPH_KG_DESCRIPTIONS_URL,
-                params={"kg_name": kg_name},
-                headers={"accept": "application/json"},
-                timeout=15,
-            )
-            response.raise_for_status()
-            payload = response.json()
-            if isinstance(payload, dict):
-                graph_kg_descriptions.append(payload)
-        except Exception:
-            continue
+
+    graph_kg_descriptions = _load_graph_descriptions()
 
     if not graph_kg_descriptions:
         return "Currently cannot load knowledge graph descriptions. Please ask the user to provide the knowledge graph name."
@@ -190,7 +213,7 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
                     query_parts.append(text)
             continue
 
-        msg_type = getattr(msg, "type", "") 
+        msg_type = getattr(msg, "type", "")
         if msg_type in {"human"}:
             text = _message_content_to_text(getattr(msg, "content", ""))
             if text:
@@ -201,7 +224,11 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
 
     results = _get_scope_relevance_scores(query, graph_kg_descriptions)
     scores = {
-        r["kg_name"]: r.get("confidence", 0.0) if r.get("decision") == "Yes" else -r.get("confidence", 0.0)
+        r["kg_name"]: (
+            r.get("confidence", 0.0)
+            if r.get("decision") == "Yes"
+            else -r.get("confidence", 0.0)
+        )
         for r in results.values()
         if isinstance(r, dict) and r.get("kg_name")
     }
@@ -209,41 +236,51 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
 
     top_key, top_score = sorted_items[0]
     second_key, second_score = sorted_items[1] if len(sorted_items) > 1 else (None, 0)
-    
+
     if (top_score - second_score) >= (0.1 - 1e-9):
         selected_kg = top_key
-        
+
         if selected_kg not in runtime_state.kg_metadata_cache:
-            kg_endpoint = next(
-                (
-                    kg.get("endpoint_url")
-                    for kg in graph_kg_descriptions
-                    if isinstance(kg, dict) and kg.get("kg_name") == selected_kg
-                ),
-                None,
-            )
-            if kg_endpoint:
-                try:
-                    retriever_tool, shex_prefixes, chunk_titles, sparql_endpoint = setup_kg_rag_environment(
-                        selected_kg,
-                        kg_endpoint,
-                        GRAPH_METADATA_URL,
-                        runtime_state.chroma_client,
-                        runtime_state.embedding_model,
-                        k=retriever_k
-                    )
-                    runtime_state.kg_metadata_cache[selected_kg] = {
-                        "retriever_tool": retriever_tool,
-                        "shex_prefixes": shex_prefixes,
-                        "chunk_titles": chunk_titles,
-                        "sparql_endpoint": sparql_endpoint
-                    }
-                except Exception:
-                    return (
-                        f"I identified `{selected_kg}` as the best match, but failed to initialize its metadata. "
-                        "Please try again or choose another knowledge graph."
-                    )
-        
+            if selected_kg == GRAPHIA_FEDERATED_KG:
+                runtime_state.kg_metadata_cache[selected_kg] = {
+                    "retriever_tool": None,
+                    "shex_prefixes": "",
+                    "chunk_titles": [],
+                    "sparql_endpoint": GRAPHIA_FEDERATED_KG_PLACEHOLDER["endpoint_url"],
+                }
+            else:
+                kg_endpoint = next(
+                    (
+                        kg.get("endpoint_url")
+                        for kg in graph_kg_descriptions
+                        if isinstance(kg, dict) and kg.get("kg_name") == selected_kg
+                    ),
+                    None,
+                )
+                if kg_endpoint:
+                    try:
+                        retriever_tool, shex_prefixes, chunk_titles, sparql_endpoint = (
+                            setup_kg_rag_environment(
+                                selected_kg,
+                                kg_endpoint,
+                                GRAPH_METADATA_URL,
+                                runtime_state.chroma_client,
+                                runtime_state.embedding_model,
+                                k=retriever_k,
+                            )
+                        )
+                        runtime_state.kg_metadata_cache[selected_kg] = {
+                            "retriever_tool": retriever_tool,
+                            "shex_prefixes": shex_prefixes,
+                            "chunk_titles": chunk_titles,
+                            "sparql_endpoint": sparql_endpoint,
+                        }
+                    except Exception:
+                        return (
+                            f"I identified `{selected_kg}` as the best match, but failed to initialize its metadata. "
+                            "Please try again or choose another knowledge graph."
+                        )
+
         if selected_kg not in runtime_state.kg_metadata_cache:
             return (
                 f"I identified `{selected_kg}` as the best match, but could not load its metadata. "
@@ -253,10 +290,16 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
         thread_id, _ = _get_thread_context()
         session = runtime_state.get_or_create_session(thread_id)
         session.selected_kg = selected_kg
-        session.shex_prefixes = runtime_state.kg_metadata_cache[selected_kg]["shex_prefixes"]
-        session.chunk_titles = runtime_state.kg_metadata_cache[selected_kg]["chunk_titles"]
-        session.sparql_endpoint = runtime_state.kg_metadata_cache[selected_kg]["sparql_endpoint"]
-        
+        session.shex_prefixes = runtime_state.kg_metadata_cache[selected_kg][
+            "shex_prefixes"
+        ]
+        session.chunk_titles = runtime_state.kg_metadata_cache[selected_kg][
+            "chunk_titles"
+        ]
+        session.sparql_endpoint = runtime_state.kg_metadata_cache[selected_kg][
+            "sparql_endpoint"
+        ]
+
         # Update runtime context with SPARQL endpoint
         try:
             current_runtime = get_runtime(ContextSchema)
@@ -266,8 +309,13 @@ def scope_checker_tool(state: Annotated[State, InjectedState]) -> str:
             current_runtime.context.shex_prefixes = session.shex_prefixes
         except:
             pass
-        
+
         console.print(f"Loaded metadata for KG: {selected_kg}", style="bold green")
+        if selected_kg == GRAPHIA_FEDERATED_KG:
+            return (
+                "User messages are aligned with the knowledge graph: "
+                f"{selected_kg}. Using placeholder metadata; external endpoint querying is disabled."
+            )
         return f"User messages are aligned with the knowledge graph: {selected_kg}"
     else:
         low_confidence_prompt = f"Ask the user which knowledge graph would they want me to query: {top_key} or {second_key}?"
@@ -306,15 +354,16 @@ class ShexRetrieverTool(BaseTool):
             else:
                 # Get vectorstore from runtime state (dynamic mode)
                 from agent_utils.agent_runtime_state import runtime_state
+
                 _, selected_kg, _, _ = _resolve_session_values()
                 if not selected_kg:
                     return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."
-                retriever_tool = (
-                    runtime_state.kg_metadata_cache.get(selected_kg, {}).get("retriever_tool")
-                )
+                retriever_tool = runtime_state.kg_metadata_cache.get(
+                    selected_kg, {}
+                ).get("retriever_tool")
                 if retriever_tool is None:
                     return "No knowledge graph has been selected. Please call scope_checker_tool first to determine which KG to query."
-                
+
                 console.print(
                     f"Finding the best classes from SHEX schema with k={self.k}, standalone_mode={self.standalone_mode}",
                     style="bold blue",
@@ -330,7 +379,9 @@ class ShexRetrieverTool(BaseTool):
                 try:
                     runtime = get_runtime(ContextSchema)
                     retrieved_attr = getattr(runtime.context, "retrieved_chunks", None)
-                    context_retrieved_chunks = set(retrieved_attr) if retrieved_attr else set()
+                    context_retrieved_chunks = (
+                        set(retrieved_attr) if retrieved_attr else set()
+                    )
                 except Exception:
                     runtime = None
                     context_retrieved_chunks = set()
@@ -372,10 +423,13 @@ class ShexRetrieverTool(BaseTool):
             max_model_tokens = None
             if self.standalone_mode:
                 from data_functions import MAX_MODEL_TOKENS
+
                 max_model_tokens = MAX_MODEL_TOKENS[self.model_name]
 
             if max_model_tokens is not None:
-                retriever_result = get_fitting_chunks(retriever_result, max_model_tokens)
+                retriever_result = get_fitting_chunks(
+                    retriever_result, max_model_tokens
+                )
             result = "\n\n".join([doc.page_content for doc in retriever_result])
             logging.info(
                 f"Chunks retrieved for the natural language query = {question}: {result}"
@@ -471,11 +525,7 @@ class CustomVoIDRetrieverTool(BaseTool):
 @tool
 def describe_knowledge_graphs_tool():
     """Tool to describe the knowledge graphs which a user can ask questions against"""
-    graph_kg_descriptions = []
-    for kg_name in GRAPHS_INVOLVED:
-        response = requests.get(
-            GRAPH_KG_DESCRIPTIONS_URL, params={"kg_name": kg_name}, headers={"accept": "application/json"}).json()
-        graph_kg_descriptions.append(response)
+    graph_kg_descriptions = _load_graph_descriptions()
 
     return json.dumps(graph_kg_descriptions)
 
@@ -504,8 +554,10 @@ def run_sparql_subagent_tool(
 class RunSPARQLToolInput(BaseModel):
     query: str = Field(description="The SPARQL query to execute")
 
+
 class RunSPARQLTool(BaseTool):
     """Tool to run SPARQL queries for exploration (lightweight execution)."""
+
     name: str = "run_sparql_tool"
     description: str = (
         "Execute SPARQL queries against the currently selected SPARQL endpoint for knowledge graph exploration. "
@@ -525,13 +577,15 @@ class RunSPARQLTool(BaseTool):
             #     query = shex_prefixes.strip() + "\n" + query
 
             console.print(
-                f"Executing SPARQL query against {endpoint}",
-                style="bold blue"
+                f"Executing SPARQL query against {endpoint}", style="bold blue"
             )
 
+            from SPARQLWrapper import SPARQLWrapper, JSON, POST, BASIC
+
             sparql = SPARQLWrapper(endpoint)
-            sparql.setQuery(query)
+            sparql.setMethod(POST)
             sparql.setReturnFormat(JSON)
+            sparql.setQuery(query)
             sparql.setTimeout(30)
 
             with ThreadPoolExecutor(max_workers=1) as executor:
@@ -585,8 +639,9 @@ def validate_sparql_tool(
     state: Annotated[dict, InjectedState],
 ) -> str:
     """Extract the SPARQL query (if any) from the subagent's response, re-run it, and
-    format the results as markdown. Returns both the prose description and the query results. 
-    This tool is always called by the main agent after the `run_sparql_subagent_tool` has run."""
+    format the results as markdown. Returns both the prose description and the query results.
+    This tool is always called by the main agent after the `run_sparql_subagent_tool` has run.
+    """
     try:
         # Prefer full subagent result from state — avoids LLM truncation when building tool args.
         # Keep incoming `summary` as fallback.
@@ -598,7 +653,9 @@ def validate_sparql_tool(
                     and getattr(msg, "name", None) == "run_sparql_subagent_tool"
                 ):
                     extracted_summary = (
-                        msg.content if isinstance(msg.content, str) else str(msg.content)
+                        msg.content
+                        if isinstance(msg.content, str)
+                        else str(msg.content)
                     )
                     break
 
@@ -616,7 +673,9 @@ def validate_sparql_tool(
         if not summary:
             return "No subagent result found to validate."
 
-        console.print("Extracting SPARQL query from subagent response", style="bold blue")
+        console.print(
+            "Extracting SPARQL query from subagent response", style="bold blue"
+        )
 
         tool_client, tool_model = _get_tool_client_and_model()
         extracted_query: str | None = None
@@ -640,7 +699,9 @@ def validate_sparql_tool(
                     {"role": "user", "content": summary},
                 ],
             )
-            extracted: SPARQLExtractionResult | None = extraction_response.choices[0].message.parsed
+            extracted: SPARQLExtractionResult | None = extraction_response.choices[
+                0
+            ].message.parsed
             if extracted is not None:
                 extracted_query = extracted.query
                 extracted_description = extracted.description
@@ -651,21 +712,33 @@ def validate_sparql_tool(
             )
 
         if not extracted_query:
-            sparql_match = re.search(r"```sparql\s*\n(.*?)\n```", summary, re.DOTALL | re.IGNORECASE)
+            sparql_match = re.search(
+                r"```sparql\s*\n(.*?)\n```", summary, re.DOTALL | re.IGNORECASE
+            )
             if sparql_match:
                 extracted_query = sparql_match.group(1).strip()
             else:
-                prefix_match = re.search(r"(PREFIX\s+\w+:\s+<[^>]+>\s*)+", summary, re.IGNORECASE)
+                prefix_match = re.search(
+                    r"(PREFIX\s+\w+:\s+<[^>]+>\s*)+", summary, re.IGNORECASE
+                )
                 if prefix_match:
                     extracted_query = prefix_match.group(0)
                 else:
-                    select_match = re.search(r"(SELECT\s+.*?WHERE\s*\{.*?\})", summary, re.IGNORECASE | re.DOTALL)
+                    select_match = re.search(
+                        r"(SELECT\s+.*?WHERE\s*\{.*?\})",
+                        summary,
+                        re.IGNORECASE | re.DOTALL,
+                    )
                     if select_match:
                         extracted_query = select_match.group(1)
 
         if isinstance(extracted_query, str):
             normalized_query = extracted_query.strip()
-            fenced_match = re.fullmatch(r"```(?:sparql)?\s*(.*?)\s*```", normalized_query, re.DOTALL | re.IGNORECASE)
+            fenced_match = re.fullmatch(
+                r"```(?:sparql)?\s*(.*?)\s*```",
+                normalized_query,
+                re.DOTALL | re.IGNORECASE,
+            )
             if fenced_match:
                 normalized_query = fenced_match.group(1).strip()
             if normalized_query.lower() in {"", "null", "none"}:
@@ -702,23 +775,22 @@ def validate_sparql_tool(
         return f"The SPARQL has been executed:\nValidation step failed: {str(e) or 'unknown error'}"
 
 
-
 def validate_by_ask_sparql_tool(query: str):
     """Tool to validate a query by asking the SPARQL endpoint incrementally"""
     _, _, endpoint, _ = _resolve_session_values()
     if not endpoint:
         return "No SPARQL endpoint configured. Please call scope_checker_tool first to select a knowledge graph."
-    
+
     parsed = parseQuery(query)
     prologue = sparql_algebra.translatePrologue(parsed[0], base=None)
     algebra_query = sparql_algebra.translateQuery(parsed)
-    
+
     prefixes = dict(prologue.namespace_manager.namespaces())
-    
+
     prefix_str = "\n".join(
         [f"PREFIX {k or ''}: <{v}>" for k, v in prefixes.items() if k is not None]
     )
-    
+
     triples = []
     all_filters = []
 
@@ -748,7 +820,11 @@ def validate_by_ask_sparql_tool(query: str):
                     continue
                 ns_str = str(ns)
                 if t_str.startswith(ns_str):
-                    return f"{prefix}:{t_str[len(ns_str):]}" if prefix else f":{t_str[len(ns_str):]}"
+                    return (
+                        f"{prefix}:{t_str[len(ns_str):]}"
+                        if prefix
+                        else f":{t_str[len(ns_str):]}"
+                    )
             return f"<{t}>"
         if isinstance(t, Literal):
             return t.n3()
@@ -758,40 +834,41 @@ def validate_by_ask_sparql_tool(query: str):
     graph = Graph(store=store)
     results = []
     accumulated_triples = []
-    
+
     for idx, pattern in enumerate(triples):
         accumulated_triples.append(pattern)
-        
-        triples_str = "\n".join([
-            f"  {term(s)} {term(p)} {term(o)} ."
-            for s, p, o in accumulated_triples
-        ])
-        
+
+        triples_str = "\n".join(
+            [f"  {term(s)} {term(p)} {term(o)} ." for s, p, o in accumulated_triples]
+        )
+
         filter_str = ""
         for f in all_filters:
             filter_expr = term(f.expr) if hasattr(f, "expr") else str(f)
             filter_str += f"  FILTER({filter_expr})\n"
-        
+
         ask_query = f"""{prefix_str}
 ASK {{
 {triples_str}
 {filter_str}}}"""
-        
+
         try:
             ask_result = graph.query(ask_query)
             result = bool(getattr(ask_result, "askAnswer", False))
         except Exception:
             result = False
-        
-        results.append({
-            "step": idx + 1,
-            "pattern": f"{term(pattern[0])} {term(pattern[1])} {term(pattern[2])}",
-            "valid": result
-        })
-        
+
+        results.append(
+            {
+                "step": idx + 1,
+                "pattern": f"{term(pattern[0])} {term(pattern[1])} {term(pattern[2])}",
+                "valid": result,
+            }
+        )
+
         if not result:
             break
-    
+
     return [result for result in results if not result["valid"]]
 
 
@@ -809,7 +886,7 @@ def generate_hypothetical_description_tool(question: str, chunk_titles: list[str
         top_p=1,
         http_client=http_client,
         max_tokens=None,
-        extra_body={"chat_template_kwargs": {"enable_thinking": False}}
+        extra_body={"chat_template_kwargs": {"enable_thinking": False}},
     )
     result = llm.invoke(f"""
     Reformulate and elaborate this question for better understanding and return only the reformulated question: {question}

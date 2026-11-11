@@ -76,22 +76,22 @@ logger.setLevel(logging.INFO)
 
 class QuaggaAgentUser(HttpUser):
     """Simulates a user interacting with the Quagga SPARQL Agent API."""
-    
+
     # Wait between 1 and 5 seconds between tasks
     wait_time = between(1, 5)
-    
+
     def on_start(self):
         """Called when a simulated user starts."""
         # Each user gets a unique chat_id to simulate separate conversations
         self.chat_id = f"load-test-user-{uuid.uuid4()}"
-        
+
     def _get_random_question(self):
         """Get a random question from a random knowledge graph."""
         kg_name = random.choice(list(KNOWLEDGE_GRAPHS.keys()))
         kg_data = KNOWLEDGE_GRAPHS[kg_name]
         question = random.choice(kg_data["questions"])
         return kg_name, question
-    
+
     @task(weight=10)
     def ask_question_streaming(self):
         """Ask a question with streaming enabled."""
@@ -99,56 +99,56 @@ class QuaggaAgentUser(HttpUser):
         run_id = uuid.uuid4().hex[:8]
         start_time = time.perf_counter()
         logger.info("[run=%s] START kg=%s prompt=%r", run_id, kg_name, question)
-        
+
         payload = {
             "chat_id": self.chat_id,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": question
-                }
-            ],
-            "stream": True
+            "messages": [{"role": "user", "content": question}],
+            "stream": True,
         }
-        
+
         # Track metrics
         total_chunks = 0
         total_content_length = 0
         answer_parts: list[str] = []
-        
+
         with self.client.post(
             "/v1/chat/completions",
             json=payload,
             stream=True,
             timeout=(10, 600),
             catch_response=True,
-            name=f"/v1/chat/completions [streaming] - {kg_name}"
+            name=f"/v1/chat/completions [streaming] - {kg_name}",
         ) as response:
             try:
                 if response.status_code != 200:
                     duration_ms = int((time.perf_counter() - start_time) * 1000)
-                    failure_msg = (
-                        f"run={run_id} kg={kg_name} status={response.status_code} prompt={question}"
+                    failure_msg = f"run={run_id} kg={kg_name} status={response.status_code} prompt={question}"
+                    logger.error(
+                        "[run=%s] FAIL status=%s kg=%s duration_ms=%s prompt=%r",
+                        run_id,
+                        response.status_code,
+                        kg_name,
+                        duration_ms,
+                        question,
                     )
-                    logger.error("[run=%s] FAIL status=%s kg=%s duration_ms=%s prompt=%r", run_id, response.status_code, kg_name, duration_ms, question)
                     response.failure(failure_msg)
                     return
 
                 done_received = False
                 for line in response.iter_lines():
                     if line:
-                        decoded = line.decode('utf-8')
-                        if decoded.startswith('data: '):
+                        decoded = line.decode("utf-8")
+                        if decoded.startswith("data: "):
                             data_str = decoded[6:]
 
-                            if data_str == '[DONE]':
+                            if data_str == "[DONE]":
                                 done_received = True
                                 break
 
                             try:
                                 chunk = json.loads(data_str)
-                                delta = chunk.get('choices', [{}])[0].get('delta', {})
-                                content = delta.get('content', '')
+                                delta = chunk.get("choices", [{}])[0].get("delta", {})
+                                content = delta.get("content", "")
 
                                 if content:
                                     total_chunks += 1
@@ -165,7 +165,14 @@ class QuaggaAgentUser(HttpUser):
                         f"run={run_id} kg={kg_name} no_content done={done_received} "
                         f"duration_ms={duration_ms} prompt={question}"
                     )
-                    logger.error("[run=%s] FAIL kg=%s no_content done=%s duration_ms=%s prompt=%r", run_id, kg_name, done_received, duration_ms, question)
+                    logger.error(
+                        "[run=%s] FAIL kg=%s no_content done=%s duration_ms=%s prompt=%r",
+                        run_id,
+                        kg_name,
+                        done_received,
+                        duration_ms,
+                        question,
+                    )
                     response.failure(failure_msg)
                 else:
                     answer_text = "".join(answer_parts).strip()
@@ -184,11 +191,17 @@ class QuaggaAgentUser(HttpUser):
 
             except Exception as e:
                 duration_ms = int((time.perf_counter() - start_time) * 1000)
-                logger.exception("[run=%s] EXCEPTION kg=%s duration_ms=%s prompt=%r", run_id, kg_name, duration_ms, question)
+                logger.exception(
+                    "[run=%s] EXCEPTION kg=%s duration_ms=%s prompt=%r",
+                    run_id,
+                    kg_name,
+                    duration_ms,
+                    question,
+                )
                 response.failure(
                     f"run={run_id} kg={kg_name} exception={str(e)} duration_ms={duration_ms} prompt={question}"
                 )
-    
+
     # @task(weight=1)
     # def health_check(self):
     #     """Check the health endpoint."""
@@ -197,7 +210,7 @@ class QuaggaAgentUser(HttpUser):
     #             response.failure(f"Health check failed with status {response.status_code}")
     #         else:
     #             response.success()
-    
+
     # @task(weight=1)
     # def list_models(self):
     #     """List available models."""

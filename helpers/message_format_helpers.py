@@ -140,9 +140,19 @@ def _pretty_sparql(query: str) -> str:
     q = re.sub(r"<[^>]*>|\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'", _protect, q)
 
     for kw in [
-        "PREFIX", "SELECT", "CONSTRUCT", "ASK", "DESCRIBE",
-        "WHERE", "OPTIONAL", "FILTER", "VALUES",
-        "GROUP BY", "ORDER BY", "LIMIT", "OFFSET"
+        "PREFIX",
+        "SELECT",
+        "CONSTRUCT",
+        "ASK",
+        "DESCRIBE",
+        "WHERE",
+        "OPTIONAL",
+        "FILTER",
+        "VALUES",
+        "GROUP BY",
+        "ORDER BY",
+        "LIMIT",
+        "OFFSET",
     ]:
         q = re.sub(rf"\b{kw}\b", f"\n{kw}", q, flags=re.IGNORECASE)
     q = re.sub(r"\{\s*", "{\n  ", q)
